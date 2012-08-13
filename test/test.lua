@@ -1,0 +1,294 @@
+local zmq = require "lzmq"
+local zloop = require "lzmq.loop" 
+local assert = zmq.assert
+
+require "utils"
+
+print_version(zmq)
+
+ECHO_ADDR = "inproc://echo"
+ECHO_ADDR = "tcp://127.0.0.1:5555"
+
+function Test_Assert()
+  print("\n\nTest_Assert ...")
+  local ok1, msg1 = pcall(zmq.assert, false, zmq.error(zmq.errors.EINVAL));    -- object
+  local ok2, msg2 = pcall(zmq.assert, false, zmq.errors.EINVAL);               -- number
+  local ok3, msg3 = pcall(zmq.assert, false, zmq.strerror(zmq.errors.EINVAL)); -- string
+  assert(not ok1)
+  assert(not ok2)
+  assert(not ok3)
+  assert(msg1 == msg2)
+  assert(msg1 == msg3)
+  print("Test_Assert done!")
+end
+
+function Test_Message()
+  print("\n\nTest_Message ...")
+
+  local msg1 = assert(zmq.msg_init())
+  local msg2 = assert(zmq.msg_init_size(255))
+  local msg3 = assert(zmq.msg_init_data("Hello world!"))
+  assert(not msg1:closed())
+  assert(not msg2:closed())
+  assert(not msg3:closed())
+  assert(msg1:close())
+  assert(msg1:closed())
+  assert(msg1:close())
+  assert(not pcall(msg1.data, msg1)) -- no AV
+  assert(msg2:close())
+  assert(msg3:close())
+
+  msg1 = assert(zmq.msg_init_size(10))
+  assert(msg1:size() == 10)
+  assert(msg1:set_data("Hello"))
+  assert(msg1:size() == 10)
+  local data = assert(msg1:data())
+  assert(#data == 10)
+  assert(data:sub(1, 5) == 'Hello')
+
+  assert(msg1:set_data(6, ", world!")) -- append and resize buffer
+  assert(msg1:size() == 13)
+  local data = assert(msg1:data())
+  assert(#data == 13)
+  assert(data == "Hello, world!")
+  
+  msg2 = assert(zmq.msg_init())
+  assert(msg2:move(msg1))
+
+  assert(msg1:size() == 0)
+  assert(not msg1:closed())
+  assert(msg1:set_data("hi"))
+  assert(msg1:size() == 2)
+  assert(msg1:data() == "hi")
+  assert(msg1:close())
+
+
+  assert(msg2:size() == #data)
+  assert(msg2:data() == data)
+
+  msg3 = assert(zmq.msg_init())
+  assert(msg3:copy(msg2))
+
+  assert(msg2:size() == #data)
+  assert(msg2:data() == data)
+  assert(msg3:size() == #data)
+  assert(msg3:data() == data)
+
+  assert(msg2:close())
+  assert(msg3:close())
+
+  print("Test_Message done!")
+end
+
+function Test_Context()
+  print("\n\nTest_Context ...")
+  local ctx = zmq.context()
+  assert(ctx:set_io_threads(2))
+  assert(ctx:get_io_threads() == 2)
+  assert(ctx:set_max_sockets(252))
+  assert(ctx:get_max_sockets() == 252)
+
+  local ctx2 = assert(zmq.init_ctx( assert(ctx:lightuserdata()) ))
+  assert(ctx:lightuserdata()   ~= ctx2:lightuserdata()  )
+  assert(ctx:get_io_threads()  == ctx2:get_io_threads()  )
+  assert(ctx:get_max_sockets() == ctx2:get_max_sockets() )
+  assert(not ctx2:closed())
+  assert(ctx2:destroy())
+  assert(ctx2:closed())
+  assert(not pcall(ctx2.get_io_threads, ctx2))
+  assert(ctx:get_io_threads() == 2)
+
+  assert(not ctx:closed())
+  assert(ctx:destroy())
+  assert(ctx:closed())
+  print("Test_Context done!")
+end
+
+function Test_Error()
+  print("\n\nTest_Error ...")
+
+  for k, v in pairs(zmq.errors) do
+    assert(zmq.errors[v] == k)
+  end
+
+  local zassert = zmq.assert
+  local err = zmq.error(zmq.errors.EAGAIN)
+  assert(err:no()    == zmq.errors.EAGAIN)
+  assert(err:mnemo() == "EAGAIN")
+  local str_err = tostring(err)
+  local ok, msg = pcall( zassert, false, err )
+  assert(not ok)
+  assert(string.find(msg, str_err, 1, true))
+
+  local ctx = zmq.context();
+  local ok, err = ctx:set(89, 89)
+  assert(ok == nil)
+  if type(err) == 'string' then
+    assert(err:sub(2,7) == 'EINVAL')
+  elseif type(err) == 'number' then
+    assert(err == zmq.errors.EINVAL)
+  else 
+    assert(type(err)   == 'userdata')
+    assert(err:mnemo() == 'EINVAL')
+    assert(err:no()    == zmq.errors.EINVAL)
+  end
+  ctx:destroy()
+  print("Test_Error done!")
+end
+
+local Test_Skel = { name = 'Test_Empty';
+  srv = function(skt) end;
+
+  cli_send = function(skt) end;
+
+  cli_recv = function(skt) end;
+}
+
+local function TestServer(t)
+  assert(t.name and t.srv and t.cli_send and t.cli_recv)
+
+  print("\n\n" .. t.name .. " ...")
+  local main_loop = zloop.new()
+
+  assert(main_loop:add_new_bind(zmq.REP, ECHO_ADDR, t.srv))
+
+  local cli = assert(main_loop:add_new_connect(zmq.REQ, ECHO_ADDR, function(skt)
+    t.cli_recv(skt)
+    main_loop:interrupt()
+  end))
+
+  main_loop:add_once(200, function() t.cli_send(cli) end)
+
+  main_loop:add_once(30000, function() assert(false, "FAIL: TIMEOUT!") end)
+
+  main_loop:start()
+
+  main_loop:destroy()
+  
+  assert(cli:closed())
+
+  main_loop.sleep(500) -- for TCP time to release IP address
+  print(t.name .. " done!");
+end
+
+Test_Send_Recv      = { name = 'Test_Send_Recv';
+  srv = function(skt)
+    local msg, more = assert(print_msg("SRV RECV: ",skt:recv()))
+    assert(more       == false)
+    assert(skt:more() == false)
+    assert(skt:send(msg))
+  end;
+
+  cli_send = function(skt)
+    assert(skt:send('hello'))
+  end;
+
+  cli_recv = function(skt)
+    local msg, more = assert(print_msg("CLI RECV: ", skt:recv()))
+    assert(more       == false)
+    assert(skt:more() == false)
+  end;
+}
+
+Test_Send_Recv_all  = { name = 'Test_Send_Recv_all';
+  srv = function(skt)
+    local msg = assert(print_msg("SRV RECV: ",skt:recv_all()))
+    assert(skt:send_all(msg))
+  end;
+
+  cli_send = function(skt)
+    assert(skt:send_all{'hello','world'})
+  end;
+
+  cli_recv = function(skt)
+    assert(print_msg("CLI RECV: ", skt:recv_all()))
+  end;
+}
+
+Test_Send_Recv_msg  = { name = 'Test_Send_Recv_msg';
+  srv = function(skt)
+    local msg = assert(zmq.msg_init())
+    local msg2, more = assert(print_msg("SRV RECV: ",skt:recv_msg(msg)))
+    assert(msg == msg2)
+    assert(more       == false)
+    assert(skt:more() == false)
+    assert(msg:more() == false)
+    assert(skt:send_msg(msg))
+    assert(not msg:closed())
+    assert(msg:size() == 0)
+    assert(msg:close())
+
+    assert(msg:closed())
+    assert(not pcall(msg.size, msg))
+    assert(not pcall(msg.more, msg))
+    assert(msg:close())
+  end;
+
+  cli_send = function(skt)
+    local msg = assert(zmq.msg_init_data('hello'))
+    assert(msg:send(skt))
+    assert(not msg:closed())
+    assert(msg:size() == 0)
+    assert(msg:close())
+  end;
+
+  cli_recv = function(skt)
+    local msg = assert(zmq.msg_init())
+    local msg2, more = assert(print_msg("CLI RECV: ", msg:recv(skt)))
+    assert(msg == msg2)
+    assert(more       == false)
+    assert(skt:more() == false)
+    assert(msg:more() == false)
+    assert(not msg:closed())
+    assert(msg:close())
+  end;
+}
+
+Test_Send_Recv_more = { name = 'Test_Send_Recv_more';
+  srv = function(skt) 
+    local msg1, more = assert(skt:recv())
+    assert(more == skt:more() and more == true)
+    local msg2, more = assert(skt:recv_new_msg())
+    assert(more == skt:more() and more == msg2:more() and more == true)
+    local msg3, more = assert(zmq.msg_init():recv(skt))
+    assert(more == skt:more() and more == msg3:more() and more == true)
+    local msgs = {}
+    local t = {}
+    repeat 
+      local msg, more = assert(skt:recv())
+      assert(more == skt:more())
+      table.insert(msgs, msg)
+      table.insert(t, msg)
+    until not more
+
+    table.insert(t, 1, msg3:data())
+    table.insert(t, 1, msg2:data())
+    table.insert(t, 1, msg1)
+    print_msg("SRV RECV: ",t)
+
+    for i = 1, #t-1 do assert(skt:send_more(t[i])) end
+    assert(skt:send(t[#t]))
+  end;
+
+  cli_send = function(skt)
+    zmq.msg_init_data('Hello'):send_more(skt)
+    skt:send_more(", ")
+    zmq.msg_init_data('world'):send(skt, zmq.SNDMORE)
+    skt:send("!!!", zmq.SNDMORE)
+    skt:send("")
+  end;
+
+  cli_recv = function(skt)
+    assert(print_msg("CLI RECV: ", skt:recv_all()))
+  end;
+}
+
+
+Test_Assert()
+Test_Message()
+Test_Error()
+Test_Context()
+TestServer(Test_Send_Recv)
+TestServer(Test_Send_Recv_all)
+TestServer(Test_Send_Recv_msg)
+TestServer(Test_Send_Recv_more)

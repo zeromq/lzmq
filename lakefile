@@ -1,0 +1,53 @@
+J = J or path.join
+
+PROJECT = 'lzmq'
+
+INSTALL_DIR = INSTALL_DIR or J(ENV.LUA_DIR,'libs',PROJECT)
+
+ERR = ERR or 'number'
+
+ERR = ERR:upper()
+
+ERRORS = {
+  OBJECT = 'LUAZMQ_USE_ERR_TYPE_OBJECT',
+  OBJ    = 'LUAZMQ_USE_ERR_TYPE_OBJECT',
+  NUMBER = 'LUAZMQ_USE_ERR_TYPE_NUMBER',
+  NUM    = 'LUAZMQ_USE_ERR_TYPE_NUMBER',
+  STRING = 'LUAZMQ_USE_ERR_TYPE_STRING',
+  STR    = 'LUAZMQ_USE_ERR_TYPE_STRING',
+}
+
+if not ERRORS[ERR] then
+  quit("Unknown error type!")
+end
+
+lzmq = c.shared{PROJECT, 
+  base     = 'src',
+  src      = '*.c',
+  needs    = {'lua', 'zmq3', 'stdint'},
+  defines  = {ERRORS[ERR]},
+  dynamic  = false,
+  strip    = true,
+}
+
+target('build', lzmq)
+
+install = target('install', {
+  file.group{odir=J(INSTALL_DIR, 'lua', PROJECT); src = J('lua', 'lzmq', '*.*')};
+  file.group{odir=J(INSTALL_DIR, 'test');         src = J('test', '*.*')};
+  file.group{odir=J(INSTALL_DIR, 'test');         src = J('examples', 'utils.lua')};
+  file.group{odir=J(INSTALL_DIR, 'examples');recurse = true;  src = J('examples', '*.*')};
+  file.group{odir=J(INSTALL_DIR, 'bin' );         src = lzmq   };
+})
+
+target('test', install, function()
+  local file = J(INSTALL_DIR,'test','test.lua')
+  print("run " .. file)
+  if not TESTING then 
+    lake.chdir(J(INSTALL_DIR,'test'))
+    os.execute( LUA_EXE .. ' ' .. file )
+    lake.chdir("<")
+  end
+end)
+
+default('build')
