@@ -313,7 +313,13 @@ DEFINE_SKT_OPT(rcvtimeo,           ZMQ_RCVTIMEO,            int  )
 DEFINE_SKT_OPT(sndtimeo,           ZMQ_SNDTIMEO,            int  )
 DEFINE_SKT_OPT(ipv4only,           ZMQ_IPV4ONLY,            int  )
 DEFINE_SKT_OPT(last_endpoint,      ZMQ_LAST_ENDPOINT,       str  )
+#ifdef ZMQ_ROUTER_BEHAVIOR 
+DEFINE_SKT_OPT(fail_unroutable,    ZMQ_ROUTER_BEHAVIOR,     int  )
+DEFINE_SKT_OPT(router_behavior,    ZMQ_ROUTER_BEHAVIOR,     int  )
+#else
 DEFINE_SKT_OPT(fail_unroutable,    ZMQ_FAIL_UNROUTABLE,     int  )
+DEFINE_SKT_OPT(router_behavior,    ZMQ_FAIL_UNROUTABLE,     int  )
+#endif
 DEFINE_SKT_OPT(tcp_keepalive,      ZMQ_TCP_KEEPALIVE,       int  )
 DEFINE_SKT_OPT(tcp_keepalive_cnt,  ZMQ_TCP_KEEPALIVE_CNT,   int  )
 DEFINE_SKT_OPT(tcp_keepalive_idle, ZMQ_TCP_KEEPALIVE_IDLE,  int  )
@@ -361,6 +367,7 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   REGISTER_SKT_OPT(  ipv4only              ),
   REGISTER_SKT_OPT(  last_endpoint         ),
   REGISTER_SKT_OPT(  fail_unroutable       ),
+  REGISTER_SKT_OPT(  router_behavior       ),
   REGISTER_SKT_OPT(  tcp_keepalive         ),
   REGISTER_SKT_OPT(  tcp_keepalive_cnt     ),
   REGISTER_SKT_OPT(  tcp_keepalive_idle    ),
