@@ -1,6 +1,7 @@
 #ifndef _LZMQ_H_
 #define _LZMQ_H_
 #include "poller.h"
+#include "lua.h"
 
 #if defined (_WIN32) || defined (_WINDOWS)
 #  define __WINDOWS__

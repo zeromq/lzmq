@@ -1,6 +1,7 @@
-local zmq = require "lzmq"
-local zloop = require "lzmq.loop" 
+local zmq    = require "lzmq"
+local zloop  = require "lzmq.loop" 
 local assert = zmq.assert
+local ztimer = zmq.timer
 
 require "utils"
 
@@ -134,6 +135,63 @@ function Test_Error()
   end
   ctx:destroy()
   print("Test_Error done!")
+end
+
+local function Test_Timer(timer)
+  print("\n\nTest_Timer ...")
+
+  local COUNT    = 1000
+  local INTERVAL = 100
+  local DELTA    = 50
+
+  local name = timer:is_absolute() and 'absolute' or 'monotonic';
+
+  local max_delta, totla_delta, totla_delta2 = 0, 0, 0
+
+  if timer:is_absolute() then
+    timer:set(ztimer.absolute_time() + INTERVAL)
+  else
+    timer:set(INTERVAL)
+  end
+
+  assert(not timer:started())
+  assert(not timer:closed())
+  assert(not pcall(timer.elapsed, timer))
+  assert(not pcall(timer.rest, timer))
+  assert(timer == timer:start())
+
+  for i = 1, COUNT do
+
+    timer:start()
+    ztimer.sleep(INTERVAL + DELTA)
+    local elapsed = timer:elapsed()
+    assert(timer:rest() == 0)
+
+    local delta = math.abs(elapsed - (INTERVAL + DELTA))
+    if delta > max_delta then max_delta = delta end
+    totla_delta = totla_delta + delta
+    totla_delta2 = totla_delta2 + (elapsed - (INTERVAL + DELTA))
+
+    assert(timer:start())
+    assert(timer:started())
+    assert(timer:setted())
+    assert(not pcall(timer.start, start))
+    assert(timer:stop())
+    assert(not pcall(timer.elapsed, timer))
+    assert(not pcall(timer.rest,  timer))
+  end
+
+  print("timer: ", name)
+  print("Max delta    : ", max_delta)
+  print("Avg delta    : ", totla_delta2/1000)
+  print("Avg abs delta: ", totla_delta/1000)
+  print("----------------------------------")
+
+  assert(timer:close())
+  assert(timer:closed())
+  assert(timer:close())
+
+  print("Test_Timer done!")
 end
 
 local Test_Skel = { name = 'Test_Empty';
@@ -292,3 +350,5 @@ TestServer(Test_Send_Recv)
 TestServer(Test_Send_Recv_all)
 TestServer(Test_Send_Recv_msg)
 TestServer(Test_Send_Recv_more)
+Test_Timer(ztimer.absolute())
+Test_Timer(ztimer.monotonic())

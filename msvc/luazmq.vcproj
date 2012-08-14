@@ -209,6 +209,10 @@
 				RelativePath="..\src\zsocket.c"
 				>
 			</File>
+			<File
+				RelativePath="..\src\ztimer.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -245,6 +249,10 @@
 			</File>
 			<File
 				RelativePath="..\src\zsocket.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\ztimer.h"
 				>
 			</File>
 		</Filter>

@@ -1,6 +1,6 @@
 local zmq      = require "lzmq"
 local zpoller  = require "lzmq.poller"
-local ztimer   = require "lzmq.timer"
+local ztimer   = assert(zmq.timer)
 
 local ZMQ_POLL_MSEC = 1000
 do local ver = zmq.version()
@@ -21,7 +21,7 @@ end
 
 function time_event:init(fn)
   self.private_ = {
-    timer = ztimer:new();
+    timer = ztimer.monotonic();
     lock  = false;
     fn    = fn;
   }
@@ -29,19 +29,23 @@ function time_event:init(fn)
 end
 
 function time_event:set_time(tm)
-  self.private_.timer:set_time(tm)
-  self.private_.timer:start()
+  if self.private_.timer:is_monotonic() then
+    self.private_.timer = ztimer.absolute()
+  end
+  self.private_.timer:start(tm)
 end
 
 function time_event:set_interval(interval)
-  self.private_.timer:set_interval(interval)
-  self.private_.timer:start()
+  if self.private_.timer:is_absolute() then
+    self.private_.timer = ztimer.monotonic()
+  end
+  self.private_.once = false
+  self.private_.timer:start(interval)
 end
 
 function time_event:set_interval_once(interval)
-  self.private_.timer:set_interval(interval)
-  self.private_.once = true;
-  self.private_.timer:start()
+  self:set_interval(interval)
+  self.private_.once = true
 end
 
 ---
@@ -67,7 +71,7 @@ end
 -- Если это одноразовое событие, то оно останавливается.
 -- возвращает признак started
 function time_event:restart()
-  local is_once = (self.private_.once) or (not self.private_.timer:interval())
+  local is_once = (self.private_.once) or (not self.private_.timer:is_absolute())
   if is_once then
     if self.private_.timer:started() then
       self.private_.timer:stop()
@@ -284,7 +288,7 @@ end
 -- в течении ожидания обрабатываются все события
 -- в том числе и запланированные
 function zmq_loop:sleep_ex(interval)
-  local ev = ztimer.new():set_interval(interval):start()
+  local ev = ztimer.monotonic(interval):start()
   local c = 0
   while true do
     local cnt, msg = self:poll(interval)
@@ -300,7 +304,7 @@ end
 -- если событий нет, то функция возвращает управление немедленно
 function zmq_loop:flush(interval)
   if self:interrupted() then return nil, 'interrupt' end
-  local ev = ztimer.new():set_interval(interval):start()
+  local ev = ztimer.monotonic(interval):start()
   local c = 0
   while true do 
     local cnt, msg = self.private_.poller:poll(0)
@@ -514,6 +518,8 @@ function M.new(p, ...)
   if p == _M then return zmq_loop:new(...) end
   return zmq_loop:new(p, ...)
 end
+
+M.sleep = ztimer.sleep
 
 M.zmq_loop_class = zmq_loop
 
