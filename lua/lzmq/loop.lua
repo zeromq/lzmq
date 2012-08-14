@@ -71,7 +71,7 @@ end
 -- Если это одноразовое событие, то оно останавливается.
 -- возвращает признак started
 function time_event:restart()
-  local is_once = (self.private_.once) or (not self.private_.timer:is_absolute())
+  local is_once = self.private_.once or self.private_.timer:is_absolute()
   if is_once then
     if self.private_.timer:started() then
       self.private_.timer:stop()
