@@ -40,7 +40,7 @@ lztimer = c.shared{'timer',
 
 target('timer', lztimer)
 
-target('build', lzmq)
+target('build', lzmq, lztimer)
 
 install = target('install', {
   file.group{odir=J(INSTALL_DIR, 'lua', PROJECT); src = J('lua', 'lzmq', '*.*')};
