@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="luazmq"
-	ProjectGUID="{C372E4D2-5680-4793-A0D9-6488413AC277}"
-	RootNamespace="luazmq"
+	Name="lztimer"
+	ProjectGUID="{38CCA91C-6392-4814-83E5-74F77E59AD3F}"
+	RootNamespace="lztimer"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -41,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(ZMQ3_DIR)\include&quot;;&quot;$(LUA_DIR)\include&quot;;&quot;$(CPPLIB_DIR)\msvc&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LUAZMQ_EXPORTS"
+				AdditionalIncludeDirectories="&quot;$(LUA_DIR)\include&quot;;&quot;$(CPPLIB_DIR)\msvc&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LZTIMER_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -61,10 +61,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libzmq3.lib lua5.1.lib"
-				OutputFile="$(OutDir)\lzmq.dll"
+				AdditionalOptions="/EXPORT:luaopen_timer=luaopen_lzmq_timer"
+				AdditionalDependencies="lua5.1.lib"
+				OutputFile="$(OutDir)\timer.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="$(ZMQ3_DIR)\lib;&quot;$(LUA_DIR)\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(LUA_DIR)\lib&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -118,8 +119,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="&quot;$(ZMQ3_DIR)\include&quot;;&quot;$(LUA_DIR)\include&quot;;&quot;$(CPPLIB_DIR)\msvc&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LUAZMQ_EXPORTS"
+				AdditionalIncludeDirectories="&quot;$(LUA_DIR)\include&quot;;&quot;$(CPPLIB_DIR)\msvc&quot;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LZTIMER_EXPORTS"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -137,9 +138,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libzmq3.lib lua5.1.lib"
+				AdditionalDependencies="lua5.1.lib"
+				OutputFile="$(OutDir)\timer.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(ZMQ3_DIR)\lib;&quot;$(LUA_DIR)\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(LUA_DIR)\lib&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -178,35 +180,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\src\lzmq.c"
-				>
-			</File>
-			<File
 				RelativePath="..\src\lzutils.c"
 				>
 			</File>
 			<File
-				RelativePath="..\src\poller.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\zcontext.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\zerror.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\zmsg.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\zpoller.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\zsocket.c"
+				RelativePath="..\src\ztimer.c"
 				>
 			</File>
 		</Filter>
@@ -216,35 +194,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\src\lzmq.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\lzutils.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\poller.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\zcontext.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\zerror.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\zmsg.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\zpoller.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\zsocket.h"
+				RelativePath="..\src\ztimer.h"
 				>
 			</File>
 		</Filter>

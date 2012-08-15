@@ -1,4 +1,3 @@
-#include "lzmq.h"
 #include "lzutils.h"
 #include "lua.h"
 #include "lauxlib.h"
@@ -7,25 +6,29 @@
 #include <stdio.h>
 #include "ztimer.h"
 #include <stdint.h>
+#include <float.h>
 
 #if defined(__WINDOWS__) 
 
-// #define USE_TICK_COUNT
-// #define USE_TICK_COUNT64
-#define USE_PERF_COUNT
-
-#else
-
-#define USE_GETTIMEOFDAY
-#define USE_CLOCK_MONOTONIC
-
+#if !defined(USE_TICK_COUNT) && !defined(USE_TICK_COUNT64) && !defined(USE_PERF_COUNT)
+#  define USE_PERF_COUNT
 #endif
 
+#else
+// USE_GETTIMEOFDAY
+// USE_CLOCK_MONOTONIC
+#endif
+
+#define LUAZMQ_PREFIX  "LuaZMQ3: "
 static const char *LUAZMQ_MONOTONIC_TIMER = LUAZMQ_PREFIX "monotonic timer";
 static const char *LUAZMQ_ABSULUTE_TIMER  = LUAZMQ_PREFIX "absolute timer";
 
-#define LUAZMQ_FLAG_TIMER_STARTED (uchar)2
-#define LUAZMQ_FLAG_TIMER_SETTED  (uchar)4
+#define luazmq_timer_pass(L) (lua_pushboolean(L, 1), 1)
+
+typedef unsigned char uchar;
+#define LUAZMQ_FLAG_TIMER_CLOSED  (uchar)0x01
+#define LUAZMQ_FLAG_TIMER_STARTED (uchar)0x02
+#define LUAZMQ_FLAG_TIMER_SETTED  (uchar)0x04
 
 static int64_t U64Delta(uint64_t s, uint64_t e){
   int64_t diff = (e > s)?(int64_t)(e - s):-(int64_t)(s - e);
@@ -33,8 +36,6 @@ static int64_t U64Delta(uint64_t s, uint64_t e){
 }
 
 #if defined(__WINDOWS__) 
-
-#define USE_TICK_COUNT
 
 #ifdef USE_TICK_COUNT
 
@@ -131,7 +132,7 @@ absolute_time_t GetUtcTime(){
 #ifdef USE_GETTIMEOFDAY
   struct timeval tv;
   if (0 == gettimeofday(&tv, NULL))
-    return absolute_time_t(tv.tv_sec) + tv.tv_usec / (absolute_time_t)(1000000);
+    return (absolute_time_t)tv.tv_sec + tv.tv_usec / (absolute_time_t)(1000000);
 #endif
   return time(0);
 }
@@ -140,7 +141,7 @@ monotonic_time_t GetMonotonicTime(){
 #ifdef USE_CLOCK_MONOTONIC
   struct timespec ts;
   if(0 == clock_gettime(CLOCK_MONOTONIC, &ts))
-    return monotonic_time_t(tv.tv_sec) + tv.tv_usec / (monotonic_time_t)(1000000000);
+    return (monotonic_time_t)tv.tv_sec + tv.tv_usec / (monotonic_time_t)(1000000000);
 #endif
   return GetUtcTime();
 }
@@ -181,7 +182,7 @@ typedef struct {
 zmonotonic_timer *luazmq_getmontimer_at (lua_State *L, int i) {
  zmonotonic_timer *timer = (zmonotonic_timer *)luazmq_checkudatap (L, i, LUAZMQ_MONOTONIC_TIMER);
  luaL_argcheck (L, timer != NULL, 1, LUAZMQ_PREFIX"timer expected");
- luaL_argcheck (L, !(timer->flags & LUAZMQ_FLAG_CLOSED), 1, LUAZMQ_PREFIX"timer is closed");
+ luaL_argcheck (L, !(timer->flags & LUAZMQ_FLAG_TIMER_CLOSED), 1, LUAZMQ_PREFIX"timer is closed");
  return timer;
 }
 #define luazmq_getmontimer(L) luazmq_getmontimer_at((L),1)
@@ -189,7 +190,7 @@ zmonotonic_timer *luazmq_getmontimer_at (lua_State *L, int i) {
 zabsolute_timer *luazmq_getabstimer_at (lua_State *L, int i) {
  zabsolute_timer *timer = (zabsolute_timer *)luazmq_checkudatap (L, i, LUAZMQ_ABSULUTE_TIMER);
  luaL_argcheck (L, timer != NULL, 1, LUAZMQ_PREFIX"timer expected");
- luaL_argcheck (L, !(timer->flags & LUAZMQ_FLAG_CLOSED), 1, LUAZMQ_PREFIX"timer is closed");
+ luaL_argcheck (L, !(timer->flags & LUAZMQ_FLAG_TIMER_CLOSED), 1, LUAZMQ_PREFIX"timer is closed");
  return timer;
 }
 #define luazmq_getabstimer(L) luazmq_getabstimer_at((L),1)
@@ -210,16 +211,16 @@ static int luazmq_timer_create_monotonic(lua_State *L){
 static int luazmq_montimer_close(lua_State *L){
   zmonotonic_timer *timer = luazmq_checkudatap(L, 1, LUAZMQ_MONOTONIC_TIMER);
   luaL_argcheck (L, timer != NULL, 1, LUAZMQ_PREFIX"timer expected");
-  if(!(timer->flags & LUAZMQ_FLAG_CLOSED)){
-    timer->flags |= LUAZMQ_FLAG_CLOSED;
+  if(!(timer->flags & LUAZMQ_FLAG_TIMER_CLOSED)){
+    timer->flags |= LUAZMQ_FLAG_TIMER_CLOSED;
   }
-  return luazmq_pass(L);
+  return luazmq_timer_pass(L);
 }
 
 static int luazmq_montimer_closed(lua_State *L){
   zmonotonic_timer *timer = luazmq_checkudatap(L, 1, LUAZMQ_MONOTONIC_TIMER);
   luaL_argcheck (L, timer != NULL, 1, LUAZMQ_PREFIX"timer expected");
-  lua_pushboolean(L, timer->flags & LUAZMQ_FLAG_CLOSED);
+  lua_pushboolean(L, timer->flags & LUAZMQ_FLAG_TIMER_CLOSED);
   return 1;
 }
 
@@ -246,7 +247,7 @@ static int luazmq_montimer_elapsed(lua_State *L){
   monotonic_diff_t elapsed;
   luaL_argcheck (L, (timer->flags & LUAZMQ_FLAG_TIMER_STARTED), 1, LUAZMQ_PREFIX"timer not started");
   elapsed = GetMonotonicElapsed(timer->start);
-  lua_pushnumber(L, elapsed);
+  lua_pushnumber(L, (lua_Number)elapsed);
   return 1;
 }
 
@@ -258,7 +259,7 @@ static int luazmq_montimer_rest(lua_State *L){
 
   elapsed = GetMonotonicElapsed(timer->start);
   if(elapsed >= timer->fire) lua_pushinteger(L, 0);
-  else lua_pushnumber(L, timer->fire - elapsed);
+  else lua_pushnumber(L, (lua_Number)(timer->fire - elapsed));
 
   return 1;
 }
@@ -273,7 +274,7 @@ static int luazmq_montimer_set(lua_State *L){
 static int luazmq_montimer_get (lua_State *L){
   zmonotonic_timer *timer = luazmq_getmontimer(L);
   if(timer->flags & LUAZMQ_FLAG_TIMER_SETTED) 
-    lua_pushnumber(L,  timer->fire);
+    lua_pushnumber(L, (lua_Number) timer->fire);
   else 
     lua_pushnil(L);
   return 1;
@@ -288,7 +289,7 @@ static int luazmq_montimer_setted(lua_State *L){
 static int luazmq_montimer_reset(lua_State *L){
   zmonotonic_timer *timer = luazmq_getmontimer(L);
   timer->flags &= ~LUAZMQ_FLAG_TIMER_SETTED;
-  return luazmq_pass(L);
+  return luazmq_timer_pass(L);
 }
 
 static int luazmq_montimer_stop(lua_State *L){
@@ -296,7 +297,7 @@ static int luazmq_montimer_stop(lua_State *L){
   monotonic_diff_t elapsed;
   luaL_argcheck (L, (timer->flags & LUAZMQ_FLAG_TIMER_STARTED), 1, LUAZMQ_PREFIX"timer not started");
   elapsed = GetMonotonicElapsed(timer->start);
-  lua_pushnumber(L, elapsed);
+  lua_pushnumber(L, (lua_Number)elapsed);
   timer->flags &= ~LUAZMQ_FLAG_TIMER_STARTED;
   return 1;
 }
@@ -331,16 +332,16 @@ static int luazmq_timer_create_absolute(lua_State *L){
 static int luazmq_abstimer_close(lua_State *L){
   zabsolute_timer *timer = luazmq_checkudatap(L, 1, LUAZMQ_ABSULUTE_TIMER);
   luaL_argcheck (L, timer != NULL, 1, LUAZMQ_PREFIX"timer expected");
-  if(!(timer->flags & LUAZMQ_FLAG_CLOSED)){
-    timer->flags |= LUAZMQ_FLAG_CLOSED;
+  if(!(timer->flags & LUAZMQ_FLAG_TIMER_CLOSED)){
+    timer->flags |= LUAZMQ_FLAG_TIMER_CLOSED;
   }
-  return luazmq_pass(L);
+  return luazmq_timer_pass(L);
 }
 
 static int luazmq_abstimer_closed(lua_State *L){
   zabsolute_timer *timer = luazmq_checkudatap(L, 1, LUAZMQ_ABSULUTE_TIMER);
   luaL_argcheck (L, timer != NULL, 1, LUAZMQ_PREFIX"timer expected");
-  lua_pushboolean(L, timer->flags & LUAZMQ_FLAG_CLOSED);
+  lua_pushboolean(L, timer->flags & LUAZMQ_FLAG_TIMER_CLOSED);
   return 1;
 }
 
@@ -410,7 +411,7 @@ static int luazmq_abstimer_setted(lua_State *L){
 static int luazmq_abstimer_reset(lua_State *L){
   zabsolute_timer *timer = luazmq_getabstimer(L);
   timer->flags &= ~LUAZMQ_FLAG_TIMER_SETTED;
-  return luazmq_pass(L);
+  return luazmq_timer_pass(L);
 }
 
 static int luazmq_abstimer_stop(lua_State *L){
@@ -442,6 +443,38 @@ static int luazmq_timer_absolute_time(lua_State *L){
   return 1;
 }
 
+static int luazmq_timer_absolute_delta(lua_State *L){
+  absolute_time_t t1 = (absolute_time_t) luaL_checknumber(L, 1);
+  absolute_time_t t2 = (absolute_time_t) luaL_checknumber(L, 2);
+  lua_pushnumber(L, (lua_Number)GetUtcDelta(t1,t2));
+  return 1;
+}
+
+static int luazmq_timer_absolute_elapsed(lua_State *L){
+  absolute_time_t t = (absolute_time_t) luaL_checknumber(L, 1);
+  lua_pushnumber(L, (lua_Number)GetUtcElapsed(t));
+  return 1;
+}
+
+static int luazmq_timer_monotonic_time(lua_State *L){
+  lua_pushnumber(L, (lua_Number)GetMonotonicTime());
+  return 1;
+}
+
+static int luazmq_timer_monotonic_delta(lua_State *L){
+  monotonic_time_t t1 = (monotonic_time_t) luaL_checknumber(L, 1);
+  monotonic_time_t t2 = (monotonic_time_t) luaL_checknumber(L, 2);
+  lua_pushnumber(L, (lua_Number)GetMonotonicDelta(t1,t2));
+  return 1;
+}
+
+static int luazmq_timer_monotonic_elapsed(lua_State *L){
+  monotonic_time_t t = (monotonic_time_t) luaL_checknumber(L, 1);
+  lua_pushnumber(L, (lua_Number)GetMonotonicElapsed(t));
+  return 1;
+}
+
+
 static int luazmq_timer_sleep(lua_State *L){
   int msecs = luaL_checkint(L,1);
 
@@ -464,14 +497,21 @@ static int luazmq_timer_sleep(lua_State *L){
     nanosleep (&t, NULL);
 #endif
 
-  return luazmq_pass(L);
+  return luazmq_timer_pass(L);
 }
 
 static const struct luaL_Reg luazmq_timerlib[]   = {
-  { "monotonic",     luazmq_timer_create_monotonic },
-  { "absolute",      luazmq_timer_create_absolute  },
-  { "absolute_time", luazmq_timer_absolute_time    },
-  { "sleep",         luazmq_timer_sleep            },
+  { "monotonic",         luazmq_timer_create_monotonic  },
+  { "absolute",          luazmq_timer_create_absolute   },
+  { "absolute_time",     luazmq_timer_absolute_time     },
+  { "absolute_delta",    luazmq_timer_absolute_delta    },
+  { "absolute_elapsed",  luazmq_timer_absolute_elapsed  },
+
+  { "monotonic_time",    luazmq_timer_monotonic_time    },
+  { "monotonic_delta",   luazmq_timer_monotonic_delta   },
+  { "monotonic_elapsed", luazmq_timer_monotonic_elapsed },
+
+  { "sleep",             luazmq_timer_sleep             },
 
   {NULL, NULL}
 };
@@ -525,3 +565,14 @@ void luazmq_timer_initlib(lua_State *L){
   lua_setfield(L,-2, "timer");
 }
 
+LUAZMQ_TIMER_EXPORT int luaopen_lzmq_timer (lua_State *L){
+  InitMonotonicTimer();
+  luazmq_createmeta(L, LUAZMQ_MONOTONIC_TIMER,  luazmq_montimer_methods);
+  luazmq_createmeta(L, LUAZMQ_ABSULUTE_TIMER,   luazmq_abstimer_methods);
+  lua_pop(L, 2);
+
+  lua_newtable(L);
+  luazmq_setfuncs(L, luazmq_timerlib, 0);
+
+  return 1;
+}

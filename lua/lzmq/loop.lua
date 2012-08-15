@@ -1,6 +1,6 @@
 local zmq      = require "lzmq"
 local zpoller  = require "lzmq.poller"
-local ztimer   = assert(zmq.timer)
+local ztimer   = require "lzmq.timer"
 
 local ZMQ_POLL_MSEC = 1000
 do local ver = zmq.version()

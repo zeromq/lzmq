@@ -1,13 +1,11 @@
-J = J or path.join
+J  = J or path.join
+IF = IF or lake.choose or choose
 
 PROJECT = 'lzmq'
 
 INSTALL_DIR = INSTALL_DIR or J(ENV.LUA_DIR,'libs',PROJECT)
 
-ERR = ERR or 'number'
-
-ERR = ERR:upper()
-
+ERR = (ERR or 'number'):upper()
 ERRORS = {
   OBJECT = 'LUAZMQ_USE_ERR_TYPE_OBJECT',
   OBJ    = 'LUAZMQ_USE_ERR_TYPE_OBJECT',
@@ -16,19 +14,31 @@ ERRORS = {
   STRING = 'LUAZMQ_USE_ERR_TYPE_STRING',
   STR    = 'LUAZMQ_USE_ERR_TYPE_STRING',
 }
-
-if not ERRORS[ERR] then
-  quit("Unknown error type!")
-end
+if not ERRORS[ERR] then quit("Unknown error type!") end
 
 lzmq = c.shared{PROJECT, 
   base     = 'src',
   src      = '*.c',
+  exclude  = 'ztimer',
   needs    = {'lua', 'zmq3', 'stdint'},
   defines  = {ERRORS[ERR]},
   dynamic  = false,
   strip    = true,
 }
+
+lztimer = c.shared{'timer', 
+  base     = 'src',
+  src      = {'ztimer','lzutils'},
+  needs    = {'lua', 'stdint'},
+  defines  = {
+    IF(WINDOWS, 'USE_PERF_COUNT', 'USE_CLOCK_MONOTONIC'),
+    IF(not WINDOWS, 'USE_GETTIMEOFDAY'),
+  },
+  dynamic  = false,
+  strip    = true,
+}
+
+target('timer', lztimer)
 
 target('build', lzmq)
 
@@ -37,7 +47,8 @@ install = target('install', {
   file.group{odir=J(INSTALL_DIR, 'test');         src = J('test', '*.*')};
   file.group{odir=J(INSTALL_DIR, 'test');         src = J('examples', 'utils.lua')};
   file.group{odir=J(INSTALL_DIR, 'examples');recurse = true;  src = J('examples', '*.*')};
-  file.group{odir=J(INSTALL_DIR, 'bin' );         src = lzmq   };
+  file.group{odir=J(INSTALL_DIR, 'bin' );         src = lzmq    };
+  file.group{odir=J(INSTALL_DIR, 'bin', PROJECT); src = lztimer };
 })
 
 target('test', install, function()

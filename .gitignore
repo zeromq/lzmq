@@ -7,5 +7,6 @@
 *.exp
 *.suo
 *.ncb
+*.user
 msvc/Debug/
 msvc/Release/

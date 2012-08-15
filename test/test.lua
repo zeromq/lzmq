@@ -1,7 +1,7 @@
 local zmq    = require "lzmq"
 local zloop  = require "lzmq.loop" 
+local ztimer = require "lzmq.timer"
 local assert = zmq.assert
-local ztimer = zmq.timer
 
 require "utils"
 
@@ -140,7 +140,7 @@ end
 local function Test_Timer(timer)
   print("\n\nTest_Timer ...")
 
-  local COUNT    = 1000
+  local COUNT    = 100
   local INTERVAL = 100
   local DELTA    = 50
 

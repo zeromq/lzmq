@@ -77,8 +77,8 @@ int luazmq_fail_no(lua_State *L, zsocket *skt);
 #  define luazmq_fail luazmq_fail_no
 #elif defined LUAZMQ_USE_ERR_TYPE_STRING
 #  define luazmq_fail luazmq_fail_str
-#else
-#  define luazmq_fail luazmq_fail_str
+#else /* default */
+#  define luazmq_fail luazmq_fail_no
 #endif
 
 #endif

@@ -7,7 +7,6 @@
 #include "zcontext.h"
 #include "zsocket.h"
 #include "zpoller.h"
-#include "ztimer.h"
 #include <assert.h>
 
 const char *LUAZMQ_CONTEXT = LUAZMQ_PREFIX "Context";
@@ -226,7 +225,6 @@ const luazmq_int_const device_types[] ={
 };
 
 static void luazmq_init_lib(lua_State *L){
-
   lua_newtable(L); 
   luazmq_context_initlib(L);
   luazmq_socket_initlib(L);
@@ -234,7 +232,6 @@ static void luazmq_init_lib(lua_State *L){
   luazmq_error_initlib(L);
   luazmq_message_initlib(L);
   luazmq_zutils_initlib(L);
-  luazmq_timer_initlib(L);
 
   luazmq_register_consts(L, device_types);
 

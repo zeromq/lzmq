@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "luazmq", "luazmq.vcproj", "{C372E4D2-5680-4793-A0D9-6488413AC277}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lztimer", "lztimer.vcproj", "{38CCA91C-6392-4814-83E5-74F77E59AD3F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -13,6 +15,10 @@ Global
 		{C372E4D2-5680-4793-A0D9-6488413AC277}.Debug|Win32.Build.0 = Debug|Win32
 		{C372E4D2-5680-4793-A0D9-6488413AC277}.Release|Win32.ActiveCfg = Release|Win32
 		{C372E4D2-5680-4793-A0D9-6488413AC277}.Release|Win32.Build.0 = Release|Win32
+		{38CCA91C-6392-4814-83E5-74F77E59AD3F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{38CCA91C-6392-4814-83E5-74F77E59AD3F}.Debug|Win32.Build.0 = Debug|Win32
+		{38CCA91C-6392-4814-83E5-74F77E59AD3F}.Release|Win32.ActiveCfg = Release|Win32
+		{38CCA91C-6392-4814-83E5-74F77E59AD3F}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

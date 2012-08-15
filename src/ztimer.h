@@ -3,7 +3,16 @@
 
 #include "lua.h"
 
-void luazmq_timer_initlib(lua_State *L);
+#if defined (_WIN32) || defined (_WINDOWS)
+#  define __WINDOWS__
+#endif
 
+#ifdef _MSC_VER
+#  define LUAZMQ_TIMER_EXPORT __declspec(dllexport)
+#else
+#  define LUAZMQ_TIMER_EXPORT
+#endif
+
+void luazmq_timer_initlib(lua_State *L);
 
 #endif
