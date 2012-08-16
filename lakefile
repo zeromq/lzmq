@@ -1,6 +1,3 @@
-J  = J or path.join
-IF = IF or lake.choose or choose
-
 PROJECT = 'lzmq'
 
 INSTALL_DIR = INSTALL_DIR or J(ENV.LUA_DIR,'libs',PROJECT)
@@ -43,12 +40,15 @@ target('timer', lztimer)
 target('build', lzmq, lztimer)
 
 install = target('install', {
-  file.group{odir=J(INSTALL_DIR, 'lua', PROJECT); src = J('lua', 'lzmq', '*.*')};
-  file.group{odir=J(INSTALL_DIR, 'test');         src = J('test', '*.*')};
-  file.group{odir=J(INSTALL_DIR, 'test');         src = J('examples', 'utils.lua')};
+
+  file.group{odir=J(INSTALL_DIR, 'share'         ); src = lzmq                   };
+  file.group{odir=J(INSTALL_DIR, 'share', PROJECT); src = lztimer                };
+  file.group{odir=J(INSTALL_DIR, 'share', PROJECT); src = J('lua', 'lzmq', '*.*')};
+
+  file.group{odir=J(INSTALL_DIR, 'test'); src = J('test', '*.*')          };
+  file.group{odir=J(INSTALL_DIR, 'test'); src = J('examples', 'utils.lua')};
+
   file.group{odir=J(INSTALL_DIR, 'examples');recurse = true;  src = J('examples', '*.*')};
-  file.group{odir=J(INSTALL_DIR, 'bin' );         src = lzmq    };
-  file.group{odir=J(INSTALL_DIR, 'bin', PROJECT); src = lztimer };
 })
 
 target('test', install, function()
@@ -60,5 +60,21 @@ target('test', install, function()
     lake.chdir("<")
   end
 end)
+
+target('perf_local_lat',      install, test_perf_r('lat', "tcp://127.0.0.1:5555 1   100000"))
+target('perf_local_thr',      install, test_perf_l('thr', "tcp://127.0.0.1:5555 512 100000"))
+target('perf_thread_lat',     install, test_perf_t('lat', "1   100000"))
+target('perf_thread_thr',     install, test_perf_t('thr', "512 100000"))
+target('perf_thread_lat_tcp', install, test_perf_t('lat', "1   100000 tcp://127.0.0.1:5555 tcp://127.0.0.1:5555"))
+target('perf_thread_thr_tcp', install, test_perf_t('thr', "512 100000 tcp://127.0.0.1:5555 tcp://127.0.0.1:5555"))
+
+target('perf', {
+  'perf_local_lat',      
+  'perf_local_thr',      
+  'perf_thread_lat',     
+  'perf_thread_thr',     
+  'perf_thread_lat_tcp', 
+  'perf_thread_thr_tcp',
+})
 
 default('build')

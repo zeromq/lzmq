@@ -40,6 +40,9 @@ local child_code = [[
 
 	local ctx = zthreads.get_parent_ctx()
 	local s = ctx:socket(zmq.REP)
+	s:set_rcvhwm(roundtrip_count+1)
+	s:set_sndhwm(roundtrip_count+1)
+
 	s:connect(connect_to)
 
 	local msg = zmq.msg_init()
@@ -55,6 +58,8 @@ local child_code = [[
 
 local ctx = zmq.init(1)
 local s = ctx:socket(zmq.REQ)
+s:set_rcvhwm(roundtrip_count+1)
+s:set_sndhwm(roundtrip_count+1)
 s:bind(bind_to)
 
 local child_thread = zthreads.runstring(ctx, child_code, connect_to, message_size, roundtrip_count)

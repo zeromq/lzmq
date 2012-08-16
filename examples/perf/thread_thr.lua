@@ -41,15 +41,19 @@ local child_code = [[
 
 	local ctx = zthreads.get_parent_ctx()
 	local s = ctx:socket(zmq.PUB)
+	s:set_sndhwm(message_count+1)
 	s:connect(connect_to)
 
 	local data = ("0"):rep(message_size)
 	local msg_data = zmq.msg_init_data(data)
 	local msg = zmq.msg_init()
 
+	zmq.utils.sleep(2) -- wait subscriber
+	print("sending")
+
 	local timer = zmq.utils.stopwatch():start()
 
-	for i = 1, message_count do
+	for i = 1, message_count + 1 do
 		assert(msg:copy(msg_data))
 		assert(s:send_msg(msg))
 	end
@@ -72,6 +76,7 @@ local child_code = [[
 local ctx = zmq.init(1)
 local s = ctx:socket(zmq.SUB)
 s:set_subscribe("")
+s:set_rcvhwm(message_count+1)
 s:bind(bind_to)
 
 print(string.format("message size: %i [B]", message_size))

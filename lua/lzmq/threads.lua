@@ -26,8 +26,8 @@ local zmq = require"lzmq"
 local Threads = require"llthreads.ex"
 
 local zthreads_prelude = [[
-local zmq = require"zmq3"
-local zthreads = require"zmq3.threads"
+local zmq = require"lzmq"
+local zthreads = require"lzmq.threads"
 local parent_ctx = arg[1]
 if parent_ctx then zthreads.set_parent_ctx(zmq.init_ctx(parent_ctx)) end
 arg = { select(2, unpack(arg)) }
