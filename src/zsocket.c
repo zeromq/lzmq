@@ -283,48 +283,74 @@ static int luazmq_skt_get_str (lua_State *L, int option_name) {
   return 1;
 }
 
-#define DEFINE_SKT_OPT(NAME, OPTNAME, TYPE) \
-  static int luazmq_skt_set_##NAME(lua_State *L){return luazmq_skt_set_##TYPE(L, OPTNAME);}\
+#define DEFINE_SKT_OPT_WO(NAME, OPTNAME, TYPE) \
+  static int luazmq_skt_set_##NAME(lua_State *L){return luazmq_skt_set_##TYPE(L, OPTNAME);}
+
+#define DEFINE_SKT_OPT_RO(NAME, OPTNAME, TYPE) \
   static int luazmq_skt_get_##NAME(lua_State *L){return luazmq_skt_get_##TYPE(L, OPTNAME);}
 
-#define REGISTER_SKT_OPT(NAME) {"set_"#NAME, luazmq_skt_set_##NAME}, {"get_"#NAME, luazmq_skt_get_##NAME}
+#define DEFINE_SKT_OPT_RW(NAME, OPTNAME, TYPE) \
+  DEFINE_SKT_OPT_WO(NAME, OPTNAME, TYPE) \
+  DEFINE_SKT_OPT_RO(NAME, OPTNAME, TYPE)
 
-DEFINE_SKT_OPT(affinity,           ZMQ_AFFINITY,            u64  )
-DEFINE_SKT_OPT(identity,           ZMQ_IDENTITY,            str  )
-DEFINE_SKT_OPT(subscribe,          ZMQ_SUBSCRIBE,           str  )
-DEFINE_SKT_OPT(unsubscribe,        ZMQ_UNSUBSCRIBE,         str  )
-DEFINE_SKT_OPT(rate,               ZMQ_RATE,                int  )
-DEFINE_SKT_OPT(recovery_ivl,       ZMQ_RECOVERY_IVL,        int  )
-DEFINE_SKT_OPT(sndbuf,             ZMQ_SNDBUF,              int  )
-DEFINE_SKT_OPT(rcvbuf,             ZMQ_RCVBUF,              int  )
-DEFINE_SKT_OPT(rcvmore,            ZMQ_RCVMORE,             int  )
-DEFINE_SKT_OPT(fd,                 ZMQ_FD,                  int  )
-DEFINE_SKT_OPT(events,             ZMQ_EVENTS,              int  )
-DEFINE_SKT_OPT(type,               ZMQ_TYPE,                int  )
-DEFINE_SKT_OPT(linger,             ZMQ_LINGER,              int  )
-DEFINE_SKT_OPT(reconnect_ivl,      ZMQ_RECONNECT_IVL,       int  )
-DEFINE_SKT_OPT(backlog,            ZMQ_BACKLOG,             int  )
-DEFINE_SKT_OPT(reconnect_ivl_max,  ZMQ_RECONNECT_IVL_MAX,   int  )
-DEFINE_SKT_OPT(maxmsgsize,         ZMQ_MAXMSGSIZE,          i64  )
-DEFINE_SKT_OPT(sndhwm,             ZMQ_SNDHWM,              int  )
-DEFINE_SKT_OPT(rcvhwm,             ZMQ_RCVHWM,              int  )
-DEFINE_SKT_OPT(multicast_hops,     ZMQ_MULTICAST_HOPS,      int  )
-DEFINE_SKT_OPT(rcvtimeo,           ZMQ_RCVTIMEO,            int  )
-DEFINE_SKT_OPT(sndtimeo,           ZMQ_SNDTIMEO,            int  )
-DEFINE_SKT_OPT(ipv4only,           ZMQ_IPV4ONLY,            int  )
-DEFINE_SKT_OPT(last_endpoint,      ZMQ_LAST_ENDPOINT,       str  )
+
+#define REGISTER_SKT_OPT_WO(NAME) {"set_"#NAME, luazmq_skt_set_##NAME}
+#define REGISTER_SKT_OPT_RO(NAME) {"get_"#NAME, luazmq_skt_get_##NAME}
+#define REGISTER_SKT_OPT_RW(NAME) REGISTER_SKT_OPT_WO(NAME), REGISTER_SKT_OPT_RO(NAME)
+
+DEFINE_SKT_OPT_RW(affinity,           ZMQ_AFFINITY,            u64  )
+DEFINE_SKT_OPT_RW(identity,           ZMQ_IDENTITY,            str  )
+DEFINE_SKT_OPT_WO(subscribe,          ZMQ_SUBSCRIBE,           str  )
+DEFINE_SKT_OPT_WO(unsubscribe,        ZMQ_UNSUBSCRIBE,         str  )
+DEFINE_SKT_OPT_RW(rate,               ZMQ_RATE,                int  )
+DEFINE_SKT_OPT_RW(recovery_ivl,       ZMQ_RECOVERY_IVL,        int  )
+DEFINE_SKT_OPT_RW(sndbuf,             ZMQ_SNDBUF,              int  )
+DEFINE_SKT_OPT_RW(rcvbuf,             ZMQ_RCVBUF,              int  )
+DEFINE_SKT_OPT_RW(rcvmore,            ZMQ_RCVMORE,             int  )
+DEFINE_SKT_OPT_RO(fd,                 ZMQ_FD,                  int  )
+DEFINE_SKT_OPT_RO(events,             ZMQ_EVENTS,              int  )
+DEFINE_SKT_OPT_RO(type,               ZMQ_TYPE,                int  )
+DEFINE_SKT_OPT_RW(linger,             ZMQ_LINGER,              int  )
+DEFINE_SKT_OPT_RW(reconnect_ivl,      ZMQ_RECONNECT_IVL,       int  )
+DEFINE_SKT_OPT_RW(backlog,            ZMQ_BACKLOG,             int  )
+DEFINE_SKT_OPT_RW(reconnect_ivl_max,  ZMQ_RECONNECT_IVL_MAX,   int  )
+DEFINE_SKT_OPT_RW(maxmsgsize,         ZMQ_MAXMSGSIZE,          i64  )
+DEFINE_SKT_OPT_RW(sndhwm,             ZMQ_SNDHWM,              int  )
+DEFINE_SKT_OPT_RW(rcvhwm,             ZMQ_RCVHWM,              int  )
+DEFINE_SKT_OPT_RW(multicast_hops,     ZMQ_MULTICAST_HOPS,      int  )
+DEFINE_SKT_OPT_RW(rcvtimeo,           ZMQ_RCVTIMEO,            int  )
+DEFINE_SKT_OPT_RW(sndtimeo,           ZMQ_SNDTIMEO,            int  )
+DEFINE_SKT_OPT_RW(ipv4only,           ZMQ_IPV4ONLY,            int  )
+DEFINE_SKT_OPT_RO(last_endpoint,      ZMQ_LAST_ENDPOINT,       str  )
+
 #ifdef ZMQ_ROUTER_BEHAVIOR 
-DEFINE_SKT_OPT(fail_unroutable,    ZMQ_ROUTER_BEHAVIOR,     int  )
-DEFINE_SKT_OPT(router_behavior,    ZMQ_ROUTER_BEHAVIOR,     int  )
+DEFINE_SKT_OPT_WO(fail_unroutable,    ZMQ_ROUTER_BEHAVIOR,     int  )
+DEFINE_SKT_OPT_WO(router_behavior,    ZMQ_ROUTER_BEHAVIOR,     int  )
 #else
-DEFINE_SKT_OPT(fail_unroutable,    ZMQ_FAIL_UNROUTABLE,     int  )
-DEFINE_SKT_OPT(router_behavior,    ZMQ_FAIL_UNROUTABLE,     int  )
+DEFINE_SKT_OPT_WO(fail_unroutable,    ZMQ_FAIL_UNROUTABLE,     int  )
+DEFINE_SKT_OPT_WO(router_behavior,    ZMQ_FAIL_UNROUTABLE,     int  )
 #endif
-DEFINE_SKT_OPT(tcp_keepalive,      ZMQ_TCP_KEEPALIVE,       int  )
-DEFINE_SKT_OPT(tcp_keepalive_cnt,  ZMQ_TCP_KEEPALIVE_CNT,   int  )
-DEFINE_SKT_OPT(tcp_keepalive_idle, ZMQ_TCP_KEEPALIVE_IDLE,  int  )
-DEFINE_SKT_OPT(tcp_keepalive_intvl,ZMQ_TCP_KEEPALIVE_INTVL, int  )
-DEFINE_SKT_OPT(tcp_accept_filter,  ZMQ_TCP_ACCEPT_FILTER,   str  )
+
+DEFINE_SKT_OPT_RW(tcp_keepalive,      ZMQ_TCP_KEEPALIVE,       int  )
+DEFINE_SKT_OPT_RW(tcp_keepalive_cnt,  ZMQ_TCP_KEEPALIVE_CNT,   int  )
+DEFINE_SKT_OPT_RW(tcp_keepalive_idle, ZMQ_TCP_KEEPALIVE_IDLE,  int  )
+DEFINE_SKT_OPT_RW(tcp_keepalive_intvl,ZMQ_TCP_KEEPALIVE_INTVL, int  )
+DEFINE_SKT_OPT_WO(tcp_accept_filter,  ZMQ_TCP_ACCEPT_FILTER,   str  )
+
+static int luazmq_skt_getopt_int(lua_State *L){ return luazmq_skt_get_int(L, luaL_checkint(L,2)); }
+static int luazmq_skt_getopt_i64(lua_State *L){ return luazmq_skt_get_i64(L, luaL_checkint(L,2)); }
+static int luazmq_skt_getopt_u64(lua_State *L){ return luazmq_skt_get_u64(L, luaL_checkint(L,2)); }
+static int luazmq_skt_getopt_str(lua_State *L){
+  int optname = luaL_checkint(L,2);
+  lua_remove(L, 2);
+  return luazmq_skt_get_str(L,  optname);
+}
+
+static int luazmq_skt_setopt_int(lua_State *L){ return luazmq_skt_set_int(L, luaL_checkint(L,2)); }
+static int luazmq_skt_setopt_i64(lua_State *L){ return luazmq_skt_set_i64(L, luaL_checkint(L,2)); }
+static int luazmq_skt_setopt_u64(lua_State *L){ return luazmq_skt_set_u64(L, luaL_checkint(L,2)); }
+static int luazmq_skt_setopt_str(lua_State *L){ return luazmq_skt_set_str(L, luaL_checkint(L,2)); }
+
 
 static const struct luaL_Reg luazmq_skt_methods[] = {
   {"bind",         luazmq_skt_bind         },
@@ -342,37 +368,46 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   {"more",         luazmq_skt_more         },
   {"get_rcvmore",  luazmq_skt_more         },
 
-  REGISTER_SKT_OPT(  affinity              ),
-  REGISTER_SKT_OPT(  identity              ),
-  REGISTER_SKT_OPT(  subscribe             ),
-  REGISTER_SKT_OPT(  unsubscribe           ),
-  REGISTER_SKT_OPT(  rate                  ),
-  REGISTER_SKT_OPT(  recovery_ivl          ),
-  REGISTER_SKT_OPT(  sndbuf                ),
-  REGISTER_SKT_OPT(  rcvbuf                ),
-  REGISTER_SKT_OPT(  rcvmore               ),
-  REGISTER_SKT_OPT(  fd                    ),
-  REGISTER_SKT_OPT(  events                ),
-  REGISTER_SKT_OPT(  type                  ),
-  REGISTER_SKT_OPT(  linger                ),
-  REGISTER_SKT_OPT(  reconnect_ivl         ),
-  REGISTER_SKT_OPT(  backlog               ),
-  REGISTER_SKT_OPT(  reconnect_ivl_max     ),
-  REGISTER_SKT_OPT(  maxmsgsize            ),
-  REGISTER_SKT_OPT(  sndhwm                ),
-  REGISTER_SKT_OPT(  rcvhwm                ),
-  REGISTER_SKT_OPT(  multicast_hops        ),
-  REGISTER_SKT_OPT(  rcvtimeo              ),
-  REGISTER_SKT_OPT(  sndtimeo              ),
-  REGISTER_SKT_OPT(  ipv4only              ),
-  REGISTER_SKT_OPT(  last_endpoint         ),
-  REGISTER_SKT_OPT(  fail_unroutable       ),
-  REGISTER_SKT_OPT(  router_behavior       ),
-  REGISTER_SKT_OPT(  tcp_keepalive         ),
-  REGISTER_SKT_OPT(  tcp_keepalive_cnt     ),
-  REGISTER_SKT_OPT(  tcp_keepalive_idle    ),
-  REGISTER_SKT_OPT(  tcp_keepalive_intvl   ),
-  REGISTER_SKT_OPT(  tcp_accept_filter     ),
+  {"getopt_int",   luazmq_skt_getopt_int   },
+  {"getopt_i64",   luazmq_skt_getopt_i64   },
+  {"getopt_u64",   luazmq_skt_getopt_u64   },
+  {"getopt_str",   luazmq_skt_getopt_str   },
+  {"setopt_int",   luazmq_skt_setopt_int   },
+  {"setopt_i64",   luazmq_skt_setopt_i64   },
+  {"setopt_u64",   luazmq_skt_setopt_u64   },
+  {"setopt_str",   luazmq_skt_setopt_str   },
+
+  REGISTER_SKT_OPT_RW( affinity            ),
+  REGISTER_SKT_OPT_RW( identity            ),
+  REGISTER_SKT_OPT_WO( subscribe           ),
+  REGISTER_SKT_OPT_WO( unsubscribe         ),
+  REGISTER_SKT_OPT_RW( rate                ),
+  REGISTER_SKT_OPT_RW( recovery_ivl        ),
+  REGISTER_SKT_OPT_RW( sndbuf              ),
+  REGISTER_SKT_OPT_RW( rcvbuf              ),
+  REGISTER_SKT_OPT_RW( rcvmore             ),
+  REGISTER_SKT_OPT_RO( fd                  ),
+  REGISTER_SKT_OPT_RO( events              ),
+  REGISTER_SKT_OPT_RO( type                ),
+  REGISTER_SKT_OPT_RW( linger              ),
+  REGISTER_SKT_OPT_RW( reconnect_ivl       ),
+  REGISTER_SKT_OPT_RW( backlog             ),
+  REGISTER_SKT_OPT_RW( reconnect_ivl_max   ),
+  REGISTER_SKT_OPT_RW( maxmsgsize          ),
+  REGISTER_SKT_OPT_RW( sndhwm              ),
+  REGISTER_SKT_OPT_RW( rcvhwm              ),
+  REGISTER_SKT_OPT_RW( multicast_hops      ),
+  REGISTER_SKT_OPT_RW( rcvtimeo            ),
+  REGISTER_SKT_OPT_RW( sndtimeo            ),
+  REGISTER_SKT_OPT_RW( ipv4only            ),
+  REGISTER_SKT_OPT_RO( last_endpoint       ),
+  REGISTER_SKT_OPT_WO( fail_unroutable     ),
+  REGISTER_SKT_OPT_WO( router_behavior     ),
+  REGISTER_SKT_OPT_RW( tcp_keepalive       ),
+  REGISTER_SKT_OPT_RW( tcp_keepalive_cnt   ),
+  REGISTER_SKT_OPT_RW( tcp_keepalive_idle  ),
+  REGISTER_SKT_OPT_RW( tcp_keepalive_intvl ),
+  REGISTER_SKT_OPT_WO( tcp_accept_filter   ),
 
   {"__gc",       luazmq_skt_destroy        },
   {"close",      luazmq_skt_destroy        },
@@ -399,36 +434,40 @@ static const luazmq_int_const skt_types[] ={
 };
 
 static const luazmq_int_const skt_options[] ={
-  // DEFINE_ZMQ_CONST(  AFFINITY            ),
-  // DEFINE_ZMQ_CONST(  IDENTITY            ),
-  // DEFINE_ZMQ_CONST(  SUBSCRIBE           ),
-  // DEFINE_ZMQ_CONST(  UNSUBSCRIBE         ),
-  // DEFINE_ZMQ_CONST(  RATE                ),
-  // DEFINE_ZMQ_CONST(  RECOVERY_IVL        ),
-  // DEFINE_ZMQ_CONST(  SNDBUF              ),
-  // DEFINE_ZMQ_CONST(  RCVBUF              ),
-  // DEFINE_ZMQ_CONST(  RCVMORE             ),
-  // DEFINE_ZMQ_CONST(  FD                  ),
-  // DEFINE_ZMQ_CONST(  EVENTS              ),
-  // DEFINE_ZMQ_CONST(  TYPE                ),
-  // DEFINE_ZMQ_CONST(  LINGER              ),
-  // DEFINE_ZMQ_CONST(  RECONNECT_IVL       ),
-  // DEFINE_ZMQ_CONST(  BACKLOG             ),
-  // DEFINE_ZMQ_CONST(  RECONNECT_IVL_MAX   ),
-  // DEFINE_ZMQ_CONST(  MAXMSGSIZE          ),
-  // DEFINE_ZMQ_CONST(  SNDHWM              ),
-  // DEFINE_ZMQ_CONST(  RCVHWM              ),
-  // DEFINE_ZMQ_CONST(  MULTICAST_HOPS      ),
-  // DEFINE_ZMQ_CONST(  RCVTIMEO            ),
-  // DEFINE_ZMQ_CONST(  SNDTIMEO            ),
-  // DEFINE_ZMQ_CONST(  IPV4ONLY            ),
-  // DEFINE_ZMQ_CONST(  LAST_ENDPOINT       ),
-  // DEFINE_ZMQ_CONST(  FAIL_UNROUTABLE     ),
-  // DEFINE_ZMQ_CONST(  TCP_KEEPALIVE       ),
-  // DEFINE_ZMQ_CONST(  TCP_KEEPALIVE_CNT   ),
-  // DEFINE_ZMQ_CONST(  TCP_KEEPALIVE_IDLE  ),
-  // DEFINE_ZMQ_CONST(  TCP_KEEPALIVE_INTVL ),
-  // DEFINE_ZMQ_CONST(  TCP_ACCEPT_FILTER   ),
+  DEFINE_ZMQ_CONST(  AFFINITY            ),
+  DEFINE_ZMQ_CONST(  IDENTITY            ),
+  DEFINE_ZMQ_CONST(  SUBSCRIBE           ),
+  DEFINE_ZMQ_CONST(  UNSUBSCRIBE         ),
+  DEFINE_ZMQ_CONST(  RATE                ),
+  DEFINE_ZMQ_CONST(  RECOVERY_IVL        ),
+  DEFINE_ZMQ_CONST(  SNDBUF              ),
+  DEFINE_ZMQ_CONST(  RCVBUF              ),
+  DEFINE_ZMQ_CONST(  RCVMORE             ),
+  DEFINE_ZMQ_CONST(  FD                  ),
+  DEFINE_ZMQ_CONST(  EVENTS              ),
+  DEFINE_ZMQ_CONST(  TYPE                ),
+  DEFINE_ZMQ_CONST(  LINGER              ),
+  DEFINE_ZMQ_CONST(  RECONNECT_IVL       ),
+  DEFINE_ZMQ_CONST(  BACKLOG             ),
+  DEFINE_ZMQ_CONST(  RECONNECT_IVL_MAX   ),
+  DEFINE_ZMQ_CONST(  MAXMSGSIZE          ),
+  DEFINE_ZMQ_CONST(  SNDHWM              ),
+  DEFINE_ZMQ_CONST(  RCVHWM              ),
+  DEFINE_ZMQ_CONST(  MULTICAST_HOPS      ),
+  DEFINE_ZMQ_CONST(  RCVTIMEO            ),
+  DEFINE_ZMQ_CONST(  SNDTIMEO            ),
+  DEFINE_ZMQ_CONST(  IPV4ONLY            ),
+  DEFINE_ZMQ_CONST(  LAST_ENDPOINT       ),
+#ifdef ZMQ_ROUTER_BEHAVIOR 
+  DEFINE_ZMQ_CONST(  ROUTER_BEHAVIOR     ),
+#else
+  DEFINE_ZMQ_CONST(  FAIL_UNROUTABLE     ),
+#endif
+  DEFINE_ZMQ_CONST(  TCP_KEEPALIVE       ),
+  DEFINE_ZMQ_CONST(  TCP_KEEPALIVE_CNT   ),
+  DEFINE_ZMQ_CONST(  TCP_KEEPALIVE_IDLE  ),
+  DEFINE_ZMQ_CONST(  TCP_KEEPALIVE_INTVL ),
+  DEFINE_ZMQ_CONST(  TCP_ACCEPT_FILTER   ),
 
   {NULL, 0}
 };
