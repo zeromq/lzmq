@@ -46,19 +46,43 @@ static int luazmq_msg_closed (lua_State *L) {
 }
 
 static int luazmq_msg_move(lua_State *L){
-  zmessage *dst = luazmq_getmessage_at(L, 1);
-  zmessage *src = luazmq_getmessage_at(L, 2);
-  int err = zmq_msg_move(&dst->msg, &src->msg);
+  zmessage *dst, *src;
+  int err;
+  if(lua_gettop(L) == 1){
+    src = luazmq_getmessage_at(L, 1);
+    dst = luazmq_newudata(L, zmessage, LUAZMQ_MESSAGE);
+    err = zmq_msg_init(&dst->msg);
+    if(-1 == err) return luazmq_fail(L, NULL);
+  }
+  else{
+    dst = luazmq_getmessage_at(L, 1);
+    src = luazmq_getmessage_at(L, 2);
+    lua_pushvalue(L, 1); // result
+  }
+
+  err = zmq_msg_move(&dst->msg, &src->msg);
   if(-1 == err) return luazmq_fail(L, NULL);
-  return luazmq_pass(L);
+  return 1;
 }
 
 static int luazmq_msg_copy(lua_State *L){
-  zmessage *dst = luazmq_getmessage_at(L, 1);
-  zmessage *src = luazmq_getmessage_at(L, 2);
-  int err = zmq_msg_copy(&dst->msg, &src->msg);
+  zmessage *dst, *src;
+  int err;
+  if(lua_gettop(L) == 1){
+    src = luazmq_getmessage_at(L, 1);
+    dst = luazmq_newudata(L, zmessage, LUAZMQ_MESSAGE);
+    err = zmq_msg_init(&dst->msg);
+    if(-1 == err) return luazmq_fail(L, NULL);
+  }
+  else{
+    dst = luazmq_getmessage_at(L, 1);
+    src = luazmq_getmessage_at(L, 2);
+    lua_pushvalue(L, 1); // result
+  }
+
+  err = zmq_msg_copy(&dst->msg, &src->msg);
   if(-1 == err) return luazmq_fail(L, NULL);
-  return luazmq_pass(L);
+  return 1;
 }
 
 static int luazmq_msg_size(lua_State *L){

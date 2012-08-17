@@ -54,7 +54,7 @@ function Test_Message()
   assert(data == "Hello, world!")
   
   msg2 = assert(zmq.msg_init())
-  assert(msg2:move(msg1))
+  assert(msg2 == msg2:move(msg1))
 
   assert(msg1:size() == 0)
   assert(not msg1:closed())
@@ -68,13 +68,27 @@ function Test_Message()
   assert(msg2:data() == data)
 
   msg3 = assert(zmq.msg_init())
-  assert(msg3:copy(msg2))
+  assert(msg3 == msg3:copy(msg2))
 
   assert(msg2:size() == #data)
   assert(msg2:data() == data)
   assert(msg3:size() == #data)
   assert(msg3:data() == data)
 
+  assert(msg2:close())
+  assert(msg3:close())
+  
+  msg1 = assert(zmq.msg_init_data("hello world"))
+  msg2 = assert(msg1:copy())
+  assert(msg1:data() == msg2:data())
+  msg3 = assert(msg1:move())
+  assert(msg3:data() == msg2:data())
+  assert(msg1:data() == "")
+
+  assert(not pcall(msg2.copy, msg, nil))
+  assert(not pcall(msg3.move, msg, nil))
+
+  assert(msg1:close())
   assert(msg2:close())
   assert(msg3:close())
 
