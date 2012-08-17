@@ -4,37 +4,39 @@
 #include "lzmq.h"
 #include <stdint.h>
 
-static int luazmq_skt_bind (lua_State *L) {
-  zsocket *skt = luazmq_getsocket(L);
-  const char *addr = luaL_checkstring(L, 2);
-  int ret = zmq_bind(skt->skt, addr);
-  if(-1 == ret) return luazmq_fail(L, skt);
-  return luazmq_pass(L);
+#define DEFINE_SKT_METHOD_1(NAME)              \
+                                               \
+static int luazmq_skt_##NAME (lua_State *L) {  \
+  zsocket *skt = luazmq_getsocket(L);          \
+  size_t tlen, i;                              \
+  int ret;                                     \
+  const char *val;                             \
+                                               \
+  if(!lua_istable(L, 2)){                      \
+    val = luaL_checkstring(L, 2);              \
+    ret = zmq_##NAME(skt->skt, val);           \
+    if (ret == -1) return luazmq_fail(L, skt); \
+    return luazmq_pass(L);                     \
+  }                                            \
+                                               \
+  tlen = lua_objlen(L,2);                      \
+  for (i = 1; i <= tlen; i++){                 \
+    lua_rawgeti(L, 2, i);                      \
+    val = luaL_checkstring(L, -1);             \
+    ret = zmq_##NAME(skt->skt, val);           \
+    if (ret == -1){                            \
+      int n = luazmq_fail(L, skt);             \
+      lua_pushstring(L, val);                  \
+      return n + 1;                            \
+    }                                          \
+  }                                            \
+  return luazmq_pass(L);                       \
 }
 
-static int luazmq_skt_unbind (lua_State *L) {
-  zsocket *skt = luazmq_getsocket(L);
-  const char *addr = luaL_checkstring(L, 2);
-  int ret = zmq_unbind(skt->skt, addr);
-  if(-1 == ret) return luazmq_fail(L, skt);
-  return luazmq_pass(L);
-}
-
-static int luazmq_skt_connect (lua_State *L) {
-  zsocket *skt = luazmq_getsocket(L);
-  const char *addr = luaL_checkstring(L, 2);
-  int ret = zmq_connect(skt->skt, addr);
-  if(-1 == ret) return luazmq_fail(L, skt);
-  return luazmq_pass(L);
-}
-
-static int luazmq_skt_disconnect (lua_State *L) {
-  zsocket *skt = luazmq_getsocket(L);
-  const char *addr = luaL_checkstring(L, 2);
-  int ret = zmq_disconnect(skt->skt, addr);
-  if(-1 == ret) return luazmq_fail(L, skt);
-  return luazmq_pass(L);
-}
+DEFINE_SKT_METHOD_1(bind)
+DEFINE_SKT_METHOD_1(unbind)
+DEFINE_SKT_METHOD_1(connect)
+DEFINE_SKT_METHOD_1(disconnect)
 
 static int luazmq_skt_send (lua_State *L) {
   zsocket *skt = luazmq_getsocket(L);

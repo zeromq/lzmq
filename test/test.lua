@@ -141,6 +141,78 @@ function Test_Sockopt()
   print("Test_Sockopt done!")
 end
 
+function Test_Bind_Connect()
+  print("\n\nTest_Bind_Connect ...")
+
+  local ctx = zmq.context()
+  local pub = ctx:socket(zmq.PUB)
+  local ok, err, str = pub:bind{
+    ECHO_ADDR;
+    "inproc://pub.test.1";
+    "inproc://pub.test.2";
+    "error address";
+    "inproc://pub.test.3";
+  }
+  assert(not ok)
+  assert(str == "error address")
+  pub:bind("inproc://pub.test.3")
+  
+  local sub1 = ctx:socket(zmq.SUB)
+  local sub2 = ctx:socket(zmq.SUB)
+  local sub3 = ctx:socket(zmq.SUB)
+  assert(sub1:set_subscribe(""))
+  assert(sub2:set_subscribe(""))
+  assert(sub3:set_subscribe(""))
+  assert(sub1:set_rcvtimeo(100))
+  assert(sub2:set_rcvtimeo(100))
+  assert(sub3:set_rcvtimeo(100))
+  
+  assert(sub1:connect("inproc://pub.test.1"))
+  assert(sub2:connect("inproc://pub.test.2"))
+  assert(sub3:connect("inproc://pub.test.3"))
+  ztimer.sleep(1000)
+  assert(pub:send("hello"))
+  assert( "hello" == 
+  assert(sub1:recv()))
+  assert( "hello" == 
+  assert(sub2:recv()))
+  assert( "hello" == 
+  assert(sub3:recv()))
+
+  sub2:close()
+  sub3:close()
+
+
+  assert(sub1:connect(ECHO_ADDR))
+  ztimer.sleep(1000)
+
+  assert(pub:send("hello"))
+  assert( "hello" == 
+  assert(sub1:recv()))
+  assert( "hello" == 
+  assert(sub1:recv()))
+
+  ok, err, str = sub1:disconnect{
+    ECHO_ADDR;
+    "inproc://pub.test.3";
+  }
+  assert(not ok)
+  assert(str == "inproc://pub.test.3")
+  ztimer.sleep(1000)
+
+  assert(pub:send("hello"))
+  assert( "hello" == 
+  assert(sub1:recv()))
+  assert(not sub1:recv())
+
+  sub1:close()
+  pub:close()
+
+  assert(ctx:destroy())
+
+  print("Test_Bind_Connect done!")
+end
+
 function Test_Error()
   print("\n\nTest_Error ...")
 
@@ -446,10 +518,11 @@ Test_Message()
 Test_Error()
 Test_Context()
 Test_Sockopt()
--- Test_Remove_ev()
--- TestServer(Test_Send_Recv)
--- TestServer(Test_Send_Recv_all)
--- TestServer(Test_Send_Recv_msg)
--- TestServer(Test_Send_Recv_more)
--- Test_Timer(ztimer.absolute())
--- Test_Timer(ztimer.monotonic())
+Test_Bind_Connect()
+Test_Remove_ev()
+TestServer(Test_Send_Recv)
+TestServer(Test_Send_Recv_all)
+TestServer(Test_Send_Recv_msg)
+TestServer(Test_Send_Recv_more)
+Test_Timer(ztimer.absolute())
+Test_Timer(ztimer.monotonic())
