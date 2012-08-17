@@ -283,6 +283,29 @@ static int luazmq_skt_get_str (lua_State *L, int option_name) {
   return 1;
 }
 
+static int luazmq_skt_set_str_arr (lua_State *L, int option_name) {
+  zsocket *skt;
+  size_t len, tlen, i;
+  const char *option_value;
+  int ret;
+
+  if(!lua_istable(L, 2)) return luazmq_skt_set_str(L, option_name);
+
+  skt = luazmq_getsocket(L);
+  tlen = lua_objlen(L,2);
+  for (i = 1; i <= tlen; i++){
+    lua_rawgeti(L, 2, i);
+    option_value = luaL_checklstring(L, -1, &len);
+    ret = zmq_setsockopt(skt->skt, option_name, option_value, len);
+    if (ret == -1){
+      int n = luazmq_fail(L, skt);
+      lua_pushnumber(L, i);
+      return n + 1;
+    }
+  }
+  return luazmq_pass(L);
+}
+
 #define DEFINE_SKT_OPT_WO(NAME, OPTNAME, TYPE) \
   static int luazmq_skt_set_##NAME(lua_State *L){return luazmq_skt_set_##TYPE(L, OPTNAME);}
 
@@ -300,8 +323,8 @@ static int luazmq_skt_get_str (lua_State *L, int option_name) {
 
 DEFINE_SKT_OPT_RW(affinity,           ZMQ_AFFINITY,            u64  )
 DEFINE_SKT_OPT_RW(identity,           ZMQ_IDENTITY,            str  )
-DEFINE_SKT_OPT_WO(subscribe,          ZMQ_SUBSCRIBE,           str  )
-DEFINE_SKT_OPT_WO(unsubscribe,        ZMQ_UNSUBSCRIBE,         str  )
+DEFINE_SKT_OPT_WO(subscribe,          ZMQ_SUBSCRIBE,           str_arr  )
+DEFINE_SKT_OPT_WO(unsubscribe,        ZMQ_UNSUBSCRIBE,         str_arr  )
 DEFINE_SKT_OPT_RW(rate,               ZMQ_RATE,                int  )
 DEFINE_SKT_OPT_RW(recovery_ivl,       ZMQ_RECOVERY_IVL,        int  )
 DEFINE_SKT_OPT_RW(sndbuf,             ZMQ_SNDBUF,              int  )
@@ -335,7 +358,7 @@ DEFINE_SKT_OPT_RW(tcp_keepalive,      ZMQ_TCP_KEEPALIVE,       int  )
 DEFINE_SKT_OPT_RW(tcp_keepalive_cnt,  ZMQ_TCP_KEEPALIVE_CNT,   int  )
 DEFINE_SKT_OPT_RW(tcp_keepalive_idle, ZMQ_TCP_KEEPALIVE_IDLE,  int  )
 DEFINE_SKT_OPT_RW(tcp_keepalive_intvl,ZMQ_TCP_KEEPALIVE_INTVL, int  )
-DEFINE_SKT_OPT_WO(tcp_accept_filter,  ZMQ_TCP_ACCEPT_FILTER,   str  )
+DEFINE_SKT_OPT_WO(tcp_accept_filter,  ZMQ_TCP_ACCEPT_FILTER,   str_arr  )
 
 static int luazmq_skt_getopt_int(lua_State *L){ return luazmq_skt_get_int(L, luaL_checkint(L,2)); }
 static int luazmq_skt_getopt_i64(lua_State *L){ return luazmq_skt_get_i64(L, luaL_checkint(L,2)); }

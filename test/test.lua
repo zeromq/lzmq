@@ -119,6 +119,28 @@ function Test_Context()
   print("Test_Context done!")
 end
 
+function Test_Sockopt()
+  print("\n\nTest_Sockopt ...")
+  
+  local ctx = zmq.context()
+  assert(ctx:set_io_threads(2))
+  local skt = ctx:socket(zmq.SUB)
+  assert(skt:set_subscribe("sub 1"))
+  assert(skt:set_subscribe("sub 2"))
+  assert(skt:set_subscribe{"sub 3"; "sub 3"})
+
+  assert(skt:set_unsubscribe{"sub 1", "sub 2"})
+  local ok, err, no = skt:set_unsubscribe{"sub 3", "sub 1"}
+  if not ok then assert(no == 2) end
+
+  assert(skt:set_unsubscribe("sub 3"))
+
+  skt:close()
+  assert(ctx:destroy())
+
+  print("Test_Sockopt done!")
+end
+
 function Test_Error()
   print("\n\nTest_Error ...")
 
@@ -423,10 +445,11 @@ Test_Assert()
 Test_Message()
 Test_Error()
 Test_Context()
-Test_Remove_ev()
-TestServer(Test_Send_Recv)
-TestServer(Test_Send_Recv_all)
-TestServer(Test_Send_Recv_msg)
-TestServer(Test_Send_Recv_more)
-Test_Timer(ztimer.absolute())
-Test_Timer(ztimer.monotonic())
+Test_Sockopt()
+-- Test_Remove_ev()
+-- TestServer(Test_Send_Recv)
+-- TestServer(Test_Send_Recv_all)
+-- TestServer(Test_Send_Recv_msg)
+-- TestServer(Test_Send_Recv_more)
+-- Test_Timer(ztimer.absolute())
+-- Test_Timer(ztimer.monotonic())
