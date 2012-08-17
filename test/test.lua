@@ -194,6 +194,69 @@ local function Test_Timer(timer)
   print("Test_Timer done!")
 end
 
+local zloop  = require "lzmq.loop"
+local loop = zloop.new()
+
+function Test_Remove_ev()
+  print("\n\nTest_Remove_ev ...")
+
+  local c = 0
+  local N = 10
+  local T = 100
+  local flag1,flag2,flag3
+
+  local ext_ev = loop:add_interval(T, function()
+    flag3 = false
+  end)
+
+  local function fn2(ev, loop) 
+    assert(c < N)
+    assert(flag1, "event 1 does not stop")
+
+    c = c + 1
+    if c == N then
+      ev:reset()     -- remove self
+      ext_ev:reset() -- remove ext
+
+      assert(flag3 == false, "ext_ev does not work")
+
+      c, flag2, flag3 = 0, true, true
+
+      loop:add_interval(T, function()
+        assert(flag1, "event 1 does not stop")
+        assert(flag2, "event 1 does not stop")
+        assert(flag3, "event 1 does not stop")
+        c = c + 1
+        if c == N then
+          loop:interrupt()
+        end
+      end)
+
+    end
+  end
+
+  local function fn1(ev, loop) 
+    assert(c < N)
+    flag3 = true --  ext_ev should set to false
+
+    c = c + 1
+    if c == N then
+      c = 0
+      flag1 = true
+      ev:reset()
+      loop:add_interval(T, fn2)
+    end
+  end
+
+  loop:add_interval(T, fn1)
+
+  loop:start()
+
+  assert(flag1 and flag2)
+
+  print("Test_Remove_ev done")
+end
+
 local Test_Skel = { name = 'Test_Empty';
   srv = function(skt) end;
 
@@ -346,6 +409,7 @@ Test_Assert()
 Test_Message()
 Test_Error()
 Test_Context()
+Test_Remove_ev()
 TestServer(Test_Send_Recv)
 TestServer(Test_Send_Recv_all)
 TestServer(Test_Send_Recv_msg)

@@ -63,7 +63,7 @@ end
 ---
 -- —брасывет событие. 
 function time_event:reset()
-  self.private_.timer:reset()
+  self.private_.timer:stop()
 end
 
 ---
@@ -182,8 +182,7 @@ function event_list:fire(...)
           ev:lock()
           ev:fire(...) -- может вызвать рекурсию
           ev:unlock()
-          local ok = ev:restart()
-          if ok then assert(ev:started()) else assert(not ev:started()) end
+          if ev:started() and ev:restart() then assert(ev:started()) else assert(not ev:started()) end
           cnt = cnt + 1
         end
       else
