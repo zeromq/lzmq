@@ -6,6 +6,7 @@
 #include "zmsg.h"
 #include "zcontext.h"
 #include "zsocket.h"
+#include "poller.h"
 #include "zpoller.h"
 #include <assert.h>
 

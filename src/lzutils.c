@@ -1,5 +1,4 @@
 #include "lzutils.h"
-#include "lzmq.h"
 #include <memory.h>
 #include <assert.h>
 
@@ -91,7 +90,7 @@ int luazmq_createmeta (lua_State *L, const char *name, const luaL_Reg *methods) 
   lua_settable (L, -3);
 
   lua_pushliteral (L, "__metatable");
-  lua_pushliteral (L, LUAZMQ_PREFIX"you're not allowed to get this metatable");
+  lua_pushliteral (L, "you're not allowed to get this metatable");
   lua_settable (L, -3);
 
   return 1;

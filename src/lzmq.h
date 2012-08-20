@@ -1,7 +1,7 @@
 #ifndef _LZMQ_H_
 #define _LZMQ_H_
-#include "poller.h"
 #include "lua.h"
+#include "zmq.h"
 
 #if defined (_WIN32) || defined (_WINDOWS)
 #  define __WINDOWS__
@@ -37,7 +37,8 @@ typedef struct{
   int no;
 } zerror;
 
-typedef ZMQ_Poller zpoller;
+struct ZMQ_Poller;
+typedef struct ZMQ_Poller zpoller;
 
 typedef struct{
   zmq_msg_t msg;
