@@ -8,12 +8,17 @@
 
 # define luazmq_rawgetp  lua_rawgetp
 # define luazmq_rawsetp  lua_rawsetp
-# define luazmq_setfuncs lua_setfuncs
+# define luazmq_setfuncs luaL_setfuncs
 # define luazmq_absindex lua_absindex
+# define lua_objlen      lua_rawlen
+
+int   luazmq_typerror (lua_State *L, int narg, const char *tname);
 
 #else 
 
 # define luazmq_absindex(L, i) (((i)>0)?(i):((i)<=LUA_REGISTRYINDEX?(i):(lua_gettop(L)+(i)+1)))
+# define lua_rawlen      lua_objlen
+# define luazmq_typerror luaL_typerror
 
 void  luazmq_rawgetp   (lua_State *L, int index, const void *p);
 void  luazmq_rawsetp   (lua_State *L, int index, const void *p);

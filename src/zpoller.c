@@ -50,7 +50,7 @@ static int luazmq_plr_add(lua_State *L) {
 
   if(lua_isuserdata(L, 2)) sock = luazmq_getsocket_at(L, 2);
   else if(lua_isnumber(L, 2)) fd = lua_tonumber(L, 2);
-  else return luaL_typerror(L, 2, "number or ZMQ socket");
+  else return luazmq_typerror(L, 2, "number or ZMQ socket");
 
   idx = poller_get_free_item(poller);
   item = &(poller->items[idx]);
@@ -78,7 +78,7 @@ static int luazmq_plr_modify(lua_State *L){
     fd = lua_tonumber(L, 2);
     idx = poller_find_fd_item(poller, fd);
   } else {
-    return luaL_typerror(L, 2, "number or ZMQ socket");
+    return luazmq_typerror(L, 2, "number or ZMQ socket");
   }
 
   if(events != 0) {
@@ -108,7 +108,7 @@ static int luazmq_plr_remove(lua_State *L) {
     socket_t fd = lua_tonumber(L, 2);
     idx = poller_find_fd_item(poller, fd);
   } else {
-    return luaL_typerror(L, 2, "number or ZMQ socket");
+    return luazmq_typerror(L, 2, "number or ZMQ socket");
   }
 
   /* if sock/fd was found. */

@@ -2,7 +2,15 @@
 #include <memory.h>
 #include <assert.h>
 
-#if LUA_VERSION_NUM < 502 
+#if LUA_VERSION_NUM >= 502 
+
+int luazmq_typerror (lua_State *L, int narg, const char *tname) {
+  const char *msg = lua_pushfstring(L, "%s expected, got %s", tname,
+      luaL_typename(L, narg));
+  return luaL_argerror(L, narg, msg);
+}
+
+#else 
 
 void luazmq_setfuncs (lua_State *L, const luaL_Reg *l, int nup){
   luaL_checkstack(L, nup, "too many upvalues");
@@ -73,7 +81,7 @@ void *luazmq_checkudatap (lua_State *L, int ud, const void *p) {
       }
     }
   }
-  luaL_typerror(L, ud, p);  /* else error */
+  luazmq_typerror(L, ud, p);  /* else error */
   return NULL;  /* to avoid warnings */
 }
 
