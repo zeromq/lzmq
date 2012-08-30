@@ -33,6 +33,10 @@ static int luazmq_geterrno(lua_State *L, zsocket *skt){
     if(!(skt->flags & LUAZMQ_FLAG_CLOSED)){
       int ret = zmq_close(skt->skt);
       skt->flags |= LUAZMQ_FLAG_CLOSED;
+      luazmq_skt_before_close(L, skt);
+#ifdef LZMQ_DEBUG
+      skt->ctx->socket_count--;
+#endif
     }
   }
   return err;
@@ -213,6 +217,8 @@ static const struct luaL_Reg luazmqlib[]   = {
   { "msg_init",       luazmq_msg_init         },
   { "msg_init_size",  luazmq_msg_init_size    },
   { "msg_init_data",  luazmq_msg_init_data    },
+  { "msg_init_data_multi",  luazmq_msg_init_data_multi    },
+  { "msg_init_data_array",  luazmq_msg_init_data_array    },
 
   {NULL, NULL}
 };

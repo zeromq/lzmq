@@ -28,6 +28,61 @@ int luazmq_msg_init_data(lua_State *L){
   return 1;
 }
 
+int luazmq_msg_init_data_multi(lua_State *L){
+  size_t top = lua_gettop(L);
+  size_t i;
+  size_t size = 0;
+  for(i = 1; i<=top; ++i){
+    size_t s;
+    luaL_checklstring(L,i,&s);
+    size += s;
+  }
+  if (0 == size) return luazmq_msg_init(L);
+
+  {
+    zmessage *zmsg = luazmq_newudata(L, zmessage, LUAZMQ_MESSAGE);
+    int err = zmq_msg_init_size(&zmsg->msg, size);
+    size_t pos;
+    if(-1 == err) return luazmq_fail(L, NULL);
+    for(pos = 0, i = 1; i<=top; ++i){
+      const char *data = luaL_checklstring(L,i,&size);
+      memcpy((char*)zmq_msg_data(&zmsg->msg) + pos, data, size);
+      pos += size;
+    }
+  }
+
+  return 1;
+}
+
+int luazmq_msg_init_data_array(lua_State *L){
+  size_t top = lua_rawlen(L, 1);
+  size_t i;
+  size_t size = 0;
+  for(i = 1; i<=top; ++i){
+    lua_rawgeti(L,1,i);
+    size += lua_rawlen(L,-1);
+    lua_pop(L, 1);
+  }
+  if (0 == size) return luazmq_msg_init(L);
+
+  {
+    zmessage *zmsg = luazmq_newudata(L, zmessage, LUAZMQ_MESSAGE);
+    int err = zmq_msg_init_size(&zmsg->msg, size);
+    size_t pos;
+    if(-1 == err) return luazmq_fail(L, NULL);
+    for(pos = 0, i = 1; i<=top; ++i){
+      const char *data;
+      lua_rawgeti(L, 1, i);
+      data = luaL_checklstring(L,-1,&size);
+      memcpy((char*)zmq_msg_data(&zmsg->msg) + pos, data, size);
+      pos += size;
+      lua_pop(L, 1);
+    }
+  }
+
+  return 1;
+}
+
 int luazmq_msg_close(lua_State *L){
   zmessage *zmsg = (zmessage *)luazmq_checkudatap (L, 1, LUAZMQ_MESSAGE);
   luaL_argcheck (L, zmsg != NULL, 1, LUAZMQ_PREFIX"message expected");

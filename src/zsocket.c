@@ -198,11 +198,44 @@ static int luazmq_skt_recv_all (lua_State *L) {
   return 1;
 }
 
+int luazmq_skt_before_close (lua_State *L, zsocket *skt) {
+  if(LUA_NOREF == skt->onclose_ref) return 0;
+  lua_rawgeti(L, LUA_REGISTRYINDEX, skt->onclose_ref);
+
+  lua_pcall(L, 0, 0, 0);
+
+  luaL_unref(L, LUA_REGISTRYINDEX, skt->onclose_ref);
+  skt->onclose_ref = LUA_NOREF;
+  return 0;
+}
+
+static int luazmq_skt_on_close (lua_State *L) {
+  zsocket *skt = luazmq_getsocket(L);
+  lua_settop(L, 2);
+  if(LUA_NOREF != skt->onclose_ref){
+    if(lua_isnil(L, 2)){
+      luaL_unref(L, LUA_REGISTRYINDEX, skt->onclose_ref);
+      skt->onclose_ref = LUA_NOREF;
+      return 0;
+    }
+  }
+  skt->onclose_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  return 0;
+}
+
 static int luazmq_skt_destroy (lua_State *L) {
   zsocket *skt = (zsocket *)luazmq_checkudatap (L, 1, LUAZMQ_SOCKET);
   luaL_argcheck (L, skt != NULL, 1, LUAZMQ_PREFIX"socket expected");
   if(!(skt->flags & LUAZMQ_FLAG_CLOSED)){
-    int ret = zmq_close(skt->skt);
+    int ret;
+    luazmq_skt_before_close(L, skt);
+
+    ret = zmq_close(skt->skt);
+
+#ifdef LZMQ_DEBUG
+    skt->ctx->socket_count--;
+#endif
+
     if(ret == -1)return luazmq_fail(L, skt);
     skt->flags |= LUAZMQ_FLAG_CLOSED;
   }
@@ -434,6 +467,7 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   REGISTER_SKT_OPT_RW( tcp_keepalive_intvl ),
   REGISTER_SKT_OPT_WO( tcp_accept_filter   ),
 
+  {"on_close",   luazmq_skt_on_close       },
   {"__gc",       luazmq_skt_destroy        },
   {"close",      luazmq_skt_destroy        },
   {"closed",     luazmq_skt_closed         },

@@ -26,11 +26,19 @@ typedef unsigned char uchar;
 typedef struct{
   void  *ctx;
   uchar flags;
+#ifdef LZMQ_DEBUG
+  int socket_count;
+#endif
+  int autoclose_ref;
 } zcontext;
 
 typedef struct{
   void  *skt;
   uchar flags;
+#ifdef LZMQ_DEBUG
+  zcontext *ctx;
+#endif
+  int onclose_ref;
 } zsocket;
 
 typedef struct{
