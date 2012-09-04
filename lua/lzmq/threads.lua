@@ -33,16 +33,22 @@ if parent_ctx then zthreads.set_parent_ctx(zmq.init_ctx(parent_ctx)) end
 arg = { select(2, unpack(arg)) }
 ]]
 
+local prelude = zthreads_prelude
+
 local M = {}
+
+function M.set_bootstrap_prelude (code)
+	prelude = code .. zthreads_prelude
+end;
 
 function M.runfile(ctx, file, ...)
 	if ctx then ctx = ctx:lightuserdata() end
-	return Threads.runfile_ex(zthreads_prelude, file, ctx, ...)
+	return Threads.runfile_ex(prelude, file, ctx, ...)
 end
 
 function M.runstring(ctx, code, ...)
 	if ctx then ctx = ctx:lightuserdata() end
-	return Threads.runstring_ex(zthreads_prelude, code, ctx, ...)
+	return Threads.runstring_ex(prelude, code, ctx, ...)
 end
 
 local parent_ctx = nil

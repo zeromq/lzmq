@@ -1,6 +1,15 @@
 PROJECT = 'lzmq'
 
-INSTALL_DIR = INSTALL_DIR or J(ENV.LUA_DIR,'libs',PROJECT)
+if LUA_VER == '5.2' then
+  LUA_NEED = 'lua52'
+  LUA_DIR  = ENV.LUA_DIR_5_2 or ENV.LUA_DIR
+else
+  LUA_NEED = 'lua'
+  LUA_DIR  = ENV.LUA_DIR
+end
+
+
+INSTALL_DIR = INSTALL_DIR or J(LUA_DIR,'libs',PROJECT)
 
 ERR = (ERR or 'number'):upper()
 ERRORS = {
@@ -17,7 +26,7 @@ lzmq = c.shared{PROJECT,
   base     = 'src',
   src      = '*.c',
   exclude  = 'ztimer',
-  needs    = {'lua', 'zmq3', 'stdint'},
+  needs    = {LUA_NEED, 'zmq3', 'stdint'},
   defines  = {ERRORS[ERR]},
   dynamic  = false,
   strip    = true,
@@ -26,7 +35,7 @@ lzmq = c.shared{PROJECT,
 lztimer = c.shared{'timer', 
   base     = 'src',
   src      = {'ztimer','lzutils'},
-  needs    = {'lua', 'stdint'},
+  needs    = {LUA_NEED, 'stdint'},
   defines  = {
     IF(WINDOWS, 'USE_PERF_COUNT', 'USE_CLOCK_MONOTONIC'),
     IF(not WINDOWS, 'USE_GETTIMEOFDAY'),

@@ -141,7 +141,6 @@ end
 ---
 -- Вызывает заплонированные события
 function event_list:fire(...)
-  -- print('fire {')
   local cnt = 0
   local i = 0
   while(true)do
