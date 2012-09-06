@@ -302,7 +302,7 @@ end
 -- если событий нет, то функция возвращает управление немедленно
 function zmq_loop:flush(interval)
   if self:interrupted() then return nil, 'interrupt' end
-  local ev = ztimer.monotonic(interval):start()
+  local ev = ztimer.monotonic():start(interval or 0)
   local c = 0
   while true do 
     local cnt, msg = self.private_.poller:poll(0)

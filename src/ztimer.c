@@ -233,6 +233,7 @@ static int luazmq_montimer_start(lua_State *L){
     timer->fire   = (monotonic_diff_t)lua_tonumber(L, 2);
     timer->flags |= LUAZMQ_FLAG_TIMER_SETTED;
   }
+  lua_settop(L, 1);
   return 1;
 }
 
@@ -268,6 +269,7 @@ static int luazmq_montimer_set(lua_State *L){
   zmonotonic_timer *timer = luazmq_getmontimer(L);
   timer->fire   = (monotonic_diff_t)luaL_checknumber(L, 2);
   timer->flags |= LUAZMQ_FLAG_TIMER_SETTED;
+  lua_settop(L, 1);
   return 1;
 }
 
@@ -354,6 +356,7 @@ static int luazmq_abstimer_start(lua_State *L){
     timer->fire   = (absolute_time_t)lua_tonumber(L, 2);
     timer->flags |= LUAZMQ_FLAG_TIMER_SETTED;
   }
+  lua_settop(L, 1);
   return 1;
 }
 
@@ -390,6 +393,7 @@ static int luazmq_abstimer_set(lua_State *L){
   zabsolute_timer *timer = luazmq_getabstimer(L);
   timer->fire   = (absolute_time_t)luaL_checknumber(L, 2);
   timer->flags |= LUAZMQ_FLAG_TIMER_SETTED;
+  lua_settop(L, 1);
   return 1;
 }
 

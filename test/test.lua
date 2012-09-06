@@ -257,9 +257,9 @@ local function Test_Timer(timer)
   local max_delta, totla_delta, totla_delta2 = 0, 0, 0
 
   if timer:is_absolute() then
-    timer:set(ztimer.absolute_time() + INTERVAL)
+    assert( timer == timer:set(ztimer.absolute_time() + INTERVAL) )
   else
-    timer:set(INTERVAL)
+    assert( timer == timer:set(INTERVAL) )
   end
 
   assert(not timer:started())
