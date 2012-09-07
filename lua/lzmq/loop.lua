@@ -286,14 +286,15 @@ end
 -- в течении ожидания обрабатываются все события
 -- в том числе и запланированные
 function zmq_loop:sleep_ex(interval)
-  local ev = ztimer.monotonic(interval):start()
+  local start = ztimer.monotonic_time()
+  local rest = interval
   local c = 0
   while true do
-    local cnt, msg = self:poll(interval)
+    local cnt, msg = self:poll(rest)
     if not cnt then return nil, msg end
     c = c + cnt
-    interval = ev:rest()
-    if interval <= 0 then return c end
+    rest = interval - ztimer.monotonic_elapsed(start)
+    if rest <= 0 then return c end
   end
 end
 
@@ -302,13 +303,16 @@ end
 -- если событий нет, то функция возвращает управление немедленно
 function zmq_loop:flush(interval)
   if self:interrupted() then return nil, 'interrupt' end
-  local ev = ztimer.monotonic():start(interval or 0)
+  interval = interval or 0
+  local start = ztimer.monotonic_time()
+  local rest = interval
   local c = 0
   while true do 
     local cnt, msg = self.private_.poller:poll(0)
     if not cnt then return nil, msg end
     c = c + cnt
-    if (cnt == 0) or (ev:rest() == 0) then break end
+    rest = interval - ztimer.monotonic_elapsed(start)
+    if (cnt == 0) or (rest <= 0) then break end
   end
   if self:interrupted() then return nil, 'interrupt', c end
   return c

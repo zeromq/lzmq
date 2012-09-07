@@ -303,7 +303,25 @@ local function Test_Timer(timer)
 end
 
 local zloop  = require "lzmq.loop"
-local loop = zloop.new()
+
+function Test_loop()
+  print("\n\nTest_loop ...")
+  local loop = zloop.new()
+  local flag1,flag2,flag3
+  loop:add_once(10, function() flag1 = true end)
+  assert(0 == loop:flush(100)) -- flush only io events
+  assert(not flag1)
+  assert(1 == loop:sleep_ex(100))
+  assert(flag1)
+  flag1 = false
+  loop:add_once(10, function() flag1 = true end)
+  loop.sleep(100)
+  assert(not flag1)
+  assert(1 == loop:sleep_ex(0))
+  assert(flag1)
+  loop:destroy()
+  print("Test_loop done")
+end
 
 function Test_Remove_ev()
   print("\n\nTest_Remove_ev ...")
@@ -312,6 +330,8 @@ function Test_Remove_ev()
   local N = 10
   local T = 100
   local flag1,flag2,flag3
+
+  local loop = zloop.new()
 
   local ext_ev = loop:add_interval(T, function()
     flag3 = false
@@ -519,6 +539,7 @@ Test_Error()
 Test_Context()
 Test_Sockopt()
 Test_Bind_Connect()
+Test_loop()
 Test_Remove_ev()
 TestServer(Test_Send_Recv)
 TestServer(Test_Send_Recv_all)
