@@ -191,6 +191,21 @@ static int luazmq_device(lua_State *L){
   return luazmq_pass(L);
 }
 
+#if(ZMQ_VERSION_MAJOR >= 3)&&(ZMQ_VERSION_MINOR >= 3)
+static int luazmq_proxy(lua_State *L){
+  zsocket *fe = luazmq_getsocket_at(L,1);
+  zsocket *be = luazmq_getsocket_at(L,2);
+  zsocket *cp = NULL;
+  int ret;
+  if(!lua_isnoneornil(L,3)) cp = luazmq_getsocket_at(L,3);
+  ret = zmq_proxy(fe->skt, be->skt, cp ? (cp->skt) : NULL);
+  if (ret == -1) return luazmq_fail(L,NULL);
+
+  assert(0 && "The zmq_proxy() function always returns -1 and errno set to ETERM");
+  return luazmq_pass(L);
+}
+#endif
+
 static int luazmq_error_create_(lua_State *L){
   int err = luaL_checkint(L, 1);
   return luazmq_error_create(L, err);
@@ -206,6 +221,11 @@ static int luazmq_error_tostring(lua_State *L){
 
 static const struct luaL_Reg luazmqlib[]   = {
   { "version",        luazmq_version          },
+
+#if(ZMQ_VERSION_MAJOR >= 3)&&(ZMQ_VERSION_MINOR >= 3)
+  { "proxy",          luazmq_proxy           },
+#endif
+
   { "device",         luazmq_device           },
   { "assert",         luazmq_assert           },
   { "error",          luazmq_error_create_    },

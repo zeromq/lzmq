@@ -352,9 +352,9 @@ static int luazmq_skt_set_str_arr (lua_State *L, int option_name) {
   DEFINE_SKT_OPT_RO(NAME, OPTNAME, TYPE)
 
 
-#define REGISTER_SKT_OPT_WO(NAME) {"set_"#NAME, luazmq_skt_set_##NAME}
-#define REGISTER_SKT_OPT_RO(NAME) {"get_"#NAME, luazmq_skt_get_##NAME}
-#define REGISTER_SKT_OPT_RW(NAME) REGISTER_SKT_OPT_WO(NAME), REGISTER_SKT_OPT_RO(NAME)
+#define REGISTER_SKT_OPT_WO(NAME) {"set_"#NAME, luazmq_skt_set_##NAME},{#NAME, luazmq_skt_set_##NAME}
+#define REGISTER_SKT_OPT_RO(NAME) {"get_"#NAME, luazmq_skt_get_##NAME},{#NAME, luazmq_skt_get_##NAME}
+#define REGISTER_SKT_OPT_RW(NAME) {"set_"#NAME, luazmq_skt_set_##NAME},{"get_"#NAME, luazmq_skt_get_##NAME}
 
 DEFINE_SKT_OPT_RW(affinity,           ZMQ_AFFINITY,            u64  )
 DEFINE_SKT_OPT_RW(identity,           ZMQ_IDENTITY,            str  )
@@ -394,6 +394,10 @@ DEFINE_SKT_OPT_RW(tcp_keepalive_cnt,  ZMQ_TCP_KEEPALIVE_CNT,   int  )
 DEFINE_SKT_OPT_RW(tcp_keepalive_idle, ZMQ_TCP_KEEPALIVE_IDLE,  int  )
 DEFINE_SKT_OPT_RW(tcp_keepalive_intvl,ZMQ_TCP_KEEPALIVE_INTVL, int  )
 DEFINE_SKT_OPT_WO(tcp_accept_filter,  ZMQ_TCP_ACCEPT_FILTER,   str_arr  )
+
+#ifdef ZMQ_DELAY_ATTACH_ON_CONNECT 
+DEFINE_SKT_OPT_RW(delay_attach_on_connect, ZMQ_DELAY_ATTACH_ON_CONNECT, int  )
+#endif
 
 static int luazmq_skt_getopt_int(lua_State *L){ return luazmq_skt_get_int(L, luaL_checkint(L,2)); }
 static int luazmq_skt_getopt_i64(lua_State *L){ return luazmq_skt_get_i64(L, luaL_checkint(L,2)); }
@@ -466,6 +470,9 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   REGISTER_SKT_OPT_RW( tcp_keepalive_idle  ),
   REGISTER_SKT_OPT_RW( tcp_keepalive_intvl ),
   REGISTER_SKT_OPT_WO( tcp_accept_filter   ),
+#ifdef ZMQ_DELAY_ATTACH_ON_CONNECT 
+  REGISTER_SKT_OPT_RW(delay_attach_on_connect ),
+#endif
 
   {"on_close",   luazmq_skt_on_close       },
   {"__gc",       luazmq_skt_destroy        },
@@ -527,6 +534,9 @@ static const luazmq_int_const skt_options[] ={
   DEFINE_ZMQ_CONST(  TCP_KEEPALIVE_IDLE  ),
   DEFINE_ZMQ_CONST(  TCP_KEEPALIVE_INTVL ),
   DEFINE_ZMQ_CONST(  TCP_ACCEPT_FILTER   ),
+#ifdef ZMQ_DELAY_ATTACH_ON_CONNECT 
+  DEFINE_ZMQ_CONST(  DELAY_ATTACH_ON_CONNECT ),
+#endif
 
   {NULL, 0}
 };
