@@ -384,9 +384,15 @@ DEFINE_SKT_OPT_RO(last_endpoint,      ZMQ_LAST_ENDPOINT,       str  )
 #ifdef ZMQ_ROUTER_BEHAVIOR 
 DEFINE_SKT_OPT_WO(fail_unroutable,    ZMQ_ROUTER_BEHAVIOR,     int  )
 DEFINE_SKT_OPT_WO(router_behavior,    ZMQ_ROUTER_BEHAVIOR,     int  )
-#else
+DEFINE_SKT_OPT_WO(router_mandatory,   ZMQ_ROUTER_BEHAVIOR,     int  )
+#elif defined(ZMQ_FAIL_UNROUTABLE)
 DEFINE_SKT_OPT_WO(fail_unroutable,    ZMQ_FAIL_UNROUTABLE,     int  )
 DEFINE_SKT_OPT_WO(router_behavior,    ZMQ_FAIL_UNROUTABLE,     int  )
+DEFINE_SKT_OPT_WO(router_mandatory,   ZMQ_FAIL_UNROUTABLE,     int  )
+#else
+DEFINE_SKT_OPT_WO(fail_unroutable,    ZMQ_ROUTER_MANDATORY,    int  )
+DEFINE_SKT_OPT_WO(router_behavior,    ZMQ_ROUTER_MANDATORY,    int  )
+DEFINE_SKT_OPT_WO(router_mandatory,   ZMQ_ROUTER_MANDATORY,    int  )
 #endif
 
 DEFINE_SKT_OPT_RW(tcp_keepalive,      ZMQ_TCP_KEEPALIVE,       int  )
@@ -397,6 +403,10 @@ DEFINE_SKT_OPT_WO(tcp_accept_filter,  ZMQ_TCP_ACCEPT_FILTER,   str_arr  )
 
 #ifdef ZMQ_DELAY_ATTACH_ON_CONNECT 
 DEFINE_SKT_OPT_RW(delay_attach_on_connect, ZMQ_DELAY_ATTACH_ON_CONNECT, int  )
+#endif
+
+#ifdef ZMQ_XPUB_VERBOSE 
+DEFINE_SKT_OPT_RW(xpub_verbose, ZMQ_XPUB_VERBOSE, int  )
 #endif
 
 static int luazmq_skt_getopt_int(lua_State *L){ return luazmq_skt_get_int(L, luaL_checkint(L,2)); }
@@ -465,6 +475,7 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   REGISTER_SKT_OPT_RO( last_endpoint       ),
   REGISTER_SKT_OPT_WO( fail_unroutable     ),
   REGISTER_SKT_OPT_WO( router_behavior     ),
+  REGISTER_SKT_OPT_WO( router_mandatory    ),
   REGISTER_SKT_OPT_RW( tcp_keepalive       ),
   REGISTER_SKT_OPT_RW( tcp_keepalive_cnt   ),
   REGISTER_SKT_OPT_RW( tcp_keepalive_idle  ),
@@ -472,6 +483,9 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   REGISTER_SKT_OPT_WO( tcp_accept_filter   ),
 #ifdef ZMQ_DELAY_ATTACH_ON_CONNECT 
   REGISTER_SKT_OPT_RW(delay_attach_on_connect ),
+#endif
+#ifdef ZMQ_XPUB_VERBOSE 
+  REGISTER_SKT_OPT_RW(xpub_verbose         ),
 #endif
 
   {"on_close",   luazmq_skt_on_close       },
@@ -526,8 +540,10 @@ static const luazmq_int_const skt_options[] ={
   DEFINE_ZMQ_CONST(  LAST_ENDPOINT       ),
 #ifdef ZMQ_ROUTER_BEHAVIOR 
   DEFINE_ZMQ_CONST(  ROUTER_BEHAVIOR     ),
-#else
+#elif defined(ZMQ_FAIL_UNROUTABLE)
   DEFINE_ZMQ_CONST(  FAIL_UNROUTABLE     ),
+#else
+  DEFINE_ZMQ_CONST(  ROUTER_MANDATORY    ),
 #endif
   DEFINE_ZMQ_CONST(  TCP_KEEPALIVE       ),
   DEFINE_ZMQ_CONST(  TCP_KEEPALIVE_CNT   ),
@@ -536,6 +552,9 @@ static const luazmq_int_const skt_options[] ={
   DEFINE_ZMQ_CONST(  TCP_ACCEPT_FILTER   ),
 #ifdef ZMQ_DELAY_ATTACH_ON_CONNECT 
   DEFINE_ZMQ_CONST(  DELAY_ATTACH_ON_CONNECT ),
+#endif
+#ifdef ZMQ_XPUB_VERBOSE 
+  DEFINE_ZMQ_CONST(XPUB_VERBOSE          ),
 #endif
 
   {NULL, 0}

@@ -2,12 +2,12 @@ J  = J or path.join
 IF = IF or lake.choose or choose
 
 function spawn_lua(file, dir)
-  winapi.shell_exec(nil, LUA_EXE, file, dir)
+  winapi.shell_exec(nil, LUA_RUNNER, file, dir)
 end
 
 function run_lua(file, dir)
   lake.chdir(dir)
-  os.execute(LUA_EXE .. ' ' .. file)
+  os.execute(LUA_RUNNER .. ' ' .. file)
   lake.chdir('<')
 end
 

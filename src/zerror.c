@@ -76,8 +76,15 @@ static const char* luazmq_err_getmnemo(int err){
     RETURN_IF ( ECONNREFUSED    );
     RETURN_IF ( EINPROGRESS     );
     RETURN_IF ( ENOTSOCK        );
+    RETURN_IF ( EMSGSIZE        );
     RETURN_IF ( EAFNOSUPPORT    );
+    RETURN_IF ( ENETUNREACH     );
+    RETURN_IF ( ECONNABORTED    );
+    RETURN_IF ( ECONNRESET      );
+    RETURN_IF ( ENOTCONN        );
+    RETURN_IF ( ETIMEDOUT       );
     RETURN_IF ( EHOSTUNREACH    );
+    RETURN_IF ( ENETRESET       );
 
     RETURN_IF ( ENOENT          );
     RETURN_IF ( ESRCH           );
@@ -180,8 +187,15 @@ static const luazmq_int_const zmq_err_codes[] ={
   DEFINE_INT_CONST ( ECONNREFUSED         ),
   DEFINE_INT_CONST ( EINPROGRESS          ),
   DEFINE_INT_CONST ( ENOTSOCK             ),
+  DEFINE_INT_CONST ( EMSGSIZE             ),
   DEFINE_INT_CONST ( EAFNOSUPPORT         ),
+  DEFINE_INT_CONST ( ENETUNREACH          ),
+  DEFINE_INT_CONST ( ECONNABORTED         ),
+  DEFINE_INT_CONST ( ECONNRESET           ),
+  DEFINE_INT_CONST ( ENOTCONN             ),
+  DEFINE_INT_CONST ( ETIMEDOUT            ),
   DEFINE_INT_CONST ( EHOSTUNREACH         ),
+  DEFINE_INT_CONST ( ENETRESET            ),
 
   /*  Native 0MQ error codes.                 */
   DEFINE_INT_CONST ( EFSM                 ),

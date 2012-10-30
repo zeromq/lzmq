@@ -3,9 +3,11 @@ PROJECT = 'lzmq'
 if LUA_VER == '5.2' then
   LUA_NEED = 'lua52'
   LUA_DIR  = ENV.LUA_DIR_5_2 or ENV.LUA_DIR
+  LUA_RUNNER = 'lua52'
 else
   LUA_NEED = 'lua'
   LUA_DIR  = ENV.LUA_DIR
+  LUA_RUNNER = 'lua'
 end
 
 
@@ -65,7 +67,7 @@ target('test', install, function()
   print("run " .. file)
   if not TESTING then 
     lake.chdir(J(INSTALL_DIR,'test'))
-    os.execute( LUA_EXE .. ' ' .. file )
+    os.execute( LUA_RUNNER .. ' ' .. file )
     lake.chdir("<")
   end
 end)

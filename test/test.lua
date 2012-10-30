@@ -5,6 +5,7 @@ local assert = zmq.assert
 
 require "utils"
 
+print(_VERSION)
 print_version(zmq)
 
 ECHO_ADDR = "inproc://echo"
