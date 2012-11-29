@@ -409,6 +409,10 @@ DEFINE_SKT_OPT_RW(delay_attach_on_connect, ZMQ_DELAY_ATTACH_ON_CONNECT, int  )
 DEFINE_SKT_OPT_RW(xpub_verbose, ZMQ_XPUB_VERBOSE, int  )
 #endif
 
+#ifdef ZMQ_ROUTER_RAW 
+DEFINE_SKT_OPT_RW(router_raw, ZMQ_ROUTER_RAW, int  )
+#endif
+
 static int luazmq_skt_getopt_int(lua_State *L){ return luazmq_skt_get_int(L, luaL_checkint(L,2)); }
 static int luazmq_skt_getopt_i64(lua_State *L){ return luazmq_skt_get_i64(L, luaL_checkint(L,2)); }
 static int luazmq_skt_getopt_u64(lua_State *L){ return luazmq_skt_get_u64(L, luaL_checkint(L,2)); }
@@ -487,6 +491,9 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
 #ifdef ZMQ_XPUB_VERBOSE 
   REGISTER_SKT_OPT_RW(xpub_verbose         ),
 #endif
+#ifdef ZMQ_ROUTER_RAW 
+  REGISTER_SKT_OPT_RW(router_raw           ),
+#endif
 
   {"on_close",   luazmq_skt_on_close       },
   {"__gc",       luazmq_skt_destroy        },
@@ -555,6 +562,9 @@ static const luazmq_int_const skt_options[] ={
 #endif
 #ifdef ZMQ_XPUB_VERBOSE 
   DEFINE_ZMQ_CONST(XPUB_VERBOSE          ),
+#endif
+#ifdef ZMQ_ROUTER_RAW 
+  DEFINE_ZMQ_CONST(ROUTER_RAW        ),
 #endif
 
   {NULL, 0}
