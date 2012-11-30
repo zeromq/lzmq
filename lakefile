@@ -10,6 +10,7 @@ else
   LUA_RUNNER = 'lua'
 end
 
+DYNAMIC  = DYNAMIC or false
 
 INSTALL_DIR = INSTALL_DIR or J(LUA_DIR,'libs',PROJECT)
 
@@ -30,7 +31,7 @@ lzmq = c.shared{PROJECT,
   exclude  = 'ztimer',
   needs    = {LUA_NEED, 'zmq3', 'stdint'},
   defines  = {ERRORS[ERR]},
-  dynamic  = false,
+  dynamic  = DYNAMIC,
   strip    = true,
 }
 
@@ -42,7 +43,7 @@ lztimer = c.shared{'timer',
     IF(WINDOWS, 'USE_PERF_COUNT', 'USE_CLOCK_MONOTONIC'),
     IF(not WINDOWS, 'USE_GETTIMEOFDAY'),
   },
-  dynamic  = false,
+  dynamic  = DYNAMIC,
   strip    = true,
 }
 
