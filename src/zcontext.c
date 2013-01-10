@@ -52,12 +52,6 @@ static int luazmq_ctx_lightuserdata(lua_State *L) {
   return 1;
 }
 
-static int luazmq_ctx_tostring(lua_State *L) {
-  zcontext *ctx = luazmq_getcontext(L);
-  lua_pushstring(L, LUAZMQ_CONTEXT);
-  return 1;
-}
-
 static int luazmq_ctx_set (lua_State *L) {
   zcontext *ctx = luazmq_getcontext(L);
   int option_name  = luaL_checkint(L, 2);
@@ -76,63 +70,57 @@ static int luazmq_ctx_get (lua_State *L) {
   return 1;
 }
 
+static int create_autoclose_list(lua_State *L){
+  int top = lua_gettop(L);
+  lua_newtable(L);
+  lua_newtable(L);
+  lua_pushliteral(L, "k");
+  lua_setfield(L, -2, "__mode");
+  lua_setmetatable(L,-2);
+  assert((top+1) == lua_gettop(L));
+  return luaL_ref(L, lua_upvalueindex(1));
+}
+
+static void call_socket_destroy(lua_State *L){
+  int top = lua_gettop(L);
+  assert(luazmq_checkudatap (L, -1, LUAZMQ_SOCKET));
+  lua_getfield(L, -1, "close");
+  assert(lua_isfunction(L, -1));
+  lua_pushvalue(L, -2);
+  lua_pcall(L,1,0,0);
+  assert(lua_gettop(L) == top);
+}
+
 static int luazmq_ctx_autoclose (lua_State *L) {
   zcontext *ctx = luazmq_getcontext(L);
-  zsocket  *skt = luazmq_getsocket_at(L,2);
+  /*zsocket  *skt = */luazmq_getsocket_at(L,2);
 
   lua_settop(L, 2);
 
   if(LUA_NOREF == ctx->autoclose_ref){
-    lua_newtable(L);
-    ctx->autoclose_ref = luaL_ref(L, lua_upvalueindex(1));
+    ctx->autoclose_ref = create_autoclose_list(L);
   }
+
   lua_rawgeti(L, lua_upvalueindex(1), ctx->autoclose_ref);
-  lua_insert(L,2);
-  lua_rawseti(L, 2, lua_rawlen(L, 2) + 1);
+  lua_pushvalue(L, -2);
+  lua_pushboolean(L, 1);
+  lua_rawset(L, -3);
+  lua_pop(L,1);
+
   return 0;
 }
 
 static int luazmq_ctx_close_sockets (lua_State *L, zcontext *ctx) {
-  size_t top = lua_gettop(L);
-
   if(LUA_NOREF == ctx->autoclose_ref) return 0;
 
   lua_rawgeti(L, lua_upvalueindex(1), ctx->autoclose_ref);
   assert(lua_istable(L, -1));
-  {
-  size_t n = lua_rawlen(L, -1);
-  size_t i;
-
-  for(i = 1; i<= n; ++i){
-    lua_rawgeti(L, -1, i);
-    { // copy from luazmq_skt_destroy
-      zsocket *skt = (zsocket *)luazmq_checkudatap (L, -1, LUAZMQ_SOCKET);
-      assert(skt != NULL);
-      if(!(skt->flags & LUAZMQ_FLAG_CLOSED)){
-        int ret;
-        luazmq_skt_before_close(L, skt);
-
-        ret = zmq_close(skt->skt);
-
-#ifdef LZMQ_DEBUG
-        assert(skt->ctx == ctx);
-        skt->ctx->socket_count--;
-#endif
-        // what we can do with error ???
-        // if(ret == -1)return luazmq_fail(L, skt);
-        skt->flags |= LUAZMQ_FLAG_CLOSED;
-      }
-    }
-    lua_pop(L, 1);
+  lua_pushnil(L);
+  while(lua_next(L, -2)){
+    lua_pop(L, 1); // we do not need value
+    call_socket_destroy(L);
   }
-  lua_pop(L, 1);
 
-  luaL_unref(L, lua_upvalueindex(1), ctx->autoclose_ref);
-  ctx->autoclose_ref = LUA_NOREF;
-
-  assert(top == lua_gettop(L));
-
-  }
   return 0;
 }
 

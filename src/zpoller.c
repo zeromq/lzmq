@@ -167,6 +167,7 @@ static const struct luaL_Reg luazmq_plr_methods[] = {
   {"next_revents_idx", luazmq_plr_next_revents_idx },
   {"count",            luazmq_plr_count            },
   {"close",            luazmq_plr_close            },
+  {"closed",           luazmq_plr_closed           },
   {"__gc",             luazmq_plr_close            },
   {NULL,NULL}
 };

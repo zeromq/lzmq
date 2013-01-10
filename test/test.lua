@@ -142,6 +142,42 @@ function Test_Sockopt()
   print("Test_Sockopt done!")
 end
 
+function Test_SockAutoclose()
+  local function weak_ptr(val)
+    return setmetatable({value = val},{__mode = 'v'})
+  end
+
+  local function gc_collect()
+    collectgarbage("collect")
+    collectgarbage("collect")
+  end
+
+  print("\n\nTest_SockAutoclose ...")
+
+  local ctx = zmq.context()
+  local skt = ctx:socket(zmq.SUB)
+  ctx:autoclose(skt)
+  assert(ctx:destroy())
+
+  local ctx = zmq.context()
+  do local skt = ctx:socket(zmq.SUB) end
+  gc_collect()
+  assert(ctx:destroy())
+
+  local ctx = zmq.context()
+  local ptr
+  do
+    local skt = ctx:socket(zmq.SUB)
+    ctx:autoclose(skt)
+    ptr = weak_ptr(skt)
+  end
+  gc_collect()
+  assert(ptr.value == nil)
+  assert(ctx:destroy())
+
+  print("Test_SockAutoclose done!")
+end
+
 function Test_Bind_Connect()
   print("\n\nTest_Bind_Connect ...")
 
@@ -539,6 +575,7 @@ Test_Message()
 Test_Error()
 Test_Context()
 Test_Sockopt()
+Test_SockAutoclose()
 Test_Bind_Connect()
 Test_loop()
 Test_Remove_ev()

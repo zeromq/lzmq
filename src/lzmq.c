@@ -31,7 +31,7 @@ static int luazmq_geterrno(lua_State *L, zsocket *skt){
   int err = zmq_errno();
   if(skt && (err == ETERM)){
     if(!(skt->flags & LUAZMQ_FLAG_CLOSED)){
-      int ret = zmq_close(skt->skt);
+      /*int ret = */zmq_close(skt->skt);
       skt->flags |= LUAZMQ_FLAG_CLOSED;
       luazmq_skt_before_close(L, skt);
 #ifdef LZMQ_DEBUG
