@@ -10,11 +10,10 @@ else
   LUA_RUNNER = 'lua'
 end
 
-DYNAMIC  = DYNAMIC or false
-
-PREFIX = ROOT or J(LUA_DIR,'libs',PROJECT)
-LUADIR = LUADIR or J(PREFIX, 'share')
-LIBDIR = LIBDIR or J(PREFIX, 'share')
+PREFIX  = ROOT or J(LUA_DIR,'libs',PROJECT)
+LUADIR  = LUADIR or J(PREFIX, 'share')
+LIBDIR  = LIBDIR or J(PREFIX, 'share')
+DYNAMIC = as_bool(DYNAMIC, false)
 
 ERR = (ERR or 'number'):upper()
 ERRORS = {

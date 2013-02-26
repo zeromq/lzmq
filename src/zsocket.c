@@ -231,12 +231,12 @@ static int luazmq_skt_destroy (lua_State *L) {
     luazmq_skt_before_close(L, skt);
 
     ret = zmq_close(skt->skt);
+    if(ret == -1)return luazmq_fail(L, skt);
 
 #ifdef LZMQ_DEBUG
     skt->ctx->socket_count--;
 #endif
 
-    if(ret == -1)return luazmq_fail(L, skt);
     skt->flags |= LUAZMQ_FLAG_CLOSED;
   }
   return luazmq_pass(L);

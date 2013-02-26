@@ -1,6 +1,14 @@
 J  = J or path.join
 IF = IF or lake.choose or choose
 
+function as_bool(v,d)
+  if v == nil then return not not d end
+  local n = tonumber(v)
+  if n == 0 then return false end
+  if n then return true end
+  return false
+end
+
 function spawn_lua(file, dir)
   winapi.shell_exec(nil, LUA_RUNNER, file, dir)
 end
