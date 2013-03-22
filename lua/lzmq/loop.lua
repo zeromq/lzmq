@@ -355,7 +355,7 @@ end
 -- момент уничтожения zmq_loop
 function zmq_loop:add_socket(skt, fn_or_flags, fn)
   if fn == nil then 
-    assert(fn_or_flags and fn_or_flags ~= 'number', 'function expected')
+    assert(fn_or_flags and type(fn_or_flags) ~= 'number', 'function expected')
     fn, fn_or_flags = fn_or_flags, nil
   end
   local zmq_flag = fn_or_flags or zmq.POLLIN
