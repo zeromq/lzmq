@@ -244,7 +244,9 @@ function zmq_loop:destroy()
   self.private_.event_list:destroy()
   for s in pairs(self.private_.sockets) do
     self.private_.poller:remove(s)
-    s:close()
+    if( type(s) ~= 'number' ) then
+      s:close()
+    end
   end
   if self.private_.context  then self.private_.context:term() end
 
