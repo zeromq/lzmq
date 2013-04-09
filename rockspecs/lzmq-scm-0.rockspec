@@ -14,10 +14,55 @@ description = {
 
 dependencies = {
   "lua >= 5.1",
-  "lake >= 1.2",
+  -- "lua-llthreads >= 1.2"
+}
+
+external_dependencies = {
+  ZMQ3 = {
+    header  = "zmq.h",
+    library = "libzmq3",
+  }
 }
 
 build = {
-  type = "command",
-  build_command = "lake install ROOT=$(PREFIX) LUADIR=$(LUADIR) LIBDIR=$(LIBDIR)",
+  copy_directories = {"test", "examples"},
+
+  type = "builtin",
+
+  platforms = {
+    windows = { modules = {
+      ["lzmq.timer"] = {
+        defines = {'USE_PERF_COUNT'}
+      },
+    }},
+    unix    = { modules = {
+      ["lzmq.timer"] = {
+        defines = {'USE_CLOCK_MONOTONIC', 'USE_GETTIMEOFDAY'},
+      }
+    }}
+  },
+
+  modules = {
+    ["lzmq"] = {
+      sources = {'src/lzmq.c','src/lzutils.c','src/poller.c',
+                 'src/zcontext.c','src/zerror.c','src/zmsg.c',
+                 'src/zpoller.c','src/zsocket.c'},
+      libraries = {"libzmq3"},
+      incdirs = {"$(ZMQ3_INCDIR)"},
+      libdirs = {"$(ZMQ3_LIBDIR)"},
+      defines = {
+        'LUAZMQ_USE_ERR_TYPE_OBJECT'
+        -- 'LUAZMQ_USE_ERR_TYPE_NUMBER'
+        -- 'LUAZMQ_USE_ERR_TYPE_STRING'
+      },
+    },
+    ["lzmq.timer"] = {
+      sources = {'src/ztimer.c','src/lzutils.c'},
+    },
+    ["lzmq.loop"   ] = "lua/lzmq/loop.lua";
+    ["lzmq.poller" ] = "lua/lzmq/poller.lua";
+    ["lzmq.threads"] = "lua/lzmq/threads.lua";
+  },
+
+
 }
