@@ -1,5 +1,5 @@
 package = "lzmq"
-version = "0.1.0-0"
+version = "0.1.0-1"
 
 source = {
   url = "https://github.com/moteus/lzmq/archive/v0.1.0.zip",
