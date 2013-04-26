@@ -577,13 +577,6 @@ Test_Send_Recv_buf  = { name = 'Test_Send_Recv_buf';
     assert(len == 32)
     assert(#msg == 16)
     assert(skt:send(msg))
-
-    local msg, more, len = assert(print_msg("SRV RECV: ", skt:recv_len(16)))
-    assert(more       == false)
-    assert(skt:more() == false)
-    assert(len == 8)
-    assert(#msg == 8)
-    assert(skt:send(msg))
   end;
 
   cli_send = function(skt)

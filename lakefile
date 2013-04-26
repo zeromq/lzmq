@@ -10,9 +10,9 @@ else
   LUA_RUNNER = 'lua'
 end
 
-PREFIX  = ROOT or J(LUA_DIR,'libs',PROJECT)
-LUADIR  = LUADIR or J(PREFIX, 'share')
-LIBDIR  = LIBDIR or J(PREFIX, 'share')
+ROOT    = ROOT or J(LUA_DIR,'libs',PROJECT)
+LUADIR  = LUADIR or J(ROOT, 'share')
+LIBDIR  = LIBDIR or J(ROOT, 'share')
 DYNAMIC = as_bool(DYNAMIC, false)
 
 ERR = (ERR or 'number'):upper()
@@ -61,20 +61,15 @@ install = target('install', {
   file.group{odir=J(LIBDIR, PROJECT); src = lztimer                };
   file.group{odir=J(LUADIR, PROJECT); src = J('lua', 'lzmq', '*.*')};
 
-  file.group{odir=J(PREFIX, 'test'); src = J('test', '*.*')          };
-  file.group{odir=J(PREFIX, 'test'); src = J('examples', 'utils.lua')};
+  file.group{odir=J(ROOT, 'test'); src = J('test', '*.*')          };
+  file.group{odir=J(ROOT, 'test'); src = J('examples', 'utils.lua')};
 
-  file.group{odir=J(PREFIX, 'examples');recurse = true;  src = J('examples', '*.*')};
+  file.group{odir=J(ROOT, 'examples');recurse = true;  src = J('examples', '*.*')};
 })
 
 target('test', install, function()
-  local file = J(PREFIX,'test','test.lua')
-  print("run " .. file)
-  if not TESTING then 
-    lake.chdir(J(PREFIX,'test'))
-    os.execute( LUA_RUNNER .. ' ' .. file )
-    lake.chdir("<")
-  end
+  run_test('test.lua')
+  run_test('utest.lua')
 end)
 
 target('perf_local_lat',      install, test_perf_r('lat', "tcp://127.0.0.1:5555 1   100000"))

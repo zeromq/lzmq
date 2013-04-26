@@ -1,5 +1,105 @@
-J  = J or path.join
+function vc_version()
+  local VER = lake.compiler_version()
+  MSVC_VER = ({
+    [15] = '9';
+    [16] = '10';
+  })[VER.MAJOR] or ''
+  return MSVC_VER
+end
+
+local function arkey(t)
+  assert(type(t) == 'table')
+  local keys = {}
+  for k in pairs(t) do
+    assert(type(k) == 'number')
+    table.insert(keys, k)
+  end
+  table.sort(keys)
+  return keys
+end
+
+local function ikeys(t)
+  local keys = arkey(t)
+  local i = 0
+  return function()
+    i = i + 1
+    local k = keys[i]
+    if k == nil then return end
+    return k, t[k]
+  end
+end
+
+local function expand(arr, t)
+  if t == nil then return arr end
+
+  if type(t) ~= 'table' then
+    table.insert(arr, t)
+    return arr
+  end
+
+  for _, v in ikeys(t) do
+    expand(arr, v)
+  end
+
+  return arr
+end
+
+function L(...)
+  return expand({}, {...})
+end
+
+J = J or path.join
+
 IF = IF or lake.choose or choose
+
+function prequire(...)
+  local ok, mod = pcall(require, ...)
+  if ok then return mod end
+end
+
+function each_join(dir, list)
+  for i, v in ipairs(list) do
+    list[i] = path.join(dir, v)
+  end
+  return list
+end
+
+function run(file, cwd)
+  print()
+  print("run " .. file)
+  if not TESTING then
+    if cwd then lake.chdir(cwd) end
+    local status, code = utils.execute( LUA_RUNNER .. ' ' .. file )
+    if cwd then lake.chdir("<") end
+    print()
+    return status, code
+  end
+  return true, 0
+end
+
+function run_test(name, params)
+  local test_dir = J(ROOT, 'test')
+  local cmd = J(test_dir, name)
+  if params then cmd = cmd .. ' ' .. params end
+  local ok = run(cmd, test_dir)
+  print("TEST " .. cmd .. (ok and ' - pass!' or ' - fail!'))
+end
+
+function spawn(file, cwd)
+  local winapi = prequire "winapi"
+  if not winapi then
+    print(file, ' error: Test needs winapi!')
+    return false
+  end
+  print("spawn " .. file)
+  if not TESTING then
+    if cwd then lake.chdir(cwd) end
+    assert(winapi.shell_exec(nil, LUA_RUNNER, file, cwd))
+    if cwd then lake.chdir("<") end
+    print()
+  end
+  return true
+end
 
 function as_bool(v,d)
   if v == nil then return not not d end
@@ -9,21 +109,15 @@ function as_bool(v,d)
   return false
 end
 
-function spawn_lua(file, dir)
-  winapi.shell_exec(nil, LUA_RUNNER, file, dir)
-end
+run_lua = run
 
-function run_lua(file, dir)
-  lake.chdir(dir)
-  os.execute(LUA_RUNNER .. ' ' .. file)
-  lake.chdir('<')
-end
+spawn_lua = spawn
 
 function test_perf_r(perf_type, opt)
   return function()
     if not winapi then quit('perf target needs winapi') end
 
-    local path = J(INSTALL_DIR,'examples','perf')
+    local path = J(ROOT,'examples','perf')
     print("run " .. J(path,'local_'  .. perf_type .. '.lua') .. ' ' .. opt)
     print("run " .. J(path,'remote_' .. perf_type .. '.lua') .. ' ' .. opt)
 
@@ -38,7 +132,7 @@ function test_perf_l(perf_type, opt)
   return function()
     if not winapi then quit('perf target needs winapi') end
 
-    local path = J(INSTALL_DIR,'examples','perf')
+    local path = J(ROOT,'examples','perf')
     print("run " .. J(path,'local_'  .. perf_type .. '.lua') .. ' ' .. opt)
     print("run " .. J(path,'remote_' .. perf_type .. '.lua') .. ' ' .. opt)
 
@@ -51,7 +145,7 @@ end
 
 function test_perf_t(perf_type, opt)
   return function()
-    local path = J(INSTALL_DIR,'examples','perf')
+    local path = J(ROOT,'examples','perf')
     print("run " .. J(path,'thread_'  .. perf_type .. '.lua') .. ' ' .. opt)
 
     if not TESTING then
@@ -59,6 +153,10 @@ function test_perf_t(perf_type, opt)
     end
   end
 end
+
+-----------------------
+-- needs --
+-----------------------
 
 lake.define_need('lua52', function()
   return {
