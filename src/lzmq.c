@@ -63,6 +63,11 @@ int luazmq_fail_obj(lua_State *L, zsocket *skt){
   return 2;
 }
 
+int luazmq_allocfail(lua_State *L){
+  lua_pushliteral(L, "can not allocate enouth memory");
+  return lua_error(L);
+}
+
 zcontext *luazmq_getcontext_at (lua_State *L, int i) {
  zcontext *ctx = (zcontext *)luazmq_checkudatap (L, i, LUAZMQ_CONTEXT);
  luaL_argcheck (L, ctx != NULL, 1, LUAZMQ_PREFIX"context expected");

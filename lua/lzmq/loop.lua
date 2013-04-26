@@ -240,7 +240,13 @@ function zmq_loop:init(N, ctx)
   return self
 end
 
+function zmq_loop:destroyed()
+  return nil == self.private_.event_list
+end
+
 function zmq_loop:destroy()
+  if self:destroyed() then return end
+
   self.private_.event_list:destroy()
   for s in pairs(self.private_.sockets) do
     self.private_.poller:remove(s)

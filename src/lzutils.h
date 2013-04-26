@@ -49,6 +49,11 @@ typedef struct {
 #define DEFINE_INT_CONST(NAME) {#NAME, NAME}
 
 
+#define TMP_BUF_SIZE 128
+#define ALLOC_TMP(BUF, SIZE) (sizeof(BUF) >= SIZE)?(BUF):malloc(SIZE)
+#define FREE_TMP(BUF, PTR) do{if((PTR) != (BUF))free((void*)PTR);}while(0)
+#define DEFINE_TMP_BUFFER(NAME) char NAME[TMP_BUF_SIZE]
+
 void luazmq_register_consts(lua_State *L, const luazmq_int_const *c);
 
 void luazmq_register_consts_invers(lua_State *L, const luazmq_int_const *c);

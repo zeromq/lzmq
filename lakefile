@@ -31,7 +31,11 @@ lzmq = c.shared{PROJECT,
   src      = '*.c',
   exclude  = 'ztimer',
   needs    = {LUA_NEED, 'zmq3', 'stdint'},
-  defines  = {ERRORS[ERR]},
+  defines  = {
+    ERRORS[ERR],
+    'LUAZMQ_USE_SEND_AS_BUF',
+    IF(DEBUG, 'LZMQ_DEBUG'),
+  },
   dynamic  = DYNAMIC,
   strip    = true,
 }

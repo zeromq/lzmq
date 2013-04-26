@@ -24,6 +24,7 @@ static int luazmq_skt_##NAME (lua_State *L) {  \
     lua_rawgeti(L, 2, i);                      \
     val = luaL_checkstring(L, -1);             \
     ret = zmq_##NAME(skt->skt, val);           \
+    lua_pop(L, 1);                             \
     if (ret == -1){                            \
       int n = luazmq_fail(L, skt);             \
       lua_pushstring(L, val);                  \
@@ -40,15 +41,21 @@ DEFINE_SKT_METHOD_1(disconnect)
 
 static int luazmq_skt_send (lua_State *L) {
   zsocket *skt = luazmq_getsocket(L);
-  zmq_msg_t msg;
   size_t len;
   const char *data = luaL_checklstring(L, 2, &len);
-  int flags = luaL_optint(L,3,0);
-  int ret = zmq_msg_init_size(&msg, len);
+  int ret, flags = luaL_optint(L,3,0);
+
+#ifdef LUAZMQ_USE_SEND_AS_BUF
+  ret = zmq_send(skt->skt, data, len, flags);
+#else
+  zmq_msg_t msg;
+  ret = zmq_msg_init_size(&msg, len);
   if(-1 == ret) return luazmq_fail(L, skt);
   memcpy(zmq_msg_data(&msg), data, len);
   ret = zmq_msg_send(&msg, skt->skt, flags);
   zmq_msg_close(&msg);
+#endif
+
   if(-1 == ret) return luazmq_fail(L, skt);
   return luazmq_pass(L);
 }
@@ -93,6 +100,41 @@ static int luazmq_skt_recv (lua_State *L) {
 
   zmq_msg_close(&msg);
   return 2;
+}
+
+static int luazmq_skt_recv_len (lua_State *L) {
+  zsocket *skt = luazmq_getsocket(L);
+  size_t len = luaL_checkint(L, 2);
+  int flags = luaL_optint(L,3,0);
+  int ret, more;
+  size_t more_size = sizeof(more);
+  DEFINE_TMP_BUFFER(tmp);
+  char *buffer = ALLOC_TMP(tmp, len);
+  if(!buffer) return luazmq_allocfail(L);
+
+  ret = zmq_recv(skt->skt, buffer, len, flags);
+  if(-1 == ret){
+    FREE_TMP(tmp, buffer);
+    return luazmq_fail(L, skt);
+  }
+
+  lua_pushlstring(L, buffer, (ret < len)?ret:len);
+  FREE_TMP(tmp, buffer);
+  len = ret;
+  ret = zmq_getsockopt(skt->skt, ZMQ_RCVMORE, &more, &more_size);
+  if(-1 == ret) return luazmq_fail(L, skt);
+
+  if( more ){
+    skt->flags |= LUAZMQ_FLAG_MORE;
+    lua_pushboolean(L, 1);
+  }
+  else{
+    skt->flags &= ~LUAZMQ_FLAG_MORE;
+    lua_pushboolean(L, 0);
+  }
+
+  lua_pushinteger(L, len);
+  return 3;
 }
 
 static int luazmq_skt_recv_msg (lua_State *L) {
@@ -439,10 +481,12 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   {"recv",         luazmq_skt_recv         },
   {"recv_msg",     luazmq_skt_recv_msg     },
   {"recv_new_msg", luazmq_skt_recv_new_msg },
+  {"recv_len",     luazmq_skt_recv_len     },
   {"send_all",     luazmq_skt_send_all     },
   {"recv_all",     luazmq_skt_recv_all     },
   {"more",         luazmq_skt_more         },
   {"get_rcvmore",  luazmq_skt_more         },
+  {"rcvmore",      luazmq_skt_more         },
 
   {"getopt_int",   luazmq_skt_getopt_int   },
   {"getopt_i64",   luazmq_skt_getopt_i64   },

@@ -90,4 +90,6 @@ int luazmq_fail_no(lua_State *L, zsocket *skt);
 #  define luazmq_fail luazmq_fail_no
 #endif
 
+int luazmq_allocfail(lua_State *L);
+
 #endif

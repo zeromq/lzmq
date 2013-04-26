@@ -419,7 +419,7 @@ function Test_Remove_ev()
 
   assert(flag1 and flag2)
 
-  print("Test_Remove_ev done")
+  print("Test_Remove_ev done!")
 end
 
 local Test_Skel = { name = 'Test_Empty';
@@ -569,6 +569,36 @@ Test_Send_Recv_more = { name = 'Test_Send_Recv_more';
   end;
 }
 
+Test_Send_Recv_buf  = { name = 'Test_Send_Recv_buf';
+  srv = function(skt)
+    local msg, more, len = assert(print_msg("SRV RECV: ", skt:recv_len(16)))
+    assert(more       == false)
+    assert(skt:more() == false)
+    assert(len == 32)
+    assert(#msg == 16)
+    assert(skt:send(msg))
+
+    local msg, more, len = assert(print_msg("SRV RECV: ", skt:recv_len(16)))
+    assert(more       == false)
+    assert(skt:more() == false)
+    assert(len == 8)
+    assert(#msg == 8)
+    assert(skt:send(msg))
+  end;
+
+  cli_send = function(skt)
+    assert(skt:send(('0'):rep(32)))
+  end;
+
+  cli_recv = function(skt)
+    local msg, more = assert(print_msg("CLI RECV: ", skt:recv()))
+    assert(more       == false)
+    assert(skt:more() == false)
+    assert(skt:send(('0'):rep(8)))
+  end;
+}
+
+
 
 Test_Assert()
 Test_Message()
@@ -580,6 +610,7 @@ Test_Bind_Connect()
 Test_loop()
 Test_Remove_ev()
 TestServer(Test_Send_Recv)
+TestServer(Test_Send_Recv_buf)
 TestServer(Test_Send_Recv_all)
 TestServer(Test_Send_Recv_msg)
 TestServer(Test_Send_Recv_more)
