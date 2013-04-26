@@ -616,6 +616,10 @@ static const luazmq_int_const skt_options[] ={
 
 static const luazmq_int_const skt_flags[] ={
   DEFINE_ZMQ_CONST(  SNDMORE             ),
+  DEFINE_ZMQ_CONST(  DONTWAIT            ),
+#ifdef ZMQ_NOBLOCK
+  DEFINE_ZMQ_CONST(  NOBLOCK             ),
+#endif
 
   {NULL, 0}
 };

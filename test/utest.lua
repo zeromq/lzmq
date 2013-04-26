@@ -49,6 +49,12 @@ function setup() end
 function teardown() end
 
 function test_constant()
+  do -- flags
+    assert_number(zmq.SNDMORE                        )
+    assert_number(zmq.DONTWAIT                       )
+    if zmq.NOBLOCK then assert_number(zmq.NOBLOCK    ) end
+  end
+
   do -- socket opt
     assert_number(zmq.AFFINITY                       )
     assert_number(zmq.IDENTITY                       )
