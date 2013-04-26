@@ -868,7 +868,18 @@ function test_remove_event()
 end
 
 function test_interface()
-  --@todo
+  assert_function(loop.destroy)
+  assert_function(loop.context)
+  assert_function(loop.flush)
+  assert_function(loop.sleep)
+  assert_function(loop.sleep_ex)
+  assert_function(loop.interrupt)
+  assert_function(loop.add_socket)
+  assert_function(loop.remove_socket)
+  assert_function(loop.start)
+  assert_function(loop.add_once)
+  assert_function(loop.add_interval)
+  assert_function(loop.add_time)
 end
 
 function test_echo()
