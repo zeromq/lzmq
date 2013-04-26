@@ -48,11 +48,19 @@ typedef struct {
 #define DEFINE_ZMQ_CONST(NAME) {#NAME, ZMQ_##NAME}
 #define DEFINE_INT_CONST(NAME) {#NAME, NAME}
 
-
-#define TMP_BUF_SIZE 128
-#define ALLOC_TMP(BUF, SIZE) (sizeof(BUF) >= SIZE)?(BUF):malloc(SIZE)
-#define FREE_TMP(BUF, PTR) do{if((PTR) != (BUF))free((void*)PTR);}while(0)
-#define DEFINE_TMP_BUFFER(NAME) char NAME[TMP_BUF_SIZE]
+#ifdef LUAZMQ_USE_TEMP_BUFFERS
+# ifndef LUAZMQ_TEMP_BUFFER_SIZE
+#  define LUAZMQ_TEMP_BUFFER_SIZE 128
+# endif
+# define LUAZMQ_ALLOC_TEMP(BUF, SIZE) (sizeof(BUF) >= SIZE)?(BUF):malloc(SIZE)
+# define LUAZMQ_FREE_TEMP(BUF, PTR) do{if((PTR) != (BUF))free((void*)PTR);}while(0)
+# define LUAZMQ_DEFINE_TEMP_BUFFER(NAME) char NAME[LUAZMQ_TEMP_BUFFER_SIZE]
+#else
+# define LUAZMQ_ALLOC_TEMP(BUF, SIZE) malloc(SIZE)
+# define LUAZMQ_FREE_TEMP(BUF, PTR) free((void*)PTR)
+// MSVC need this to compile easy
+# define LUAZMQ_DEFINE_TEMP_BUFFER(NAME) static const void *const NAME = NULL
+#endif
 
 void luazmq_register_consts(lua_State *L, const luazmq_int_const *c);
 

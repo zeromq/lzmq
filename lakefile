@@ -34,6 +34,8 @@ lzmq = c.shared{PROJECT,
   defines  = {
     ERRORS[ERR],
     'LUAZMQ_USE_SEND_AS_BUF',
+    'LUAZMQ_USE_TEMP_BUFFERS',
+    'LUAZMQ_TEMP_BUFFER_SIZE=64',
     IF(DEBUG, 'LZMQ_DEBUG'),
   },
   dynamic  = DYNAMIC,

@@ -108,18 +108,18 @@ static int luazmq_skt_recv_len (lua_State *L) {
   int flags = luaL_optint(L,3,0);
   int ret, more;
   size_t more_size = sizeof(more);
-  DEFINE_TMP_BUFFER(tmp);
-  char *buffer = ALLOC_TMP(tmp, len);
+  LUAZMQ_DEFINE_TEMP_BUFFER(tmp);
+  char *buffer = LUAZMQ_ALLOC_TEMP(tmp, len);
   if(!buffer) return luazmq_allocfail(L);
 
   ret = zmq_recv(skt->skt, buffer, len, flags);
   if(-1 == ret){
-    FREE_TMP(tmp, buffer);
+    LUAZMQ_FREE_TEMP(tmp, buffer);
     return luazmq_fail(L, skt);
   }
 
   lua_pushlstring(L, buffer, (ret < len)?ret:len);
-  FREE_TMP(tmp, buffer);
+  LUAZMQ_FREE_TEMP(tmp, buffer);
   len = ret;
   ret = zmq_getsockopt(skt->skt, ZMQ_RCVMORE, &more, &more_size);
   if(-1 == ret) return luazmq_fail(L, skt);
