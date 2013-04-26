@@ -54,7 +54,6 @@ function test_constant()
     assert_number(zmq.DONTWAIT                       )
     if zmq.NOBLOCK then assert_number(zmq.NOBLOCK    ) end
   end
-
   do -- socket opt
     assert_number(zmq.AFFINITY                       )
     assert_number(zmq.IDENTITY                       )
@@ -905,8 +904,49 @@ end
 
 local _ENV = TEST_CASE'timer'             if true then
 
+local timer
+
+function teardown()
+  if timer then timer:close() end
+end
+
 function test_interface()
-  --@todo
+  assert_function(ztimer.monotonic)
+  assert_function(ztimer.absolute)
+
+  assert_function(ztimer.absolute_time)
+  assert_function(ztimer.absolute_delta)
+  assert_function(ztimer.absolute_elapsed)
+
+  assert_function(ztimer.monotonic_time)
+  assert_function(ztimer.monotonic_delta)
+  assert_function(ztimer.monotonic_elapsed)
+end
+
+local function test_timer_interface(timer)
+  assert_function(timer.close)
+  assert_function(timer.closed)
+  assert_function(timer.set)
+  assert_function(timer.get)
+  assert_function(timer.reset)
+  assert_function(timer.setted)
+  assert_function(timer.start)
+  assert_function(timer.started)
+  assert_function(timer.elapsed)
+  assert_function(timer.rest)
+  assert_function(timer.stop)
+  assert_function(timer.is_absolute)
+  assert_function(timer.is_monotonic)
+end
+
+function test_monotonic_interface()
+  timer = ztimer.monotonic()
+  test_timer_interface(timer)
+end
+
+function test_absolute_interface()
+  timer = ztimer.absolute()
+  test_timer_interface(timer)
 end
 
 local function test_timer(timer)
@@ -917,6 +957,13 @@ local function test_timer(timer)
   local name = timer:is_absolute() and 'absolute' or 'monotonic';
 
   local max_delta, totla_delta, totla_delta2 = 0, 0, 0
+
+  assert_false(timer:setted())
+  assert_equal(timer, timer:start())
+  assert_error (function() timer:rest() end)
+  assert_true(timer:reset())
+  assert_number(timer:elapsed())
+  assert_number(timer:stop())
 
   if timer:is_absolute() then
     assert_equal( timer, timer:set(ztimer.absolute_time() + INTERVAL) )
@@ -956,11 +1003,13 @@ local function test_timer(timer)
 end
 
 function test_monotonic()
-  test_timer(ztimer.monotonic())
+  timer = ztimer.monotonic()
+  test_timer(timer)
 end
 
 function test_absolute()
-  test_timer(ztimer.absolute())
+  timer = ztimer.absolute()
+  test_timer(timer)
 end
 
 end
