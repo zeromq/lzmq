@@ -464,6 +464,8 @@ function test_interface()
   assert_function(msg.move)
   assert_function(msg.copy)
   assert_function(msg.size)
+  assert_function(msg.set_size)
+  assert_function(msg.pointer)
   assert_function(msg.data)
   assert_function(msg.set_data)
   assert_function(msg.more)
@@ -486,19 +488,25 @@ function test_close()
   assert_true(msg:close())
 end
 
+function test_access_after_close()
+  local msg = zmq.msg_init()
+  assert_true(msg:close())
+  assert_error(function() msg:data() end) -- no AV
+end
+
+function test_create()
+  msg = assert_userdata(zmq.msg_init())
+  assert_true(msg:close())
+  msg = assert_userdata(zmq.msg_init_size(255))
+  assert_true(msg:close())
+  msg = assert_userdata(zmq.msg_init_data("Hello world!"))
+  assert_true(msg:close())
+end
+
 function test_operations()
-  local msg1 = assert_userdata(zmq.msg_init())
-  local msg2 = assert_userdata(zmq.msg_init_size(255))
-  local msg3 = assert_userdata(zmq.msg_init_data("Hello world!"))
-  assert_false(msg1:closed())
-  assert_false(msg2:closed())
-  assert_false(msg3:closed())
-  assert_true(msg1:close())
-  assert_true(msg1:closed())
-  assert_true(msg1:close())
-  assert_error(function() msg1:data() end) -- no AV
-  assert_true(msg2:close())
-  assert_true(msg3:close())
+  local msg1
+  local msg2
+  local msg3
 
   msg1 = assert_userdata(zmq.msg_init_size(10))
   assert_equal(10, msg1:size())
@@ -557,6 +565,45 @@ function test_operations()
   assert_true(msg1:close())
   assert_true(msg2:close())
   assert_true(msg3:close())
+end
+
+function test_tostring()
+  local msg = assert_userdata(zmq.msg_init_data("Hello world!"))
+  assert_equal("Hello world!", tostring(msg))
+end
+
+function test_pointer()
+  local msg = assert_userdata(zmq.msg_init_data("Hello world!"))
+  local ptr = msg:pointer()
+  assert_true(msg:set_data("Privet"))
+  assert_equal("Privetworld!", msg:data())
+  assert_equal(ptr, msg:pointer())
+  assert_true(msg:set_size(100))
+  assert_not_equal(ptr, msg:pointer())
+  ptr = msg:pointer()
+  assert_true(msg:set_size(100))
+  assert_equal(ptr, msg:pointer())
+end
+
+function test_resize()
+  local msg = assert_userdata(zmq.msg_init_data("Hello world!"))
+  assert_true(msg:set_size(5)) -- shrink
+  assert_equal(5, msg:size())
+  assert_equal("Hello", msg:data())
+  assert_true(msg:set_size(10)) -- extend
+  assert_equal(10, msg:size())
+  local str = assert_string(msg:data())
+  assert_equal("Hello", str:sub(1,5))
+end
+
+function test_setdata()
+  local msg = assert_userdata(zmq.msg_init_data("Hello world!"))
+  assert_true(msg:set_data("Privet")) -- this is do not shrink message
+  assert_equal(12, msg:size())
+  assert_equal("Privetworld!", msg:data())
+  assert_true(msg:set_data(7, " world!!!")) -- extend message
+  assert_equal(15, msg:size())
+  assert_equal("Privet world!!!", msg:data())
 end
 
 end

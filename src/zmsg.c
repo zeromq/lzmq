@@ -152,6 +152,12 @@ static int luazmq_msg_data(lua_State *L){
   return 1;
 }
 
+static int luazmq_msg_pointer(lua_State *L){
+  zmessage *zmsg = luazmq_getmessage(L);
+  lua_pushlightuserdata(L, zmq_msg_data(&zmsg->msg));
+  return 1;
+}
+
 static int luazmq_msg_set_data(lua_State *L){
   zmessage *zmsg = luazmq_getmessage(L);
   int start_pos = (lua_gettop(L) >= 3)?luaL_optint(L,2,1):1;
@@ -166,14 +172,36 @@ static int luazmq_msg_set_data(lua_State *L){
     err = zmq_msg_init_size(&msg, start_pos + size);
     if(-1 == err)return luazmq_fail(L, NULL);
     memcpy(zmq_msg_data(&msg), zmq_msg_data(&zmsg->msg), zmq_msg_size(&zmsg->msg));
-    zmq_msg_move(&zmsg->msg, &msg);
+    err = zmq_msg_move(&zmsg->msg, &msg);
     if(-1 == err){
       zmq_msg_close(&msg);
       return luazmq_fail(L, NULL); 
     }
-    zmq_msg_close(&msg);
+    zmq_msg_close(&msg); // @FIXME do not close message
   }
   memcpy( (char*)zmq_msg_data(&zmsg->msg) + start_pos, data, size);
+  return luazmq_pass(L);
+}
+
+static int luazmq_msg_set_size(lua_State *L){
+  zmessage *zmsg = luazmq_getmessage(L);
+  size_t nsize = luaL_checkinteger(L, 2);
+  size_t osize = zmq_msg_size(&zmsg->msg);
+  int err; zmq_msg_t msg;
+
+  if(nsize == osize) return luazmq_pass(L);
+
+  err = zmq_msg_init_size(&msg, nsize);
+  if(-1 == err)return luazmq_fail(L, NULL);
+
+  memcpy(zmq_msg_data(&msg), zmq_msg_data(&zmsg->msg), (nsize>osize)?osize:nsize);
+  err = zmq_msg_move(&zmsg->msg, &msg);
+  if(-1 == err){
+    zmq_msg_close(&msg);
+    return luazmq_fail(L, NULL); 
+  }
+  zmq_msg_close(&msg); // @FIXME do not close message
+
   return luazmq_pass(L);
 }
 
@@ -234,6 +262,8 @@ static const struct luaL_Reg luazmq_msg_methods[] = {
   { "move",       luazmq_msg_move        },
   { "copy",       luazmq_msg_copy        },
   { "size",       luazmq_msg_size        },
+  { "set_size",   luazmq_msg_set_size    },
+  { "pointer",    luazmq_msg_pointer     },
   { "data",       luazmq_msg_data        },
   { "set_data",   luazmq_msg_set_data    },
   { "more",       luazmq_msg_more        },
@@ -242,6 +272,7 @@ static const struct luaL_Reg luazmq_msg_methods[] = {
   { "send",       luazmq_msg_send        },
   { "send_more",  luazmq_msg_send_more   },
   { "recv",       luazmq_msg_recv        },
+  { "__tostring", luazmq_msg_data        },
   { "__gc",       luazmq_msg_close       },
 
   { NULL, NULL },
