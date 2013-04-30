@@ -9,7 +9,7 @@ source = {
 description = {
   summary = "Lua bindings to ZeroMQ 3",
   homepage = "https://github.com/moteus/lzmq",
-  -- license = "",
+  license = "MIT/X11",
 }
 
 dependencies = {
@@ -51,7 +51,9 @@ build = {
       incdirs = {"$(ZMQ3_INCDIR)"},
       libdirs = {"$(ZMQ3_LIBDIR)"},
       defines = {
-        'LUAZMQ_USE_ERR_TYPE_OBJECT'
+        'LUAZMQ_USE_SEND_AS_BUF',
+        'LUAZMQ_USE_TEMP_BUFFERS',
+        'LUAZMQ_USE_ERR_TYPE_OBJECT',
         -- 'LUAZMQ_USE_ERR_TYPE_NUMBER'
         -- 'LUAZMQ_USE_ERR_TYPE_STRING'
       },
@@ -63,6 +65,4 @@ build = {
     ["lzmq.poller" ] = "lua/lzmq/poller.lua";
     ["lzmq.threads"] = "lua/lzmq/threads.lua";
   },
-
-
 }
