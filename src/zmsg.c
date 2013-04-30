@@ -11,8 +11,8 @@ int luazmq_msg_init(lua_State *L){
 }
 
 int luazmq_msg_init_size(lua_State *L){
-  zmessage *zmsg = luazmq_newudata(L, zmessage, LUAZMQ_MESSAGE);
   size_t size = luaL_checkinteger(L,1);
+  zmessage *zmsg = luazmq_newudata(L, zmessage, LUAZMQ_MESSAGE);
   int err = zmq_msg_init_size(&zmsg->msg, size);
   if(-1 == err) return luazmq_fail(L, NULL);
   return 1;
