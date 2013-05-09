@@ -1,3 +1,16 @@
+function zversion(zmq)
+  local version = zmq.version()
+  return string.format("%d.%d.%d", version[1], version[2], version[3])
+end
+
+print("------------------------------------")
+print("Lua version: " .. (_G.jit and _G.jit.version or _G._VERSION))
+print("ZQM version: " .. zversion(require"lzmq"))
+print("------------------------------------")
+print("")
+
+local HAS_RUNNER = not not lunit 
+
 local lunit    = require "lunit"
 -- @fix in lunit:
 --  return multiple values from assert_XXX
@@ -1072,4 +1085,4 @@ end
 
 end
 
-lunit.run()
+if not HAS_RUNNER then lunit.run() end
