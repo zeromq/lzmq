@@ -8,6 +8,7 @@ branches:
     - master
 
 install:
+  - sudo apt-get install libzmq3-dev
   - sudo apt-get install luarocks
   - sudo luarocks install lunitx
   - sudo luarocks make rockspecs/lzmq-scm-0.rockspec
