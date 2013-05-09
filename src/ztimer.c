@@ -123,6 +123,8 @@ static absolute_diff_t GetUtcDelta(absolute_time_t StartTime, absolute_time_t En
 
 #else // not __WINDOWS__
 
+#include <sys/time.h>
+
 typedef uint64_t absolute_time_t;
 typedef int64_t  absolute_diff_t;
 typedef uint64_t monotonic_time_t;
@@ -142,7 +144,7 @@ monotonic_time_t GetMonotonicTime(){
 #ifdef USE_CLOCK_MONOTONIC
   struct timespec ts;
   if(0 == clock_gettime(CLOCK_MONOTONIC, &ts))
-    return (monotonic_time_t)tv.tv_sec + tv.tv_usec / (monotonic_time_t)(1000000000);
+    return (monotonic_time_t)ts.tv_sec + ts.tv_usec / (monotonic_time_t)(1000000000);
 #endif
   return GetUtcTime();
 }
