@@ -38,6 +38,7 @@ build = {
     unix    = { modules = {
       ["lzmq.timer"] = {
         defines = {'USE_CLOCK_MONOTONIC', 'USE_GETTIMEOFDAY'},
+        libraries = {"rt"},
       }
     }}
   },
