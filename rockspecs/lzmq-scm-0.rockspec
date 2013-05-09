@@ -19,8 +19,8 @@ dependencies = {
 
 external_dependencies = {
   ZMQ3 = {
-    header  = "zmq.h",
-    library = "zmq",
+--    header  = "zmq.h",
+--    library = "zmq",
   }
 }
 
