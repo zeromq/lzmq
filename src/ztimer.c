@@ -136,7 +136,7 @@ absolute_time_t GetUtcTime(){
 #ifdef USE_GETTIMEOFDAY
   struct timeval tv;
   if (0 == gettimeofday(&tv, NULL))
-    return (absolute_time_t)tv.tv_sec * 1000000 + (absolute_time_t)tv.tv_usec;
+    return (absolute_time_t)tv.tv_sec * 1000 + (absolute_time_t)tv.tv_usec/1000;
 #endif
   return time(0);
 }
@@ -145,7 +145,7 @@ monotonic_time_t GetMonotonicTime(){
 #ifdef USE_CLOCK_MONOTONIC
   struct timespec ts;
   if(0 == clock_gettime(CLOCK_MONOTONIC, &ts))
-    return (monotonic_time_t)ts.tv_sec * 100000 + (monotonic_time_t)ts.tv_nsec / 1000;
+    return (monotonic_time_t)ts.tv_sec * 1000 + (monotonic_time_t)ts.tv_nsec / 1000000;
 #endif
   return GetUtcTime();
 }
