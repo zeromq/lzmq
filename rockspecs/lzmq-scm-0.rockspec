@@ -19,8 +19,7 @@ dependencies = {
 
 external_dependencies = {
   ZMQ3 = {
---    header  = "zmq.h",
---    library = "zmq",
+    header  = "zmq.h",
   }
 }
 
@@ -34,11 +33,17 @@ build = {
       ["lzmq.timer"] = {
         defines = {'USE_PERF_COUNT'}
       },
+      ["lzmq"] = {
+        libraries = {"libzmq3"},
+      }
     }},
     unix    = { modules = {
       ["lzmq.timer"] = {
         defines = {'USE_CLOCK_MONOTONIC', 'USE_GETTIMEOFDAY'},
         libraries = {"rt"},
+      },
+      ["lzmq"] = {
+        libraries = {"zmq"},
       }
     }}
   },
@@ -48,7 +53,6 @@ build = {
       sources = {'src/lzmq.c','src/lzutils.c','src/poller.c',
                  'src/zcontext.c','src/zerror.c','src/zmsg.c',
                  'src/zpoller.c','src/zsocket.c'},
-      libraries = {"zmq"},
       incdirs = {"$(ZMQ3_INCDIR)"},
       libdirs = {"$(ZMQ3_LIBDIR)"},
       defines = {
