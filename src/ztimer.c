@@ -1,7 +1,6 @@
 #include "lzutils.h"
 #include "lua.h"
 #include "lauxlib.h"
-#include <Windows.h>
 #include <time.h>
 #include <stdio.h>
 #include "ztimer.h"
@@ -9,6 +8,8 @@
 #include <float.h>
 
 #if defined(__WINDOWS__) 
+
+#include <Windows.h>
 
 #if !defined(USE_TICK_COUNT) && !defined(USE_TICK_COUNT64) && !defined(USE_PERF_COUNT)
 #  define USE_PERF_COUNT
