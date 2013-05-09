@@ -1,15 +1,32 @@
 language: erlang
 
 env:
-  - LUA="lua5.1"
+  global:
+    - LUAROCKS_BASE=luarocks-2.0.13
+  matrix:
+    - "LUA=lua5.1 LUA_DEV=liblua5.1-dev     LUA_VER=5.1 LUA_SFX=5.1    LUA_LIB=lua5.1"
+    - "LUA=lua5.2 LUA_DEV=liblua5.2-dev     LUA_VER=5.2 LUA_SFX=5.2    LUA_LIB=lua5.2"
 
 branches:
   only:
     - master
 
+before_install:
+  - "sudo apt-get install $LUA"
+  - "sudo apt-get install $LUA_DEV"
+
+  # Install a recent luarocks release locally.
+  - wget http://luarocks.org/releases/$LUAROCKS_BASE.tar.gz
+  - tar zxvpf $LUAROCKS_BASE.tar.gz
+  - cd $LUAROCKS_BASE
+  - ./configure
+    --lua-version=$LUA_VER --lua-suffix=$LUA_SFX 
+  - sudo make 
+  - sudo make install
+  - cd $TRAVIS_BUILD_DIR
+
 install:
   - sudo apt-get install libzmq3-dev
-  - sudo apt-get install luarocks
   - sudo luarocks install lunitx
   - sudo luarocks make rockspecs/lzmq-scm-0.rockspec
 
