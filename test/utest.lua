@@ -1,6 +1,11 @@
-function zversion(zmq)
+local function zversion(zmq)
   local version = zmq.version()
   return string.format("%d.%d.%d", version[1], version[2], version[3])
+end
+
+local function iszvereq(zmq, mi, ma, bu)
+  local version = zmq.version()
+  return (mi == version[1]) and (ma == version[2]) and (bu == version[3])
 end
 
 print("------------------------------------")
@@ -688,20 +693,21 @@ function test_connect()
   assert_equal( "hello", assert_string(sub1:recv()))
   assert_equal( "hello", assert_string(sub1:recv()))
 
-  -- disconnect from first and get error from second
-  ok, err, str = sub1:disconnect{
-    ECHO_ADDR;
-    "inproc://pub.test.3";
-  }
-  assert_nil(ok)
-  assert_equal("inproc://pub.test.3", str)
+  if not iszvereq(zmq, 3, 2, 2) then -- fix in 3.2.3
+    -- disconnect from first and get error from second
+    ok, err, str = sub1:disconnect{
+      ECHO_ADDR;
+      "inproc://pub.test.3";
+    }
+    assert_nil(ok)
+    assert_equal("inproc://pub.test.3", str)
 
-  wait()
+    wait()
 
-  assert_true(pub:send("hello"))
-  assert_equal( "hello", assert_string(sub1:recv()))
-  assert_nil(sub1:recv())
-
+    assert_true(pub:send("hello"))
+    assert_equal( "hello", assert_string(sub1:recv()))
+    assert_nil(sub1:recv())
+  end
 end
 
 end
