@@ -94,7 +94,7 @@ function _M.begin()
 end
 
 function _M.run(testcasename, testname)
-  io.write(testcasename, '.', testname)
+  io.write(testcasename, '.', testname) io.flush()
 end
 
 function _M.err(fullname, message, traceback)
