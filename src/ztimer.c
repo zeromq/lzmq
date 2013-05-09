@@ -145,7 +145,7 @@ monotonic_time_t GetMonotonicTime(){
 #ifdef USE_CLOCK_MONOTONIC
   struct timespec ts;
   if(0 == clock_gettime(CLOCK_MONOTONIC, &ts))
-    return (monotonic_time_t)ts.tv_sec * 100000 + ts.tv_nsec / (monotonic_time_t)(1000);
+    return (monotonic_time_t)ts.tv_sec * 100000 + (monotonic_time_t)ts.tv_nsec / 1000;
 #endif
   return GetUtcTime();
 }

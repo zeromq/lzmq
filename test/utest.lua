@@ -1051,7 +1051,8 @@ local function test_timer(timer)
   assert_true(timer:started())
   assert_true(timer:setted())
   wait(100)
-  assert_true(timer:elapsed() >= 50) -- wait is not realy correct
+  local e = timer:elapsed()
+  assert_true((e >= 50)and(e <= 150), "expected value >=50,<=150 got: " .. tostring(e)) -- wait is not realy correct
   assert_equal(timer, timer:start())
   assert_true(timer:elapsed() < 50)
   assert_number(timer:elapsed())
