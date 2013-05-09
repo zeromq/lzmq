@@ -833,7 +833,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'loop'              if false then
+local _ENV = TEST_CASE'loop'              if true then
 
 local loop, timer
 
