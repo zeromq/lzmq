@@ -130,6 +130,7 @@ typedef int64_t  absolute_diff_t;
 typedef uint64_t monotonic_time_t;
 typedef int64_t  monotonic_diff_t;
 
+static void InitMonotonicTimer(){}
 
 absolute_time_t GetUtcTime(){
 #ifdef USE_GETTIMEOFDAY
