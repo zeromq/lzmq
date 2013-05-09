@@ -20,7 +20,7 @@ dependencies = {
 external_dependencies = {
   ZMQ3 = {
     header  = "zmq.h",
-    library = "libzmq3",
+    library = "zmq3",
   }
 }
 
@@ -47,7 +47,7 @@ build = {
       sources = {'src/lzmq.c','src/lzutils.c','src/poller.c',
                  'src/zcontext.c','src/zerror.c','src/zmsg.c',
                  'src/zpoller.c','src/zsocket.c'},
-      libraries = {"libzmq3"},
+      libraries = {"zmq3"},
       incdirs = {"$(ZMQ3_INCDIR)"},
       libdirs = {"$(ZMQ3_LIBDIR)"},
       defines = {
