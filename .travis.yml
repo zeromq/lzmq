@@ -1,0 +1,20 @@
+language: erlang
+
+env:
+  - LUA="lua5.1"
+
+branches:
+  only:
+    - master
+
+install:
+  - sudo apt-get install luarocks
+  - sudo luarocks install lunitx
+  - sudo luarocks make rockspecs/lzmq-scm-0.rockspec
+
+script: "cd test && lunit.sh utest.lua"
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always
