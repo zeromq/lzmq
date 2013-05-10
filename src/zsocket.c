@@ -406,7 +406,7 @@ DEFINE_SKT_OPT_RW(rate,               ZMQ_RATE,                int  )
 DEFINE_SKT_OPT_RW(recovery_ivl,       ZMQ_RECOVERY_IVL,        int  )
 DEFINE_SKT_OPT_RW(sndbuf,             ZMQ_SNDBUF,              int  )
 DEFINE_SKT_OPT_RW(rcvbuf,             ZMQ_RCVBUF,              int  )
-DEFINE_SKT_OPT_RW(rcvmore,            ZMQ_RCVMORE,             int  )
+DEFINE_SKT_OPT_RO(rcvmore,            ZMQ_RCVMORE,             int  )
 DEFINE_SKT_OPT_RO(fd,                 ZMQ_FD,                  int  )
 DEFINE_SKT_OPT_RO(events,             ZMQ_EVENTS,              int  )
 DEFINE_SKT_OPT_RO(type,               ZMQ_TYPE,                int  )
@@ -485,8 +485,6 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   {"send_all",     luazmq_skt_send_all     },
   {"recv_all",     luazmq_skt_recv_all     },
   {"more",         luazmq_skt_more         },
-  {"get_rcvmore",  luazmq_skt_more         },
-  {"rcvmore",      luazmq_skt_more         },
 
   {"getopt_int",   luazmq_skt_getopt_int   },
   {"getopt_i64",   luazmq_skt_getopt_i64   },
@@ -505,7 +503,7 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   REGISTER_SKT_OPT_RW( recovery_ivl        ),
   REGISTER_SKT_OPT_RW( sndbuf              ),
   REGISTER_SKT_OPT_RW( rcvbuf              ),
-  REGISTER_SKT_OPT_RW( rcvmore             ),
+  REGISTER_SKT_OPT_RO( rcvmore             ),
   REGISTER_SKT_OPT_RO( fd                  ),
   REGISTER_SKT_OPT_RO( events              ),
   REGISTER_SKT_OPT_RO( type                ),
