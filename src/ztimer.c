@@ -109,7 +109,7 @@ static monotonic_time_t IncMonotonic(monotonic_time_t StartTime, monotonic_diff_
 typedef uint64_t absolute_time_t;
 typedef int64_t  absolute_diff_t;
 
-absolute_time_t GetUtcTime(){
+static absolute_time_t GetUtcTime(){
   FILETIME ft;
   absolute_time_t t;
   GetSystemTimeAsFileTime (&ft);
@@ -132,7 +132,7 @@ typedef int64_t  monotonic_diff_t;
 
 static void InitMonotonicTimer(){}
 
-absolute_time_t GetUtcTime(){
+static absolute_time_t GetUtcTime(){
 #ifdef USE_GETTIMEOFDAY
   struct timeval tv;
   if (0 == gettimeofday(&tv, NULL))
@@ -141,7 +141,7 @@ absolute_time_t GetUtcTime(){
   return time(0);
 }
 
-monotonic_time_t GetMonotonicTime(){
+static monotonic_time_t GetMonotonicTime(){
 #ifdef USE_CLOCK_MONOTONIC
   struct timespec ts;
   if(0 == clock_gettime(CLOCK_MONOTONIC, &ts))
