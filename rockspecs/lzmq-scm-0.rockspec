@@ -18,8 +18,19 @@ dependencies = {
 }
 
 external_dependencies = {
-  ZMQ3 = {
-    header  = "zmq.h",
+  platforms = {
+    windows = {
+      ZMQ3 = {
+        header  = "zmq.h",
+        library = "libzmq3",
+      }
+    };
+    unix = {
+      ZMQ3 = {
+        header  = "zmq.h",
+        -- library = "zmq", -- does not work !?
+      }
+    };
   }
 }
 
