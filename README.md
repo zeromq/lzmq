@@ -1,4 +1,4 @@
-#Lua binding to [ZeroMQ 3](http:\\zeromq.org) library.
+#Lua binding to [ZeroMQ 3](http://zeromq.org) library.
 
 [![Build Status](https://travis-ci.org/moteus/lzmq.png)](https://travis-ci.org/moteus/lzmq)
 
