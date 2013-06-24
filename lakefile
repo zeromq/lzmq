@@ -62,6 +62,7 @@ install = target('install', {
   file.group{odir=LIBDIR;             src = lzmq                   };
   file.group{odir=J(LIBDIR, PROJECT); src = lztimer                };
   file.group{odir=J(LUADIR, PROJECT); src = J('lua', 'lzmq', '*.*')};
+  file.group{odir=J(LUADIR, PROJECT); src = J('lua', 'lzmq', 'ffi',  '*.*')};
 
   file.group{odir=J(ROOT, 'test'); src = J('test', '*.*')          };
   file.group{odir=J(ROOT, 'test'); src = J('examples', 'utils.lua')};
