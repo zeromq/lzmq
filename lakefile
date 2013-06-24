@@ -61,8 +61,7 @@ target('build', lzmq, lztimer)
 install = target('install', {
   file.group{odir=LIBDIR;             src = lzmq                   };
   file.group{odir=J(LIBDIR, PROJECT); src = lztimer                };
-  file.group{odir=J(LUADIR, PROJECT); src = J('lua', 'lzmq', '*.*')};
-  file.group{odir=J(LUADIR, PROJECT); src = J('lua', 'lzmq', 'ffi',  '*.*')};
+  file.group{odir=J(LUADIR, PROJECT); src = J('lua', 'lzmq', '*.*'), recurse = true};
 
   file.group{odir=J(ROOT, 'test'); src = J('test', '*.*')          };
   file.group{odir=J(ROOT, 'test'); src = J('examples', 'utils.lua')};
@@ -73,6 +72,10 @@ install = target('install', {
 target('test', install, function()
   run_test('test.lua')
   run_test('utest.lua')
+  if LUA_RUNNER == 'lua' then 
+    LUA_RUNNER = 'luajit'
+    run_test('utest.lua')
+  end
 end)
 
 target('perf_local_lat',      install, test_perf_r('lat', "tcp://127.0.0.1:5555 1   100000"))

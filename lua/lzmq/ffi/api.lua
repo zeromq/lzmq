@@ -34,6 +34,7 @@ ffi.cdef[[
 
   void *zmq_ctx_new (void);
   int zmq_ctx_term (void *context);
+  int zmq_ctx_destroy (void *context);
   int zmq_ctx_set (void *context, int option, int optval);
   int zmq_ctx_get (void *context, int option);
 
@@ -148,8 +149,19 @@ function _M.zmq_ctx_new()
   return ctx
 end
 
+local has_term = pcall(function()
+  if libzmq3.zmq_ctx_term then return end
+  error("some error")
+end)
+
+if has_term then
 function _M.zmq_ctx_term(ctx)
   libzmq3.zmq_ctx_term(ffi.gc(ctx, nil))
+end
+else
+function _M.zmq_ctx_term(ctx)
+  libzmq3.zmq_ctx_destroy(ffi.gc(ctx, nil))
+end
 end
 
 function _M.zmq_ctx_get(ctx, option)
