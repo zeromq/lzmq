@@ -1,3 +1,5 @@
+local ffi     = require "ffi"
+
 local function orequire(...)
   local err = ""
   for _, name in ipairs{...} do
@@ -8,9 +10,20 @@ local function orequire(...)
   error(err)
 end
 
-local ffi     = require "ffi"
+local function oload(...)
+  local err = ""
+  for _, name in ipairs{...} do
+    local ok, mod = pcall(ffi.load, name)
+    if ok then return mod, name end
+    err = err .. "\n" .. mod
+  end
+  error(err)
+end
+
 local bit     = orequire("bit32", "bit")
-local libzmq3 = ffi.load("libzmq3.dll")
+
+require "lzmq" -- jus to load libzmq3
+local libzmq3 = oload("zmq", "zmq3", "libzmq3")
 
 ffi.cdef[[
   typedef struct zmq_msg_t {unsigned char _ [32];} zmq_msg_t;
@@ -342,8 +355,7 @@ end
 
 end
 
-
-_M.ERRORS = require"jzmq.error"
+_M.ERRORS = require"lzmq.ffi.error"
 local ERRORS_MNEMO = {}
 for k,v in pairs(_M.ERRORS) do ERRORS_MNEMO[v] = k end
 

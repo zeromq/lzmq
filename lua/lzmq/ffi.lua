@@ -1,5 +1,5 @@
 
-local api = require "jzmq.api"
+local api = require "lzmq.ffi.api"
 local ffi = require "ffi"
 
 local make_weak_k do
