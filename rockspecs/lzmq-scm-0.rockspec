@@ -77,14 +77,18 @@ build = {
     ["lzmq.timer"] = {
       sources = {'src/ztimer.c','src/lzutils.c'},
     },
-    ["lzmq.loop"      ] = "lua/lzmq/loop.lua";
-    ["lzmq.poller"    ] = "lua/lzmq/poller.lua";
-    ["lzmq.threads"   ] = "lua/lzmq/threads.lua";
-    ["lzmq.ffi"       ] = "lua/lzmq/ffi.lua";
-    ["lzmq.ffi.api"   ] = "lua/lzmq/ffi/api.lua";
-    ["lzmq.ffi.error" ] = "lua/lzmq/ffi/error.lua";
-    ["lzmq.ffi.loop"  ] = "lua/lzmq/ffi/loop.lua";
-    ["lzmq.ffi.poller"] = "lua/lzmq/ffi/poller.lua";
-    ["lzmq.ffi.timer" ] = "lua/lzmq/ffi/timer.lua";
+    ["lzmq.loop"         ] = "lua/lzmq/loop.lua";
+    ["lzmq.poller"       ] = "lua/lzmq/poller.lua";
+    ["lzmq.threads"      ] = "lua/lzmq/threads.lua";
+    ["lzmq.ffi"          ] = "lua/lzmq/ffi.lua";
+    ["lzmq.ffi.api"      ] = "lua/lzmq/ffi/api.lua";
+    ["lzmq.ffi.error"    ] = "lua/lzmq/ffi/error.lua";
+    ["lzmq.ffi.loop"     ] = "lua/lzmq/ffi/loop.lua";
+    ["lzmq.ffi.poller"   ] = "lua/lzmq/ffi/poller.lua";
+    ["lzmq.ffi.timer"    ] = "lua/lzmq/ffi/timer.lua";
+    ["lzmq.ffi.threads"  ] = "lua/lzmq/ffi/threads.lua";
+    ["lzmq.llthreads.ex" ] = "lua/lzmq/llthreads/ex.lua";
+    ["lzmq.impl.threads" ] = "lua/lzmq/impl/threads.lua";
+    ["lzmq.impl.loop"    ] = "lua/lzmq/impl/loop.lua";
   },
 }
