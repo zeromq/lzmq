@@ -190,13 +190,13 @@ local function gen_skt_bind(bind)
     assert(not self:closed())
     if type(addr) == 'string' then
       local ret = bind(self._private.skt, addr)
-      if 0 ~= ret then return nil, zerror() end
+      if -1 == ret then return nil, zerror() end
       return true
     end
     assert(type(addr) == 'table')
     for _, a in ipairs(addr) do
       local ret = bind(self._private.skt, a)
-      if 0 ~= ret then return nil, zerror(), a end
+      if -1 == ret then return nil, zerror(), a end
     end
     return true
   end
@@ -219,7 +219,10 @@ function Socket:recv(flags)
   local msg = api.zmq_msg_init()
   if not msg then return nil, zerror() end
   local ret = api.zmq_msg_recv(msg, self._private.skt)
-  if ret == -1 then return nil, zerror() end
+  if ret == -1 then
+    api.zmq_msg_close(msg)
+    return nil, zerror()
+  end
   local data = api.zmq_msg_get_data(msg)
   local more = api.zmq_msg_more(msg)
   api.zmq_msg_close(msg)
@@ -350,7 +353,6 @@ function Socket:on_close(fn)
   self._private.on_close = fn
   return true
 end
-
 
 end
 
