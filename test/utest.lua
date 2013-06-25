@@ -21,8 +21,12 @@ local lunit    = require "lunit"
 --  return multiple values from assert_XXX
 --  implement assert_ge/le methods 
 
-local skip     = function (msg) return function() lunit.fail("#SKIP: " .. msg) end end
 local IS_LUA52 = _VERSION >= 'Lua 5.2'
+
+-- value >= expected
+local function ge(expected, value)
+  return (value >= expected), value .. " less then " .. expected
+end
 
 local TEST_CASE = function (name)
   if not IS_LUA52 then
@@ -877,14 +881,14 @@ function test_sleep()
 
   timer:start()
   assert_equal(1, loop:sleep_ex(100)) -- run event
-  assert_true(timer:stop() >= 100)    -- wait full interval
+  assert_true(ge(100, timer:stop()))  -- wait full interval
   assert_true(flag1)                  -- ensure event was emit
 
   flag1 = false
   loop:add_once(10, function() assert_false(flag1) flag1 = true end)
   timer:start()
   loop.sleep(100)                     -- do not run event
-  assert_true(timer:stop() >= 100)    -- wait full interval
+  assert_true(ge(100, timer:stop()))  -- wait full interval
   assert_false(flag1)
 
   assert_equal(0, loop:flush(100))    -- only flush io events and no wait
@@ -985,7 +989,7 @@ function test_echo()
 
   timer:start()
   loop:start()
-  assert_true(timer:stop() >= 2000)
+  assert_true(ge(2000, timer:stop()))
   assert_true(counter > 3)
 
   loop:destroy()
