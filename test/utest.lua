@@ -188,6 +188,7 @@ function test_constant()
 end
 
 function test_assert()
+  local msg = zmq.strerror(zmq.errors.EINVAL)
   local ok1, msg1 = pcall(zmq.assert, false, zmq.error(zmq.errors.EINVAL));    -- object
   local ok2, msg2 = pcall(zmq.assert, false, zmq.errors.EINVAL);               -- number
   local ok3, msg3 = pcall(zmq.assert, false, zmq.strerror(zmq.errors.EINVAL)); -- string
@@ -195,8 +196,11 @@ function test_assert()
   assert_false(ok2)
   assert_false(ok3)
   assert_string(msg1)
-  assert_equal(msg1, msg2)
-  assert_equal(msg1, msg3)
+  assert_string(msg2)
+  assert_string(msg3)
+  assert(string.find(msg1, msg, nil, true), "`" .. msg .. "` not found in `" .. msg1 .. "`")
+  assert(string.find(msg2, msg, nil, true), "`" .. msg .. "` not found in `" .. msg2 .. "`")
+  assert(string.find(msg3, msg, nil, true), "`" .. msg .. "` not found in `" .. msg3 .. "`")
 end
 
 function test_error()

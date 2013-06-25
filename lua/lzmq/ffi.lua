@@ -561,14 +561,21 @@ function Poller:ensure(n)
 end
 
 function Poller:add(skt, events, cb)
-  local h = skt:handle()
   local n = self._private.nitems
   self:ensure(n+1)
-  self._private.items[n].socket  = h
+  local h
+  if type(skt) == "number" then
+    self._private.items[n].socket = api.NULL
+    self._private.items[n].fd     = skt
+    h = skt
+  else
+    self._private.items[n].socket = skt:handle()
+    self._private.items[n].fd     = 0
+    h = api.ptrtoint(skt:handle())
+  end
   self._private.items[n].events  = events
-  self._private.items[n].fd      = 0
   self._private.items[n].revents = 0
-  self._private.sockets[ptrtoint(h)] = {skt, cb, n}
+  self._private.sockets[h] = {skt, cb, n}
   self._private.nitems = n + 1
   return true
 end
