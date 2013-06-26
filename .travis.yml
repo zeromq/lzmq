@@ -2,7 +2,11 @@ language: erlang
 
 env:
   global:
-    - LUAROCKS_BASE=luarocks-2.0.13
+    - LUAROCKS_VER=2.0.13
+    - LUAROCKS_BASE=luarocks-$LUAROCKS_VER
+    - LUAROCKS_INSTALL=wget
+    - LUAROCKS_GITTAG=master
+    # - LUAROCKS_GITTAG=v$LUAROCKS_VER
   matrix:
     # todo: install libffi and test ffi binding on Lua 5.1/5.2
     - LZMQ=lzmq LUA=lua5.1 LUA_DEV=liblua5.1-dev LUA_VER=5.1 LUA_SFX=5.1 LUA_INCDIR=/usr/include/lua5.1
@@ -22,9 +26,15 @@ before_install:
   - sudo apt-get install $LUA_DEV
   - lua$LUA_SFX -v
   # Install a recent luarocks release
-  - wget http://luarocks.org/releases/$LUAROCKS_BASE.tar.gz
-  - tar zxvpf $LUAROCKS_BASE.tar.gz
-  - cd $LUAROCKS_BASE
+  - if [ $LUAROCKS_INSTALL = "git" ]; then
+      git clone https://github.com/keplerproject/luarocks.git;
+      cd luarocks;
+      git checkout $LUAROCKS_GITTAG;
+    else
+      wget http://luarocks.org/releases/$LUAROCKS_BASE.tar.gz;
+      tar zxvpf $LUAROCKS_BASE.tar.gz;
+      cd $LUAROCKS_BASE;
+    fi
   - ./configure
     --lua-version=$LUA_VER --lua-suffix=$LUA_SFX --with-lua-include="$LUA_INCDIR"
   - sudo make
@@ -34,7 +44,10 @@ before_install:
 install:
   - sudo apt-get install libzmq3 libzmq3-dev
   - sudo luarocks install lunitx
-  - sudo luarocks install lua-llthreads
+  - git clone https://github.com/Neopallium/lua-llthreads.git
+  - cd lua-llthreads
+  - sudo luarocks make rockspecs/lua-llthreads-scm-0.rockspec
+  - cd $TRAVIS_BUILD_DIR
   - sudo luarocks make rockspecs/lzmq-scm-0.rockspec
 
 script: 
