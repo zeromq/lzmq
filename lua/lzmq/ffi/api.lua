@@ -13,9 +13,9 @@ local function orequire(...)
   error(err)
 end
 
-local function oload(...)
+local function oload(t)
   local err = ""
-  for _, name in ipairs{...} do
+  for _, name in ipairs(t) do
     local ok, mod = pcall(ffi.load, name)
     if ok then return mod, name end
     err = err .. "\n" .. mod
@@ -30,10 +30,21 @@ end
 
 local bit     = orequire("bit32", "bit")
 
-local ok, libzmq3 = pcall( oload, "zmq3", "libzmq3", "zmq", "libzmq" )
+
+local zlibs ={
+  "zmq3",
+  "libzmq3",
+  "zmq",
+  "libzmq",
+  "libzmq.so.3",
+  "/usr/lib/i386-linux-gnu/libzmq3.so",
+  "/usr/lib/i386-linux-gnu/libzmq.so.3",
+}
+
+local ok, libzmq3 = pcall( oload, zlibs )
 if not ok then
   if pcall( require, "lzmq" ) then -- jus to load libzmq3
-    libzmq3 = oload( "zmq3", "libzmq3", "zmq", "libzmq" )
+    libzmq3 = oload( zlibs )
   else error(libzmq3) end
 end
 
