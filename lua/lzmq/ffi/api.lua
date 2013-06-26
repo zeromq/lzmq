@@ -23,7 +23,7 @@ end
 local bit     = orequire("bit32", "bit")
 
 require "lzmq" -- jus to load libzmq3
-local libzmq3 = oload("zmq", "zmq3", "libzmq3")
+local libzmq3 = oload("zmq3", "libzmq3", "zmq", "libzmq")
 
 ffi.cdef[[
   typedef struct zmq_msg_t {unsigned char _ [32];} zmq_msg_t;
@@ -82,7 +82,6 @@ ffi.cdef[[
   int zmq_proxy  (void *frontend, void *backend, void *capture);
   int zmq_device (int type, void *frontend, void *backend);
 ]]
-
 
 local aint_t          = ffi.typeof("int[1]")
 local aint64_t        = ffi.typeof("int64_t[1]")
@@ -466,5 +465,10 @@ _M.vla_pollitem_t = vla_pollitem_t
 _M.zmq_pollitem_t = zmq_pollitem_t
 _M.NULL           = NULL
 
+local ZMQ_MAJOR, ZMQ_MINOR, ZMQ_PATCH = _M.zmq_version()
+assert( 
+  (ZMQ_MAJOR == 3) and (ZMQ_MINOR >= 2), 
+  "Unsupported ZMQ version: " .. ZMQ_MAJOR .. "." .. ZMQ_MINOR .. "." .. ZMQ_PATCH
+)
 
 return _M
