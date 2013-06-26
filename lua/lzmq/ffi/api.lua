@@ -22,8 +22,12 @@ end
 
 local bit     = orequire("bit32", "bit")
 
-require "lzmq" -- jus to load libzmq3
-local libzmq3 = oload("zmq3", "libzmq3", "zmq", "libzmq")
+local ok, libzmq3 = pcall( oload, "zmq3", "libzmq3", "zmq", "libzmq" )
+if (not ok) and pcall( require, "lzmq" ) then -- jus to load libzmq3
+  libzmq3 = oload( "zmq3", "libzmq3", "zmq", "libzmq" )
+else
+  error(libzmq3)
+end
 
 ffi.cdef[[
   typedef struct zmq_msg_t {unsigned char _ [32];} zmq_msg_t;
