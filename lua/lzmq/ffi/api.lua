@@ -1,4 +1,7 @@
 local ffi     = require "ffi"
+local IS_WINDOWS = 
+  (require "ffi".os:lower() == 'windows')
+  or package.config:sub(1,1) == '\\'
 
 local function orequire(...)
   local err = ""
@@ -18,6 +21,11 @@ local function oload(...)
     err = err .. "\n" .. mod
   end
   error(err)
+end
+
+local function IF(cond, true_v, false_v)
+  if cond then return true_v end
+  return false_v
 end
 
 local bit     = orequire("bit32", "bit")
@@ -71,16 +79,16 @@ ffi.cdef[[
   int    zmq_msg_set       (zmq_msg_t *msg, int option, int optval);
 ]]
 
-ffi.cdef[[
+ffi.cdef([[
 typedef struct {
   void *socket;
-  uint32_t fd;
+  ]] .. IF(IS_WINDOWS, "uint32_t", "int") .. [[ fd;
   short events;
   short revents;
 } zmq_pollitem_t;
 
 int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
-]]
+]])
 
 ffi.cdef[[
   int zmq_proxy  (void *frontend, void *backend, void *capture);
