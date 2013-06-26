@@ -23,10 +23,10 @@ end
 local bit     = orequire("bit32", "bit")
 
 local ok, libzmq3 = pcall( oload, "zmq3", "libzmq3", "zmq", "libzmq" )
-if (not ok) and pcall( require, "lzmq" ) then -- jus to load libzmq3
-  libzmq3 = oload( "zmq3", "libzmq3", "zmq", "libzmq" )
-else
-  error(libzmq3)
+if not ok then
+  if pcall( require, "lzmq" ) then -- jus to load libzmq3
+    libzmq3 = oload( "zmq3", "libzmq3", "zmq", "libzmq" )
+  else error(libzmq3) end
 end
 
 ffi.cdef[[
