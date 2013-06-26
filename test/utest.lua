@@ -22,6 +22,7 @@ local lunit    = require "lunit"
 --  implement assert_ge/le methods 
 
 local IS_LUA52 = _VERSION >= 'Lua 5.2'
+local TEST_FFI = ("ffi" == os.getenv("LZMQ"))
 
 -- value >= expected
 local function ge(expected, value)
@@ -46,7 +47,6 @@ local function gc_collect()
   collectgarbage("collect")
 end
 
-local TEST_FFI = not not _G.jit
 local LZMQ = "lzmq" .. (TEST_FFI and ".ffi" or "")
 
 local zmq    = require (LZMQ)

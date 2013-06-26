@@ -4,10 +4,11 @@ env:
   global:
     - LUAROCKS_BASE=luarocks-2.0.13
   matrix:
-    - LUA=lua5.1 LUA_DEV=liblua5.1-dev LUA_VER=5.1 LUA_SFX=5.1 LUA_INCDIR=/usr/include/lua5.1
-    # - LUA=lua5.2 LUA_DEV=liblua5.2-dev LUA_VER=5.2 LUA_SFX=5.2 LUA_INCDIR=/usr/include/lua5.2
-    # - LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
-    - LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
+    # todo: install libffi and test ffi binding on Lua 5.1/5.2
+    - LZMQ=lzmq LUA=lua5.1 LUA_DEV=liblua5.1-dev LUA_VER=5.1 LUA_SFX=5.1 LUA_INCDIR=/usr/include/lua5.1
+    - LZMQ=lzmq LUA=lua5.2 LUA_DEV=liblua5.2-dev LUA_VER=5.2 LUA_SFX=5.2 LUA_INCDIR=/usr/include/lua5.2
+    - LZMQ=lzmq LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
+    - LZMQ=ffi  LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
 
 branches:
   only:
@@ -33,11 +34,13 @@ before_install:
 install:
   - sudo apt-get install libzmq3 libzmq3-dev
   - sudo luarocks install lunitx
+  - sudo luarocks install lua-llthreads
   - sudo luarocks make rockspecs/lzmq-scm-0.rockspec
 
 script: 
   - cd test 
   - lunit.sh -i lua$LUA_SFX utest.lua
+  - lua$LUA_SFX test_threads.lua
 
 notifications:
   email:
