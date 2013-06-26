@@ -65,7 +65,7 @@ static const char* luazmq_err_getmnemo(int err){
     RETURN_IF ( EFSM            );
     RETURN_IF ( ENOCOMPATPROTO  );
     RETURN_IF ( ETERM           );
-    RETURN_IF ( EPERM           );
+    RETURN_IF ( EMTHREAD        );
 
     RETURN_IF ( ENOTSUP         );
     RETURN_IF ( EPROTONOSUPPORT );
