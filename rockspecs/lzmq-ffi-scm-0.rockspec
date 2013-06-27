@@ -15,6 +15,7 @@ description = {
 dependencies = {
   "lua >= 5.1",
   -- "lua-llthreads >= 1.2"
+  -- "lzmq-timer"
 }
 
 build = {
@@ -41,15 +42,16 @@ build = {
       sources = {'src/ztimer.c','src/lzutils.c'},
     },
     ["lzmq"              ] = "lua/lzmq/ffi/lzmq.lua";
+    ["lzmq.ffi"          ] = "lua/lzmq/ffi.lua";
+    ["lzmq.loop"         ] = "lua/lzmq/ffi/loop.lua";
     ["lzmq.poller"       ] = "lua/lzmq/ffi/poller.lua";
     ["lzmq.threads"      ] = "lua/lzmq/ffi/threads.lua";
-    ["lzmq.ffi"          ] = "lua/lzmq/ffi.lua";
+
     ["lzmq.ffi.api"      ] = "lua/lzmq/ffi/api.lua";
     ["lzmq.ffi.error"    ] = "lua/lzmq/ffi/error.lua";
-    ["lzmq.ffi.loop"     ] = "lua/lzmq/ffi/loop.lua";
     ["lzmq.ffi.poller"   ] = "lua/lzmq/ffi/poller.lua";
     ["lzmq.ffi.timer"    ] = "lua/lzmq/ffi/timer.lua";
-    ["lzmq.ffi.threads"  ] = "lua/lzmq/ffi/threads.lua";
+
     ["lzmq.llthreads.ex" ] = "lua/lzmq/llthreads/ex.lua";
     ["lzmq.impl.threads" ] = "lua/lzmq/impl/threads.lua";
     ["lzmq.impl.loop"    ] = "lua/lzmq/impl/loop.lua";
