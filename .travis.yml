@@ -4,8 +4,10 @@ env:
   global:
     - LUAROCKS_VER=2.0.13
     - LUAROCKS_BASE=luarocks-$LUAROCKS_VER
-    - LUAROCKS_INSTALL=wget
+    - LUAROCKS_INSTALL=git
     - LUAROCKS_GITTAG=master
+    - LUAROCKS_GITURL=https://github.com/moteus/luarocks.git
+    # - LUAROCKS_GITURL=https://github.com/keplerproject/luarocks.git
     # - LUAROCKS_GITTAG=v$LUAROCKS_VER
   matrix:
     # todo: install libffi and test ffi binding on Lua 5.1/5.2
@@ -28,7 +30,7 @@ before_install:
   - lua$LUA_SFX -v
   # Install a recent luarocks release
   - if [ $LUAROCKS_INSTALL = "git" ]; then
-      git clone https://github.com/keplerproject/luarocks.git;
+      git clone $LUAROCKS_GITURL;
       cd luarocks;
       git checkout $LUAROCKS_GITTAG;
     else
