@@ -30,15 +30,12 @@ end
 
 local bit     = orequire("bit32", "bit")
 
-
 local zlibs ={
   "zmq3",
   "libzmq3",
   "libzmq.so.3",
   "zmq",
   "libzmq",
-  -- "/usr/lib/i386-linux-gnu/libzmq3.so",
-  -- "/usr/lib/i386-linux-gnu/libzmq.so.3",
 }
 
 local ok, libzmq3 = pcall( oload, zlibs )

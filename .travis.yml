@@ -9,10 +9,11 @@ env:
     # - LUAROCKS_GITTAG=v$LUAROCKS_VER
   matrix:
     # todo: install libffi and test ffi binding on Lua 5.1/5.2
-    # - LZMQ=lzmq LUA=lua5.1 LUA_DEV=liblua5.1-dev LUA_VER=5.1 LUA_SFX=5.1 LUA_INCDIR=/usr/include/lua5.1
-    # - LZMQ=lzmq LUA=lua5.2 LUA_DEV=liblua5.2-dev LUA_VER=5.2 LUA_SFX=5.2 LUA_INCDIR=/usr/include/lua5.2
-    # - LZMQ=lzmq LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
-    - LZMQ=ffi  LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
+    # - LZMQ=lzmq     LUA=lua5.1 LUA_DEV=liblua5.1-dev LUA_VER=5.1 LUA_SFX=5.1 LUA_INCDIR=/usr/include/lua5.1
+    # - LZMQ=lzmq     LUA=lua5.2 LUA_DEV=liblua5.2-dev LUA_VER=5.2 LUA_SFX=5.2 LUA_INCDIR=/usr/include/lua5.2
+    # - LZMQ=lzmq     LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
+    - LZMQ=ffi      LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
+    - LZMQ=ffi-lua  LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
 
 branches:
   only:
@@ -43,13 +44,16 @@ before_install:
 
 install:
   - sudo apt-get install libzmq3
-  # - sudo apt-get install libzmq3-dev
+  - if [ $LZMQ != "ffi-lua" ]; then
+      sudo apt-get install libzmq3-dev;
+    fi
   - sudo luarocks install lunitx
-  - git clone https://github.com/Neopallium/lua-llthreads.git
-  - cd lua-llthreads
-  - sudo luarocks make rockspecs/lua-llthreads-scm-0.rockspec
-  - cd $TRAVIS_BUILD_DIR
-  - sudo luarocks make rockspecs/lzmq-ffi-scm-0.rockspec
+  - sudo luarocks install https://raw.github.com/Neopallium/lua-llthreads/master/rockspecs/lua-llthreads-scm-0.rockspec
+  - if [ $LZMQ = "ffi-lua" ]; then
+      sudo luarocks make rockspecs/lzmq-ffi-scm-0.rockspec;
+    else
+      sudo luarocks make rockspecs/lzmq-scm-0.rockspec;
+    fi
 
 script: 
   - cd test 
