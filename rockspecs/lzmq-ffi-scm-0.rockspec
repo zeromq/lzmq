@@ -50,6 +50,7 @@ build = {
     ["lzmq.ffi.api"      ] = "lua/lzmq/ffi/api.lua";
     ["lzmq.ffi.error"    ] = "lua/lzmq/ffi/error.lua";
     ["lzmq.ffi.poller"   ] = "lua/lzmq/ffi/poller.lua";
+    ["lzmq.ffi.threads"  ] = "lua/lzmq/ffi/threads.lua";
     ["lzmq.ffi.timer"    ] = "lua/lzmq/ffi/timer.lua";
 
     ["lzmq.llthreads.ex" ] = "lua/lzmq/llthreads/ex.lua";
