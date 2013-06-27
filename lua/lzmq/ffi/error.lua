@@ -21,10 +21,15 @@ else -- WARNING this is not best way
   local ZMQ_HAUSNUMERO = 156384712
 
   errors = {
-    EFSM            = ZMQ_HAUSNUMERO + 51,
-    ENOCOMPATPROTO  = ZMQ_HAUSNUMERO + 52,
-    ETERM           = ZMQ_HAUSNUMERO + 53,
-    EMTHREAD        = ZMQ_HAUSNUMERO + 54,
+    EFSM            = ZMQ_HAUSNUMERO + 51;
+    ENOCOMPATPROTO  = ZMQ_HAUSNUMERO + 52;
+    ETERM           = ZMQ_HAUSNUMERO + 53;
+    EMTHREAD        = ZMQ_HAUSNUMERO + 54;
+    ENOMEM          = 12;
+    EACCES          = 13;
+    EFAULT          = 14;
+    EINVAL          = 22;
+    EAGAIN          = 35;
     EHOSTUNREACH    = 65,
     ENOTSOCK        = 38;
     ENETDOWN        = 50;
@@ -46,6 +51,7 @@ else -- WARNING this is not best way
 
   if IS_WINDOWS then
     local winerr = {
+      EAGAIN          = 11;
       EHOSTUNREACH    = 110;
       ENOTSOCK        = 128;
       ENETDOWN        = 116;
