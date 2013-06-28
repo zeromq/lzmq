@@ -472,21 +472,12 @@ _M.ptrtoint = ptrtoint
 
 _M.inttoptr = inttoptr
 
-_M.aint_t         = aint_t
-_M.aint64_t       = aint64_t
-_M.auint64_t      = auint64_t
-_M.asize_t        = asize_t
-_M.vla_char_t     = vla_char_t
-_M.pvoid_t        = pvoid_t
-_M.pchar_t        = pchar_t
-_M.uintptr_t      = uintptr_t
-_M.zmq_msg_t      = zmq_msg_t
 _M.vla_pollitem_t = vla_pollitem_t
 _M.zmq_pollitem_t = zmq_pollitem_t
 _M.NULL           = NULL
 
 local ZMQ_MAJOR, ZMQ_MINOR, ZMQ_PATCH = _M.zmq_version()
-assert( 
+assert(
   (ZMQ_MAJOR == 3) and (ZMQ_MINOR >= 2), 
   "Unsupported ZMQ version: " .. ZMQ_MAJOR .. "." .. ZMQ_MINOR .. "." .. ZMQ_PATCH
 )
