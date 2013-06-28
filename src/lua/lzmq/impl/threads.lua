@@ -22,12 +22,14 @@
 -- zmq.thread wraps the low-level threads object & a zmq context.
 --
 
-local zmq = require"lzmq"
-local Threads = require"llthreads.ex"
+local Threads = require"lzmq.llthreads.ex"
+return function(ZMQ_NAME)
+
+local zmq = require(ZMQ_NAME)
 
 local zthreads_prelude = [[
-local zmq = require"lzmq"
-local zthreads = require"lzmq.threads"
+local zmq = require(]] .. ("%q"):format(ZMQ_NAME) .. [[)
+local zthreads = require(]] .. ("%q"):format(ZMQ_NAME) .. [[ .. ".threads")
 local parent_ctx = arg[1]
 if parent_ctx then zthreads.set_parent_ctx(zmq.init_ctx(parent_ctx)) end
 local unpack = table.unpack or unpack
@@ -62,3 +64,5 @@ function M.get_parent_ctx(ctx)
 end
 
 return M
+
+end
