@@ -1,6 +1,6 @@
 #Lua binding to [ZeroMQ 3](http://zeromq.org) library.
 
-[![Build Status](https://travis-ci.org/moteus/lzmq.png)](https://travis-ci.org/moteus/lzmq)
+[![Build Status](https://travis-ci.org/moteus/lzmq.png?branch=master)](https://travis-ci.org/moteus/lzmq)
 
 This library use `zmq.poller` and `zmq.threads` from [lua-zmq](https://github.com/Neopallium/lua-zmq) binding.
 But this library is not dropin replacement for lua-zmq library.
