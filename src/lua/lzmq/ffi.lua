@@ -590,7 +590,9 @@ function Poller:poll(timeout)
   for i = 0, nitems-1 do
     local item = items[i]
     if item.revents ~= 0 then
-      local params = self._private.sockets[ptrtoint(item.socket)]
+      local skt = ptrtoint(item.socket)
+      if skt == 0 then skt = item.fd end
+      local params = self._private.sockets[skt]
       if params then
         params[2](params[1], item.revents)
       end
