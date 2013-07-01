@@ -35,6 +35,7 @@ local poller_mt = {}
 poller_mt.__index = poller_mt
 
 function poller_mt:add(sock, events, cb)
+	assert(cb ~= nil)
 	local id = self.poller:add(sock, events)
 	self.callbacks[id] = function(revents) return cb(sock, revents) end
 end
@@ -45,14 +46,16 @@ function poller_mt:modify(sock, events, cb)
 		id = self.poller:modify(sock, events)
 		self.callbacks[id] = function(revents) return cb(sock, revents) end
 	else
-		id = self:remove(sock)
-		self.callbacks[id] = nil
+		self:remove(sock)
 	end
 end
 
 function poller_mt:remove(sock)
 	local id = self.poller:remove(sock)
-	self.callbacks[id] = nil
+	assert(id <= #self.callbacks)
+	for i = id, #self.callbacks do
+		self.callbacks[i] = self.callbacks[i+1]
+	end
 end
 
 function poller_mt:poll(timeout)

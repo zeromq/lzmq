@@ -92,6 +92,8 @@ int poller_find_fd_item(ZMQ_Poller *poller, socket_t fd) {
 	return -1;
 }
 
+static int poller_compact_items(ZMQ_Poller *poller);
+
 void poller_remove_item(ZMQ_Poller *poller, int idx) {
 	zmq_pollitem_t *items;
 	int free_list;
@@ -117,6 +119,7 @@ void poller_remove_item(ZMQ_Poller *poller, int idx) {
 	items[idx].events = FREE_ITEM_EVENTS_TAG;
 	/* clear old revents. */
 	items[idx].revents = 0;
+	poller_compact_items(poller);
 }
 
 int poller_get_free_item(ZMQ_Poller *poller) {

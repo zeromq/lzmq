@@ -563,8 +563,10 @@ function Poller:ensure(n)
 end
 
 function Poller:add(skt, events, cb)
+  assert(type(events) == 'number')
+  assert(cb)
+  self:ensure(1)
   local n = self._private.nitems
-  self:ensure(n+1)
   local h
   if type(skt) == "number" then
     self._private.items[n].socket = api.NULL
@@ -580,25 +582,6 @@ function Poller:add(skt, events, cb)
   self._private.sockets[h] = {skt, cb, n}
   self._private.nitems = n + 1
   return true
-end
-
-function Poller:poll(timeout)
-  local items, nitems = self._private.items, self._private.nitems
-  local ret = api.zmq_poll(items, nitems, timeout)
-  if ret == -1 then return nil, zerror() end
-  local n = 0
-  for i = 0, nitems-1 do
-    local item = items[i]
-    if item.revents ~= 0 then
-      local skt = (item.socket == api.NULL) and item.fd or api.ptrtoint(item.socket)
-      local params = self._private.sockets[skt]
-      if params then
-        params[2](params[1], item.revents)
-      end
-      n = n + 1
-    end
-  end
-  return n
 end
 
 function Poller:remove(skt)
@@ -623,6 +606,45 @@ function Poller:remove(skt)
   items[ skt_no ].events = last_item.events
 
   return true
+end
+
+function Poller:modify(skt, events, cb)
+  if events ~= 0 and cb then
+    local h
+    if type(skt) == "number" then h = skt
+    else h = api.ptrtoint(skt:handle()) end
+    local params = self._private.sockets[h]
+    if not params then return self:add(skt, events, cb) end
+    self._private.items[ params[3] ].events  = events
+    params[2] = cb
+  else
+    self:remove(skt)
+  end
+end
+
+function Poller:count()
+  return self._private.nitems
+end
+
+function Poller:poll(timeout)
+  assert(type(timeout) == 'number')
+
+  local items, nitems = self._private.items, self._private.nitems
+  local ret = api.zmq_poll(items, nitems, timeout)
+  if ret == -1 then return nil, zerror() end
+  local n = 0
+  for i = 0, nitems-1 do
+    local item = items[i]
+    if item.revents ~= 0 then
+      local skt = (item.socket == api.NULL) and item.fd or api.ptrtoint(item.socket)
+      local params = self._private.sockets[skt]
+      if params then
+        params[2](params[1], item.revents)
+      end
+      n = n + 1
+    end
+  end
+  return n
 end
 
 function Poller:start()

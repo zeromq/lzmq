@@ -52,6 +52,7 @@ local LZMQ = "lzmq" .. (TEST_FFI and ".ffi" or "")
 local zmq    = require (LZMQ)
 local ztimer = require (LZMQ .. ".timer" )
 local zloop  = require (LZMQ .. ".loop"  )
+local zpoller= require (LZMQ .. ".poller")
 
 local function is_object(o, ...)
   if o == nil then return o, ... end
@@ -94,6 +95,10 @@ function test_constant()
     assert_number(zmq.SNDMORE                        )
     assert_number(zmq.DONTWAIT                       )
     if zmq.NOBLOCK then assert_number(zmq.NOBLOCK    ) end
+  end
+  do -- poller
+    assert_number(zmq.POLLIN                         )
+    assert_number(zmq.POLLOUT                        )
   end
   do -- socket opt
     assert_number(zmq.AFFINITY                       )
@@ -622,10 +627,10 @@ function setup()
   pub = assert(is_zsocket(ctx:socket(zmq.PUB)))
   ctx:autoclose(pub)
   sub1 = assert(is_zsocket(ctx:socket(zmq.SUB)))
-  sub2 = assert(is_zsocket(ctx:socket(zmq.SUB)))
-  sub3 = assert(is_zsocket(ctx:socket(zmq.SUB)))
   ctx:autoclose(sub1)
+  sub2 = assert(is_zsocket(ctx:socket(zmq.SUB)))
   ctx:autoclose(sub2)
+  sub3 = assert(is_zsocket(ctx:socket(zmq.SUB)))
   ctx:autoclose(sub3)
 end
 
@@ -973,7 +978,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'timer'             if false then
+local _ENV = TEST_CASE'timer'             if true then
 
 local timer
 
@@ -1082,6 +1087,110 @@ end
 function test_absolute()
   timer = ztimer.absolute()
   test_timer(timer)
+end
+
+end
+
+local _ENV = TEST_CASE'poller'            if true then
+local ctx, pub, sub1, sub2, sub3, msg
+local poller
+
+function setup()
+  ctx = assert(is_zcontext(zmq.context()))
+  pub = assert(is_zsocket(ctx:socket(zmq.PUB)))
+  ctx:autoclose(pub)
+  sub1 = assert(is_zsocket(ctx:socket(zmq.SUB)))
+  ctx:autoclose(sub1)
+  sub2 = assert(is_zsocket(ctx:socket(zmq.SUB)))
+  ctx:autoclose(sub2)
+  sub3 = assert(is_zsocket(ctx:socket(zmq.SUB)))
+  ctx:autoclose(sub3)
+  poller = zpoller.new()
+end
+
+function teardown()
+  if msg then msg:close()               end
+  if ctx then ctx:destroy()             end
+  if pub then assert_true(pub:closed()) end
+  if sub1 then assert_true(sub1:closed()) end
+  if sub2 then assert_true(sub2:closed()) end
+  if sub3 then assert_true(sub3:closed()) end
+end
+
+function test_poll_withot_timeout()
+  poller:add(sub1, zmq.POLLIN, function() end)
+  assert_error(function() poller:poll() end)
+end
+
+function test_add_error()
+  assert_error(function() poller:add(sub1, zmq.POLLIN) end)
+  assert_error(function() poller:add(sub1) end)
+  assert_error(function() poller:add() end)
+end
+
+function test_create()
+  local ok, err, str = pub:bind{
+    "inproc://pub.test.1";
+  }
+
+  assert_true(sub1:subscribe(""))
+  assert_true(sub2:subscribe(""))
+  assert_true(sub3:subscribe(""))
+
+  wait()
+
+  assert_true(sub1:connect("inproc://pub.test.1"))
+  assert_true(sub2:connect("inproc://pub.test.1"))
+  assert_true(sub3:connect("inproc://pub.test.1"))
+
+  wait()
+
+  local t = {}
+  poller:add(sub1, zmq.POLLIN, function(skt) assert_equal(sub1, skt) t[skt] = {skt:recv()} end)
+  poller:add(sub2, zmq.POLLIN, function(skt) assert_equal(sub2, skt) t[skt] = {skt:recv()} end)
+  poller:add(sub3, zmq.POLLIN, function(skt) assert_equal(sub3, skt) t[skt] = {skt:recv()} end)
+
+  assert_true(pub:send("hello"))
+
+  assert_equal(3, poller:poll(100))
+  local ret
+  ret = t[sub1] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
+  ret = t[sub2] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
+  ret = t[sub3] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
+end
+
+function test_remove()
+  local ok, err, str = pub:bind{
+    "inproc://pub.test.1";
+  }
+
+  assert_true(sub1:subscribe(""))
+  assert_true(sub2:subscribe(""))
+  assert_true(sub3:subscribe(""))
+
+  wait()
+
+  assert_true(sub1:connect("inproc://pub.test.1"))
+  assert_true(sub2:connect("inproc://pub.test.1"))
+  assert_true(sub3:connect("inproc://pub.test.1"))
+
+  wait()
+
+  local t  = {}
+
+  poller:add(sub1, zmq.POLLIN, function(skt) assert_equal(sub1, skt) t[skt] = {skt:recv()} end)
+  poller:add(sub2, zmq.POLLIN, function(skt) fail("poller remove fail") end)
+  poller:add(sub3, zmq.POLLIN, function(skt) fail("poller modify fail") end)
+
+  poller:remove(sub2)
+  poller:modify(sub3, zmq.POLLIN, function(skt) assert_equal(sub3, skt) t[skt] = {skt:recv()} end)
+
+  assert_true(pub:send("hello"))
+
+  assert_equal(2, poller:poll(100))
+  local ret
+  ret = t[sub1] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
+  ret = t[sub3] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
 end
 
 end
