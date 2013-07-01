@@ -31,7 +31,7 @@ static int poller_resize_items(ZMQ_Poller *poller, int len) {
 	int old_len = poller->len;
 
 	/* make sure new length is atleast as large as items count. */
-	len = (poller->count <= len) ? len : poller->count;
+	len = (old_len <= len) ? len : old_len;
 
 	/* if the new length is the same as the old length, then don't try to resize. */
 	if(old_len == len) return len;
