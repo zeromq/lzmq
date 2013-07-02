@@ -126,7 +126,7 @@ static int luazmq_plr_poll(lua_State *L) {
   long timeout = luaL_checkinteger(L,2);
   int err = poller_poll(poller, timeout);
 
-  poller->next = (err > 0)?0:-1;
+  poller->next = (err > 0)?(poller->count-1):-1;
   if(-1 == err) {
     //err = zmq_errno();
     //if (err != ENOTSOCK)

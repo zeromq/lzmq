@@ -221,13 +221,12 @@ int poller_next_revents(ZMQ_Poller *poller, int *revents) {
 		return idx;
 	}
 	items = poller->items;
-	count = poller->count;
 	/* find next item with pending events. */
-	for(;idx < count; ++idx) {
+	for(;idx >=0; --idx) {
 		/* did we find a pending event? */
 		if(items[idx].revents != 0) {
 			*revents = items[idx].revents;
-			poller->next = idx+1;
+			poller->next = idx-1;
 			return idx;
 		}
 	}

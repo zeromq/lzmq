@@ -99,6 +99,7 @@ function test_constant()
   do -- poller
     assert_number(zmq.POLLIN                         )
     assert_number(zmq.POLLOUT                        )
+    assert_number(zmq.POLLERR                        )
   end
   do -- socket opt
     assert_number(zmq.AFFINITY                       )
@@ -1094,6 +1095,7 @@ end
 local _ENV = TEST_CASE'poller'            if true then
 local ctx, pub, sub1, sub2, sub3, msg
 local poller
+local names
 
 function setup()
   ctx = assert(is_zcontext(zmq.context()))
@@ -1106,6 +1108,25 @@ function setup()
   sub3 = assert(is_zsocket(ctx:socket(zmq.SUB)))
   ctx:autoclose(sub3)
   poller = zpoller.new()
+
+  names = {}
+  names[sub1] = "sub1"
+  names[sub2] = "sub2"
+  names[sub3] = "sub3"
+
+  assert_true(pub:bind("inproc://pub.test.1"))
+
+  assert_true(sub1:subscribe(""))
+  assert_true(sub2:subscribe(""))
+  assert_true(sub3:subscribe(""))
+
+  wait()
+
+  assert_true(sub1:connect("inproc://pub.test.1"))
+  assert_true(sub2:connect("inproc://pub.test.1"))
+  assert_true(sub3:connect("inproc://pub.test.1"))
+
+  wait()
 end
 
 function teardown()
@@ -1129,26 +1150,10 @@ function test_add_error()
 end
 
 function test_create()
-  local ok, err, str = pub:bind{
-    "inproc://pub.test.1";
-  }
-
-  assert_true(sub1:subscribe(""))
-  assert_true(sub2:subscribe(""))
-  assert_true(sub3:subscribe(""))
-
-  wait()
-
-  assert_true(sub1:connect("inproc://pub.test.1"))
-  assert_true(sub2:connect("inproc://pub.test.1"))
-  assert_true(sub3:connect("inproc://pub.test.1"))
-
-  wait()
-
   local t = {}
-  poller:add(sub1, zmq.POLLIN, function(skt) assert_equal(sub1, skt) t[skt] = {skt:recv()} end)
-  poller:add(sub2, zmq.POLLIN, function(skt) assert_equal(sub2, skt) t[skt] = {skt:recv()} end)
-  poller:add(sub3, zmq.POLLIN, function(skt) assert_equal(sub3, skt) t[skt] = {skt:recv()} end)
+  poller:add(sub1, zmq.POLLIN, function(skt) assert_equal(sub1, skt, " expect socket `sub1` got `" .. (names[skt] or tostring(skt))) t[skt] = {skt:recv()} end)
+  poller:add(sub2, zmq.POLLIN, function(skt) assert_equal(sub2, skt, " expect socket `sub2` got `" .. (names[skt] or tostring(skt))) t[skt] = {skt:recv()} end)
+  poller:add(sub3, zmq.POLLIN, function(skt) assert_equal(sub3, skt, " expect socket `sub3` got `" .. (names[skt] or tostring(skt))) t[skt] = {skt:recv()} end)
 
   assert_true(pub:send("hello"))
 
@@ -1160,36 +1165,36 @@ function test_create()
 end
 
 function test_remove()
-  local ok, err, str = pub:bind{
-    "inproc://pub.test.1";
-  }
-
-  assert_true(sub1:subscribe(""))
-  assert_true(sub2:subscribe(""))
-  assert_true(sub3:subscribe(""))
-
-  wait()
-
-  assert_true(sub1:connect("inproc://pub.test.1"))
-  assert_true(sub2:connect("inproc://pub.test.1"))
-  assert_true(sub3:connect("inproc://pub.test.1"))
-
-  wait()
-
   local t  = {}
 
-  poller:add(sub1, zmq.POLLIN, function(skt) assert_equal(sub1, skt) t[skt] = {skt:recv()} end)
+  poller:add(sub1, zmq.POLLIN, function(skt) assert_equal(sub1, skt, " expect socket `sub1` got `" .. (names[skt] or tostring(skt))) t[skt] = {skt:recv()} end)
   poller:add(sub2, zmq.POLLIN, function(skt) fail("poller remove fail") end)
   poller:add(sub3, zmq.POLLIN, function(skt) fail("poller modify fail") end)
 
   poller:remove(sub2)
-  poller:modify(sub3, zmq.POLLIN, function(skt) assert_equal(sub3, skt) t[skt] = {skt:recv()} end)
+  poller:modify(sub3, zmq.POLLIN, function(skt) assert_equal(sub3, skt, " expect socket `sub3` got `" .. (names[skt] or tostring(skt))) t[skt] = {skt:recv()} end)
 
   assert_true(pub:send("hello"))
 
   assert_equal(2, poller:poll(100))
   local ret
   ret = t[sub1] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
+  ret = t[sub3] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
+end
+
+function test_remove_on_poll()
+  local t  = {}
+
+  poller:add(sub1, zmq.POLLIN, function(skt) assert_equal(sub1, skt, " expect socket `sub1` got `" .. (names[skt] or tostring(skt)) .. "`") t[skt] = {skt:recv()} end)
+  poller:add(sub2, zmq.POLLIN, function(skt) assert_equal(sub2, skt, " expect socket `sub2` got `" .. (names[skt] or tostring(skt)) .. "`") t[skt] = {skt:recv()} poller:remove(skt) end)
+  poller:add(sub3, zmq.POLLIN, function(skt) assert_equal(sub3, skt, " expect socket `sub3` got `" .. (names[skt] or tostring(skt)) .. "`") t[skt] = {skt:recv()} end)
+
+  assert_true(pub:send("hello"))
+
+  assert_equal(3, poller:poll(100))
+  local ret
+  ret = t[sub1] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
+  ret = t[sub2] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
   ret = t[sub3] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
 end
 

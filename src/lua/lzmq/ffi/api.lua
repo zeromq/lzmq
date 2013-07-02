@@ -475,6 +475,7 @@ _M.inttoptr = inttoptr
 _M.vla_pollitem_t = vla_pollitem_t
 _M.zmq_pollitem_t = zmq_pollitem_t
 _M.NULL           = NULL
+_M.bit            = bit
 
 local ZMQ_MAJOR, ZMQ_MINOR, ZMQ_PATCH = _M.zmq_version()
 assert(

@@ -1,6 +1,7 @@
 
 local api = require "lzmq.ffi.api"
 local ffi = require "ffi"
+local bit = api.bit
 
 local make_weak_k do
   local mt = {__mode = "k"}
@@ -633,7 +634,7 @@ function Poller:poll(timeout)
   local ret = api.zmq_poll(items, nitems, timeout)
   if ret == -1 then return nil, zerror() end
   local n = 0
-  for i = 0, nitems-1 do
+  for i = nitems-1, 0, -1 do
     local item = items[i]
     if item.revents ~= 0 then
       local skt = (item.socket == api.NULL) and item.fd or api.ptrtoint(item.socket)
