@@ -458,7 +458,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'message interface' if true then
+local _ENV = TEST_CASE'message' if true then
 
 local msg
 

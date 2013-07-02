@@ -78,7 +78,8 @@ if lua_init and #lua_init > 0 then
 end
 
 -- create global 'arg'
-arg = { select(3, ...) }
+local argc = select("#", ...)
+arg = { n = argc - 2, select(3, ...) }
 ]]
 
 local bootstrap_post = [[
@@ -97,8 +98,9 @@ elseif action == 'runstring' then
 	arg[0] = '=(loadstring)'
 end
 
+argc = arg.n or #arg
 -- run loaded code.
-return func(unpack(arg))
+return func(unpack(arg, 1, argc))
 ]]
 
 local bootstrap_code = bootstrap_pre..bootstrap_post

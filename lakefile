@@ -72,10 +72,8 @@ install = target('install', {
 target('test', install, function()
   run_test('test.lua')
   run_test('utest.lua')
-  if LUA_RUNNER == 'lua' then 
-    LUA_RUNNER = 'luajit'
-    run_test('utest.lua')
-  end
+  run_test('test_threads.lua')
+  run_test('test_threads_arg.lua')
 end)
 
 target('perf_local_lat',      install, test_perf_r('lat', "tcp://127.0.0.1:5555 1   100000"))
