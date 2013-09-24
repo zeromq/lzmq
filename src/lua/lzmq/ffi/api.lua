@@ -434,8 +434,23 @@ _M.SOCKET_OPTIONS = {
   ZMQ_TCP_KEEPALIVE_INTVL     = {37, "RW", "int"};
   ZMQ_TCP_ACCEPT_FILTER       = {38, "WO", "str_arr"};
   ZMQ_DELAY_ATTACH_ON_CONNECT = {39, "RW", "int"};
+  ZMQ_IMMEDIATE               = {39, "RW", "int"};
   ZMQ_XPUB_VERBOSE            = {40, "RW", "int"};
   ZMQ_ROUTER_RAW              = {41, "RW", "int"};
+  ZMQ_IPV6                    = {42, "RW", "int"},
+  ZMQ_MECHANISM               = {43, "RO", "int"},
+  ZMQ_PLAIN_SERVER            = {44, "RW", "int"},
+  ZMQ_PLAIN_USERNAME          = {45, "RW", "str"},
+  ZMQ_PLAIN_PASSWORD          = {46, "RW", "str"},
+  ZMQ_CURVE_SERVER            = {47, "RW", "int"},
+  ZMQ_CURVE_PUBLICKEY         = {48, "RW", "str"},
+  ZMQ_CURVE_SECRETKEY         = {49, "RW", "str"},
+  ZMQ_CURVE_SERVERKEY         = {50, "RW", "str"},
+  ZMQ_PROBE_ROUTER            = {51, "WO", "int"},
+  ZMQ_REQ_CORRELATE           = {52, "WO", "int"},
+  ZMQ_REQ_RELAXED             = {53, "WO", "int"},
+  ZMQ_CONFLATE                = {54, "WO", "int"},
+  ZMQ_ZAP_DOMAIN              = {55, "RW", "str"},
 }
 
 _M.SOCKET_TYPES = {

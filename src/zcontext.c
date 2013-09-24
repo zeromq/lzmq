@@ -191,7 +191,6 @@ static int luazmq_create_socket (lua_State *L) {
 DEFINE_CTX_OPT(io_threads,  ZMQ_IO_THREADS)
 DEFINE_CTX_OPT(max_sockets, ZMQ_MAX_SOCKETS)
 
-
 static const struct luaL_Reg luazmq_ctx_methods[] = {
   {"set",           luazmq_ctx_set           },
   {"get",           luazmq_ctx_get           },
@@ -215,7 +214,6 @@ static const struct luaL_Reg luazmq_ctx_methods_2[] = {
   {"term",       luazmq_ctx_destroy    },
   {NULL,NULL}
 };
-
 
 void luazmq_context_initlib (lua_State *L){
   luazmq_createmeta(L, LUAZMQ_CONTEXT, luazmq_ctx_methods);
