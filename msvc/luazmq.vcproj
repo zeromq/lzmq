@@ -61,10 +61,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libzmq3.lib lua5.1.lib"
+				AdditionalDependencies="libzmq.lib lua5.1.lib"
 				OutputFile="$(OutDir)\lzmq.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="$(ZMQ3_DIR)\lib;&quot;$(LUA_DIR)\lib&quot;"
+				AdditionalLibraryDirectories="$(ZMQ4_DIR)\lib;&quot;$(LUA_DIR)\lib&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"

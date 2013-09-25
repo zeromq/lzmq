@@ -34,7 +34,7 @@ lzmq = c.shared{PROJECT,
   base     = 'src',
   src      = '*.c',
   exclude  = 'ztimer',
-  needs    = {LUA_NEED, 'zmq3', 'stdint'},
+  needs    = {LUA_NEED, 'zmq4', 'stdint'},
   defines  = {
     ERRORS[ERR],
     'LUAZMQ_USE_SEND_AS_BUF',

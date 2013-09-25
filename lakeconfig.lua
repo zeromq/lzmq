@@ -186,7 +186,15 @@ lake.define_need('zmq3', function()
   return {
     incdir = J(ENV.ZMQ3_DIR, 'include');
     libdir = J(ENV.ZMQ3_DIR, 'lib');
-    libs   = {'libzmq3'};
+    libs   = {'libzmq'};
+  }
+end)
+
+lake.define_need('zmq4', function()
+  return {
+    incdir = J(ENV.ZMQ4_DIR, 'include');
+    libdir = J(ENV.ZMQ4_DIR, 'lib');
+    libs   = {'libzmq'};
   }
 end)
 

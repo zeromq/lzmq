@@ -7,7 +7,7 @@ source = {
 }
 
 description = {
-  summary = "Lua bindings to ZeroMQ 3",
+  summary = "Lua bindings to ZeroMQ",
   homepage = "https://github.com/moteus/lzmq",
   license = "MIT/X11",
 }
@@ -20,13 +20,13 @@ dependencies = {
 external_dependencies = {
   platforms = {
     windows = {
-      ZMQ3 = {
+      ZMQ = {
         header  = "zmq.h",
-        library = "libzmq3",
+        library = "libzmq",
       }
     };
     unix = {
-      ZMQ3 = {
+      ZMQ = {
         header  = "zmq.h",
         -- library = "zmq", -- does not work !?
       }
@@ -45,7 +45,7 @@ build = {
         defines = {'USE_PERF_COUNT'}
       },
       ["lzmq"] = {
-        libraries = {"libzmq3"},
+        libraries = {"libzmq"},
       }
     }},
     unix    = { modules = {
@@ -64,8 +64,8 @@ build = {
       sources = {'src/lzmq.c','src/lzutils.c','src/poller.c',
                  'src/zcontext.c','src/zerror.c','src/zmsg.c',
                  'src/zpoller.c','src/zsocket.c'},
-      incdirs = {"$(ZMQ3_INCDIR)"},
-      libdirs = {"$(ZMQ3_LIBDIR)"},
+      incdirs = {"$(ZMQ_INCDIR)"},
+      libdirs = {"$(ZMQ_LIBDIR)"},
       defines = {
         'LUAZMQ_USE_SEND_AS_BUF',
         'LUAZMQ_USE_TEMP_BUFFERS',

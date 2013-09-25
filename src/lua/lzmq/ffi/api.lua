@@ -34,6 +34,9 @@ local zlibs ={
   "zmq3",
   "libzmq3",
   "libzmq.so.3",
+  "zmq4",
+  "libzmq4",
+  "libzmq.so.4",
   "zmq",
   "libzmq",
 }
