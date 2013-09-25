@@ -711,11 +711,12 @@ function zmq.msg_init_size(size) return Message:new(size) end
 
 function zmq.msg_init_data(str)  return Message:new(str)  end
 
-for name, value in pairs(api.SOCKET_TYPES)    do zmq[ name:sub(5) ] = value end
-for name, value in pairs(api.CONTEXT_OPTIONS) do zmq[ name:sub(5) ] = value end
-for name, value in pairs(api.SOCKET_OPTIONS)  do zmq[ name:sub(5) ] = value[1] end
-for name, value in pairs(api.FLAGS)           do zmq[ name:sub(5) ] = value end
-for name, value in pairs(api.DEVICE)          do zmq[ name:sub(5) ] = value end
+for name, value in pairs(api.SOCKET_TYPES)       do zmq[ name:sub(5) ] = value end
+for name, value in pairs(api.CONTEXT_OPTIONS)    do zmq[ name:sub(5) ] = value end
+for name, value in pairs(api.SOCKET_OPTIONS)     do zmq[ name:sub(5) ] = value[1] end
+for name, value in pairs(api.FLAGS)              do zmq[ name:sub(5) ] = value end
+for name, value in pairs(api.DEVICE)             do zmq[ name:sub(5) ] = value end
+for name, value in pairs(api.SECURITY_MECHANISM) do zmq[ name:sub(5) ] = value end
 
 zmq.errors = {}
 for name, value in pairs(api.ERRORS) do 

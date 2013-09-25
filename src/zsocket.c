@@ -940,10 +940,25 @@ static const luazmq_int_const skt_flags[] ={
   {NULL, 0}
 };
 
+static const luazmq_int_const skt_security_mechanism[] ={
+#ifdef ZMQ_NULL
+  DEFINE_ZMQ_CONST(  NULL             ),
+#endif
+#ifdef ZMQ_PLAIN
+  DEFINE_ZMQ_CONST(  PLAIN            ),
+#endif
+#ifdef ZMQ_CURVE
+  DEFINE_ZMQ_CONST(  CURVE           ),
+#endif
+
+  {NULL, 0}
+};
+
 void luazmq_socket_initlib (lua_State *L){
   luazmq_createmeta(L, LUAZMQ_SOCKET, luazmq_skt_methods);
   lua_pop(L, 1);
   luazmq_register_consts(L, skt_types);
   luazmq_register_consts(L, skt_options);
   luazmq_register_consts(L, skt_flags);
+  luazmq_register_consts(L, skt_security_mechanism);
 }

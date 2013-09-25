@@ -484,6 +484,12 @@ _M.DEVICE = {
   ZMQ_QUEUE     = 3;
 }
 
+_M.SECURITY_MECHANISM = {
+ ZMQ_NULL  = 0;
+ ZMQ_PLAIN = 1;
+ ZMQ_CURVE = 2;
+}
+
 end
 
 _M.ptrtoint = ptrtoint
