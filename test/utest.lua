@@ -8,18 +8,11 @@ local function iszvereq(zmq, mi, ma, bu)
   return (mi == version[1]) and (ma == version[2]) and (bu == version[3])
 end
 
-print("------------------------------------")
-print("Lua version: " .. (_G.jit and _G.jit.version or _G._VERSION))
-print("ZQM version: " .. zversion(require"lzmq"))
-print("------------------------------------")
-print("")
-
 local HAS_RUNNER = not not lunit 
 
-local lunit    = require "lunit"
--- @fix in lunit:
---  return multiple values from assert_XXX
---  implement assert_ge/le methods 
+local lunit      = require "lunit"
+local TEST_CASE  = assert(lunit.TEST_CASE)
+local skip       = lunit.skip or function() end
 
 local IS_LUA52 = _VERSION >= 'Lua 5.2'
 local TEST_FFI = ("ffi" == os.getenv("LZMQ"))
@@ -27,15 +20,6 @@ local TEST_FFI = ("ffi" == os.getenv("LZMQ"))
 -- value >= expected
 local function ge(expected, value)
   return (value >= expected), value .. " less then " .. expected
-end
-
-local TEST_CASE = function (name)
-  if not IS_LUA52 then
-    module(name, package.seeall, lunit.testcase)
-    setfenv(2, _M)
-  else
-    return lunit.module(name, 'seeall')
-  end
 end
 
 local function weak_ptr(val)
@@ -54,6 +38,13 @@ local ztimer = require (LZMQ .. ".timer" )
 local zloop  = require (LZMQ .. ".loop"  )
 local zpoller= require (LZMQ .. ".poller")
 
+print("------------------------------------")
+print("Lua version: " .. (_G.jit and _G.jit.version or _G._VERSION))
+print("ZQM version: " .. zversion(zmq))
+print("------------------------------------")
+print("")
+
+
 local function is_object(o, ...)
   if o == nil then return o, ... end
   local flag = (type(o) == 'table') or (type(o) == 'userdata')
@@ -68,6 +59,16 @@ local is_zcontext_ud = function(o, ...)
   local flag = (type(o) == 'number') or (type(o) == 'userdata')
   if not flag then return nil, '`' .. tostring(o) .. '` is not zma.context.userdata' end
   return o, ...
+end
+
+local function error_is(err, no)
+  if type(err) == 'number' then
+    return err == no
+  end
+  if type(err) == 'string' then
+    return not not string.find(err, tostring(no), nil, true)
+  end
+  return err:no() == no
 end
 
 -- usage assert_equal(socket_count(ctx, 1))
@@ -250,6 +251,10 @@ function test_context()
   assert_function(ctx.autoclose)
   assert_function(ctx.destroy)
   assert_function(ctx.term)
+  if ctx.shutdown then
+    assert_function(ctx.shutdown)
+    assert_function(ctx.shutdowned)
+  end
 end
 
 function test_socket()
@@ -412,6 +417,56 @@ end
 
 end
 
+local _ENV = TEST_CASE'context'           if true then
+
+local ctx, skt
+
+function setup() end
+
+function teardown()
+  if skt then skt:close()   end
+  if ctx then ctx:destroy() end
+end
+
+function test_context_shutdown()
+  ctx = assert(is_zcontext(zmq.context()))
+  if not ctx.shutdown then
+    return skip("shutdown support since ZMQ 4.0.0")
+  end
+
+  skt = assert(is_zsocket(ctx:socket(zmq.SUB)))
+  skt:set_rcvtimeo(1)
+  local ok, err = skt:recv()
+  assert(not ok, 'EAGAIN expected got: ' .. tostring(ok))
+  assert(error_is(err, zmq.errors.EAGAIN))
+  assert_false(ctx:shutdowned())
+  assert_true(ctx:shutdown())
+  assert_true(ctx:shutdowned())
+  assert_false(ctx:closed())
+  assert_error(function() ctx:socket() end)
+  assert_error(function() ctx:shutdown() end)
+  assert_false(skt:closed())
+  local ok, err = skt:recv()
+  assert(not ok, 'ETERM expected got: ' .. tostring(ok))
+  assert(error_is(err, zmq.errors.ETERM))
+  assert_true(skt:close())
+  assert_true(ctx:destroy())
+end
+
+function test_context_shutdown_autoclose()
+  ctx = assert(is_zcontext(zmq.context()))
+  if not ctx.shutdown then
+    return skip("shutdown support since ZMQ 4.0.0")
+  end
+
+  skt = assert(is_zsocket(ctx:socket(zmq.SUB)))
+  ctx:autoclose(skt)
+  assert_true(ctx:shutdown())
+  assert_true(skt:closed())
+end
+
+end
+
 local _ENV = TEST_CASE'socket autoclose'  if true then
 
 local ctx, skt
@@ -458,7 +513,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'message' if true then
+local _ENV = TEST_CASE'message'           if true then
 
 local msg
 

@@ -71,7 +71,8 @@ int luazmq_allocfail(lua_State *L){
 zcontext *luazmq_getcontext_at (lua_State *L, int i) {
  zcontext *ctx = (zcontext *)luazmq_checkudatap (L, i, LUAZMQ_CONTEXT);
  luaL_argcheck (L, ctx != NULL, 1, LUAZMQ_PREFIX"context expected");
- luaL_argcheck (L, !(ctx->flags & LUAZMQ_FLAG_CLOSED), 1, LUAZMQ_PREFIX"connection is closed");
+ luaL_argcheck (L, !(ctx->flags & LUAZMQ_FLAG_CLOSED), 1, LUAZMQ_PREFIX"context is closed");
+ luaL_argcheck (L, !(ctx->flags & LUAZMQ_FLAG_CTX_SHUTDOWN), 1, LUAZMQ_PREFIX"context is  shutdowned");
  return ctx;
 }
 

@@ -1,6 +1,7 @@
 #ifndef _LZMQ_H_
 #define _LZMQ_H_
 #include "lua.h"
+
 #include "zmq.h"
 
 #if defined (_WIN32) || defined (_WINDOWS)
@@ -17,11 +18,13 @@
 #define LUAZMQ_PREFIX  "LuaZMQ3: "
 
 typedef unsigned char uchar;
-#define LUAZMQ_FLAG_CLOSED       (uchar)0x01
+#define LUAZMQ_FLAG_CLOSED       (uchar)(0x01 << 0)
 /*context only*/
-#define LUAZMQ_FLAG_DONT_DESTROY (uchar)0x02
+#define LUAZMQ_FLAG_CTX_SHUTDOWN (uchar)(0x01 << 1)
+/*context only*/
+#define LUAZMQ_FLAG_DONT_DESTROY (uchar)(0x01 << 2)
 /*socket only*/
-#define LUAZMQ_FLAG_MORE         (uchar)0x02
+#define LUAZMQ_FLAG_MORE         (uchar)(0x01 << 2)
 
 typedef struct{
   void  *ctx;

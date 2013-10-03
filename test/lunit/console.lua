@@ -99,7 +99,7 @@ end
 
 function _M.err(fullname, message, traceback)
   io.write(" - error!\n")
-  io.write("Error! ("..fullname.."):\n"..message.."\n\t"..table.concat(traceback, "\n\t") .. "\n")
+  io.write("Error! ("..fullname.."):\n"..message.."\n\t"..table.concat(traceback, "\n\t"), "\n")
 end
 
 function _M.fail(fullname, where, message, usermessage)
@@ -108,9 +108,8 @@ function _M.fail(fullname, where, message, usermessage)
 end
 
 function _M.skip(fullname, where, message, usermessage)
-  writestatus("S")
-  local text = string.format("Skip (%s): %s\n%s: %s", fullname, usermessage or "", where, message)
-  msgs[#msgs+1] = text
+  io.write(" - skip!\n")
+  io.write(string.format("Skip (%s): %s\n%s: %s", fullname, usermessage or "", where, message), "\n")
 end
 
 function _M.pass(testcasename, testname)

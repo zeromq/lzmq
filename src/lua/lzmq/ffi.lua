@@ -62,6 +62,11 @@ end
 do -- Context
 Context.__index = Context
 
+local function check_context(self)
+  assert(not self:closed())
+  assert(not self:shutdowned())
+end
+
 function Context:new(ptr)
   local ctx
   if ptr then
@@ -85,8 +90,7 @@ function Context:closed()
   return not self._private.ctx
 end
 
-function Context:destroy()
-  if self:closed() then return true end
+local function Context_cleanup(self)
   for _, skt in pairs(self._private.sockets) do
     skt:close()
   end
@@ -94,6 +98,11 @@ function Context:destroy()
   -- for skt._private.skt so we enforce gc
   -- collectgarbage("collect")
   -- collectgarbage("collect")
+end
+
+function Context:destroy()
+  if self:closed() then return true end
+  Context_cleanup(self)
 
   if self._private.owner then
     api.zmq_ctx_term(self._private.ctx)
@@ -102,26 +111,46 @@ function Context:destroy()
   return true
 end
 
+if api.zmq_ctx_shutdown then
+
+function Context:shutdown()
+  check_context(self)
+  Context_cleanup(self)
+
+  if self._private.owner then
+    api.zmq_ctx_shutdown(self._private.ctx)
+  end
+  self._private.shutdown = true
+  return true
+end
+
+function Context:shutdowned()
+  return not not self._private.shutdown
+end
+
+end
+
 Context.term = Context.destroy
 
 function Context:handle()
+  check_context(self)
   return self._private.ctx
 end
 
 function Context:get(option)
-  assert(not self:closed())
+  check_context(self)
   return api.zmq_ctx_get(self._private.ctx, option)
 end
 
 function Context:set(option, value)
-  assert(not self:closed())
+  check_context(self)
   local ret = api.zmq_ctx_set(self._private.ctx, option, value)
   if ret == -1 then return nil, zerror() end
   return true
 end
 
 function Context:lightuserdata()
-  assert(not self:closed())
+  check_context(self)
   local ptr = api.ptrtoint(self._private.ctx)
   assert(self._private.ctx == api.inttoptr(ptr))
   return ptr
@@ -139,7 +168,7 @@ for optname, optid in pairs(api.CONTEXT_OPTIONS) do
 end
 
 function Context:socket(stype)
-  assert(not self:closed())
+  check_context(self)
   local skt = api.zmq_socket(self._private.ctx, stype)
   if not skt then return nil, zerror() end
   return setmetatable({
@@ -151,7 +180,7 @@ function Context:socket(stype)
 end
 
 function Context:autoclose(skt)
-  assert(not self:closed())
+  check_context(self)
   assert(self == skt._private.ctx)
   if not skt:closed() then
     self._private.sockets[skt:handle()] = skt

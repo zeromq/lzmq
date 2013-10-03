@@ -3,6 +3,10 @@
 #include "lzmq.h"
 #include <assert.h>
 
+#if ZMQ_VERSION_MAJOR == 4
+#  define LUAZMQ_SUPPORT_CTX_SHUTDOWN
+#endif
+
 int luazmq_context_create (lua_State *L) {
   zcontext *zctx = luazmq_newudata(L, zcontext, LUAZMQ_CONTEXT);
   zctx->ctx = zmq_ctx_new();
@@ -135,6 +139,28 @@ static int luazmq_ctx_skt_count (lua_State *L) {
 
 #endif
 
+#ifdef LUAZMQ_SUPPORT_CTX_SHUTDOWN
+
+static int luazmq_ctx_shutdown (lua_State *L) {
+  zcontext *ctx = luazmq_getcontext(L);
+  luazmq_ctx_close_sockets(L, ctx);
+  if(!(ctx->flags & LUAZMQ_FLAG_DONT_DESTROY)){
+    int ret = zmq_ctx_shutdown(ctx->ctx);
+    if(ret == -1)return luazmq_fail(L,NULL);
+  }
+  ctx->flags |= LUAZMQ_FLAG_CTX_SHUTDOWN;
+  return luazmq_pass(L);
+}
+
+static int luazmq_ctx_shutdowned (lua_State *L) {
+  zcontext *ctx = (zcontext *)luazmq_checkudatap (L, 1, LUAZMQ_CONTEXT);
+  luaL_argcheck (L, ctx != NULL, 1, LUAZMQ_PREFIX"context expected");
+  lua_pushboolean(L, ctx->flags & LUAZMQ_FLAG_CTX_SHUTDOWN);
+  return 1;
+}
+
+#endif
+
 static int luazmq_ctx_destroy (lua_State *L) {
   zcontext *ctx = (zcontext *)luazmq_checkudatap (L, 1, LUAZMQ_CONTEXT);
   luaL_argcheck (L, ctx != NULL, 1, LUAZMQ_PREFIX"context expected");
@@ -212,6 +238,10 @@ static const struct luaL_Reg luazmq_ctx_methods_2[] = {
   {"__gc",       luazmq_ctx_destroy    },
   {"destroy",    luazmq_ctx_destroy    },
   {"term",       luazmq_ctx_destroy    },
+#ifdef LUAZMQ_SUPPORT_CTX_SHUTDOWN
+  {"shutdown",   luazmq_ctx_shutdown   },
+  {"shutdowned", luazmq_ctx_shutdowned },
+#endif
   {NULL,NULL}
 };
 
