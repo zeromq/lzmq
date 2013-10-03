@@ -14,6 +14,7 @@ env:
     - LZMQ=lzmq     ZMQ_VER=zeromq4 LUA=lua5.1 LUA_DEV=liblua5.1-dev LUA_VER=5.1 LUA_SFX=5.1 LUA_INCDIR=/usr/include/lua5.1
     - LZMQ=lzmq     ZMQ_VER=zeromq3 LUA=lua5.2 LUA_DEV=liblua5.2-dev LUA_VER=5.2 LUA_SFX=5.2 LUA_INCDIR=/usr/include/lua5.2
     - LZMQ=lzmq     ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
+    - LZMQ=ffi      ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
     - LZMQ=ffi      ZMQ_VER=zeromq4 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
     - LZMQ=ffi-lua  ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
 
@@ -45,12 +46,17 @@ before_install:
   - cd $TRAVIS_BUILD_DIR
 
 install:
-  - git clone https://github.com/zeromq/$ZMQ_VER-x.git ./$ZMQ_VER
-  - cd ./$ZMQ_VER
-  - ./autogen.sh
-  - ./configure
-  - sudo make
-  - sudo make install
+  - if [ $LZMQ = "ffi-lua" ]; then
+      sudo apt-get install libzmq3;
+    else
+      sudo apt-get remove libzmq3;
+      git clone https://github.com/zeromq/$ZMQ_VER-x.git ./$ZMQ_VER;
+      cd ./$ZMQ_VER;
+      ./autogen.sh;
+      ./configure;
+      sudo make;
+      sudo make install;
+    fi
   - cd $TRAVIS_BUILD_DIR
   - sudo luarocks install https://raw.github.com/moteus/lunit/moteus-skip/rockspecs/lunitx-scm.mot.skip-0.rockspec
   - sudo luarocks install https://raw.github.com/Neopallium/lua-llthreads/master/rockspecs/lua-llthreads-scm-0.rockspec
