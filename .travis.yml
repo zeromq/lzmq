@@ -52,7 +52,7 @@ install:
   - sudo make
   - sudo make install
   - cd $TRAVIS_BUILD_DIR
-  - sudo luarocks install lunitx
+  - sudo luarocks install https://raw.github.com/moteus/lunit/moteus-skip/rockspecs/lunitx-scm.mot.skip-0.rockspec
   - sudo luarocks install https://raw.github.com/Neopallium/lua-llthreads/master/rockspecs/lua-llthreads-scm-0.rockspec
   - if [ $LZMQ = "ffi-lua" ]; then
       sudo luarocks make rockspecs/lzmq-ffi-scm-0.rockspec;

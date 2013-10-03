@@ -64,7 +64,7 @@ Context.__index = Context
 
 local function check_context(self)
   assert(not self:closed())
-  assert(not self:shutdowned())
+  if self.shutdowned then assert(not self:shutdowned()) end
 end
 
 function Context:new(ptr)
