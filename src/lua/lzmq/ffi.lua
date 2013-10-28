@@ -68,22 +68,44 @@ local function check_context(self)
 end
 
 function Context:new(ptr)
-  local ctx
+  local ctx, opt
   if ptr then
-    ctx = api.inttoptr(ptr)
-    assert(ptr == api.ptrtoint(ctx)) -- ensure correct convert
-  else
+    if(type(ptr) == 'table')then
+      opt,ptr = ptr
+    else
+      ctx = api.inttoptr(ptr)
+      assert(ptr == api.ptrtoint(ctx)) -- ensure correct convert
+    end
+  end
+  if not ctx then
     ctx = api.zmq_ctx_new()
     if not ctx then return nil, zerror() end
   end
-  local o = {
+
+  local o = setmetatable({
     _private = {
       owner   = not ptr;
       sockets = make_weak_kv();
       ctx     = ctx;
     }
-  }
-  return setmetatable(o, self)
+  }, self)
+
+  if opt then
+    for k, v in pairs(opt) do
+      if type(k) == 'string' then
+        local fn = o['set_' .. k]
+        if fn then
+          local ok, err = fn(o, v)
+          if not ok then
+            o:destroy()
+            return nil, err
+          end
+        end
+      end
+    end
+  end
+
+  return o
 end
 
 function Context:closed()
@@ -167,16 +189,50 @@ for optname, optid in pairs(api.CONTEXT_OPTIONS) do
   end
 end
 
-function Context:socket(stype)
+function Context:socket(stype, opt)
   check_context(self)
   local skt = api.zmq_socket(self._private.ctx, stype)
   if not skt then return nil, zerror() end
-  return setmetatable({
+  local o = setmetatable({
     _private = {
       ctx = self;
       skt = skt;
     }
   },Socket)
+
+  if opt then
+    for k, v in pairs(opt) do
+      if type(k) == 'string' then
+        local fn = o['set_' .. k]
+        if fn then
+          local ok, err, ext = fn(o, v)
+          if not ok then
+            o:destroy()
+            return nil, err, ext
+          end
+        end
+      end
+    end
+
+    if opt.bind then
+      local ok, err, ext = o:bind(opt.bind)
+      if not ok then
+        o:close()
+        return ok, err, ext
+      end
+    end
+
+    if opt.connect then
+      local ok, err, ext = o:connect(opt.connect)
+      if not ok then
+        o:close()
+        return ok, err, ext
+      end
+    end
+
+  end
+
+  return o
 end
 
 function Context:autoclose(skt)
@@ -703,8 +759,8 @@ function zmq.version()
   return nil, zerror()
 end
 
-function zmq.context()
-  return Context:new()
+function zmq.context(opt)
+  return Context:new(opt)
 end
 
 zmq.init = zmq.context

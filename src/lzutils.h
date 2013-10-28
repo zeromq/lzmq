@@ -66,4 +66,6 @@ void luazmq_register_consts(lua_State *L, const luazmq_int_const *c);
 
 void luazmq_register_consts_invers(lua_State *L, const luazmq_int_const *c);
 
+int luazmq_pcall_method(lua_State *L, const char *name, int nargs, int nresults, int errfunc);
+
 #endif

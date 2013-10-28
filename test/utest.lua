@@ -390,6 +390,17 @@ function test_socket_options()
   assert_true(skt:set_unsubscribe("sub 3"))
 end
 
+function test_socket_options_ctor()
+  assert_true(skt:close())
+  skt = assert(is_zsocket(ctx:socket(zmq.SUB,{
+    subscribe = { "sub 1", "sub 2", "sub 3" };
+    linger    = 123;
+  })))
+  ctx:autoclose(skt)
+  assert_true(skt:set_unsubscribe{"sub 1", "sub 2"})
+  assert_equal(123, skt:get_linger())
+end
+
 function test_context_options()
   assert_true(ctx:set_io_threads(2))
   assert_equal(2, ctx:get_io_threads())
@@ -413,6 +424,23 @@ function test_context_options()
   assert_false(ctx:closed())
   assert_true(ctx:destroy())
   assert_true(ctx:closed())
+end
+
+function test_context_options_on_ctor()
+  assert_true(ctx:destroy())
+  ctx = assert(is_zcontext(zmq.context{
+    io_threads  = 2;
+    max_sockets =252;
+  }))
+  assert_equal(2, ctx:get_io_threads())
+  assert_equal(252, ctx:get_max_sockets())
+end
+
+function test_context_options_fail_on_ctor()
+  assert_true(ctx:destroy())
+  assert_nil(zmq.context{
+    max_sockets = -1;
+  })
 end
 
 end
@@ -759,6 +787,59 @@ function test_connect()
     assert_equal( "hello", assert_string(sub1:recv()))
     assert_nil(sub1:recv())
   end
+end
+
+end
+
+local _ENV = TEST_CASE'bind/connect on ctor' if true then
+
+local ctx, pub, sub, msg
+
+function setup()
+  ctx = assert(is_zcontext(zmq.context()))
+end
+
+function teardown()
+  if pub then pub:close()   end
+  if sub then sub:close()   end
+  if ctx then ctx:destroy() end
+end
+
+function test_connect()
+  pub = assert(is_zsocket(ctx:socket(zmq.PUB,{
+    bind = {
+      "inproc://pub.test.1";
+      "inproc://pub.test.2";
+      "inproc://pub.test.3";
+    };
+  })))
+  ctx:autoclose(pub)
+
+  sub = assert(is_zsocket(ctx:socket(zmq.SUB,{
+    subscribe = "", rcvtimeo = 100;
+    connect = "inproc://pub.test.1";
+  })))
+  ctx:autoclose(sub)
+
+  wait()
+
+  assert_true(pub:send("hello"))
+  assert_equal( "hello", assert_string(sub:recv()))
+end
+
+function test_fail_bind()
+  local err, str
+  pub, err, str = ctx:socket(zmq.PUB,{
+    bind = {
+      "inproc://pub.test.1";
+      "inproc://pub.test.2";
+      "inproc://pub.test.3";
+      "error address"
+    };
+  })
+  assert_nil(ok)
+  assert_equal("error address", str)
+  assert_equal(socket_count(ctx, 0))
 end
 
 end

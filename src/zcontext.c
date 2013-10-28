@@ -7,6 +7,70 @@
 #  define LUAZMQ_SUPPORT_CTX_SHUTDOWN
 #endif
 
+// apply options for object on top of stack
+// if set option fail call destroy method for object and return error
+// unknown options are ignoring
+static int apply_options(lua_State *L, int opt, const char *close_meth){
+  if(lua_type(L, opt) == LUA_TTABLE){
+    int o = lua_gettop(L);
+
+    lua_pushnil(L);
+    while (lua_next(L, opt) != 0){
+      assert(lua_gettop(L) == (o+2));
+      if(lua_type(L, -2) != LUA_TSTRING){
+        lua_pop(L, 1);
+        continue;
+      }
+
+      lua_pushliteral(L, "set_"); lua_pushvalue(L, -3); lua_concat(L, 2);
+      lua_gettable(L, o);
+      if(lua_isnil(L, -1)){
+        lua_pop(L, 2);
+        assert(lua_gettop(L) == (o+1));
+        continue;
+      }
+      lua_insert(L, -2);
+      lua_pushvalue(L, o); lua_insert(L, -2);
+      lua_call(L, 2, 2);
+
+      if(lua_isnil(L, -2)){
+        lua_pushvalue(L, o);
+        luazmq_pcall_method(L, close_meth, 0, 0, 0);
+        return 2;
+      }
+
+      lua_pop(L, 2);
+      assert(lua_gettop(L) == (o+1));
+    }
+    assert(lua_gettop(L) == o);
+  }
+
+  return 0;
+}
+
+static int apply_bind_connect(lua_State *L, int opt, const char *meth){
+  if(lua_type(L, opt) == LUA_TTABLE){
+    int o = lua_gettop(L);         // socket
+    lua_getfield(L, opt, meth);
+    if(!lua_isnil(L, -1)){         // socket, address
+      lua_pushvalue(L, o);         // socket, address, socket
+      lua_getfield(L, -1, meth);   // socket, address, socket, bind
+      lua_insert(L, -3);           // socket, bind, address, socket
+      lua_insert(L, -2);           // socket, bind, socket, address
+      lua_call(L, 2, 3);
+      if(lua_isnil(L, -3)){
+        int n = lua_gettop(L);
+        lua_pushvalue(L, o);
+        luazmq_pcall_method(L, "close", 0, 0, 0);
+        lua_settop(L, n);
+        return 3;
+      }
+    }
+    lua_settop(L, o);
+  }
+  return 0;
+}
+
 int luazmq_context_create (lua_State *L) {
   zcontext *zctx = luazmq_newudata(L, zcontext, LUAZMQ_CONTEXT);
   zctx->ctx = zmq_ctx_new();
@@ -15,6 +79,8 @@ int luazmq_context_create (lua_State *L) {
 #ifdef LZMQ_DEBUG
   zctx->socket_count = 0;
 #endif
+
+  {int n = apply_options(L, 1, "destroy"); if(n != 0) return n;}
 
   return 1;
 }
@@ -197,6 +263,15 @@ static int luazmq_create_socket (lua_State *L) {
   ctx->socket_count++;
   zskt->ctx = ctx;
 #endif
+
+  {
+    int n = apply_options(L, 3, "close");
+    if(n != 0) return n;
+    n = apply_bind_connect(L, 3, "bind");
+    if(n != 0) return n;
+    n = apply_bind_connect(L, 3, "connect");
+    if(n != 0) return n;
+  }
 
   return 1;
 }
