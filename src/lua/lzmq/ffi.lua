@@ -763,7 +763,9 @@ function zmq.context(opt)
   return Context:new(opt)
 end
 
-zmq.init = zmq.context
+ function zmq.init(n)
+  return zmq.context{io_threads = n}
+end  
 
 function zmq.init_ctx(ctx)
   return Context:new(ctx)
