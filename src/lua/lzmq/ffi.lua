@@ -124,20 +124,26 @@ function Context:new(ptr)
   return o
 end
 
--- !IMPORTANT!
--- wothout __gc method on socket object this counter is not correct,
--- but still it should be >= 0
+if HAS_GC_TABLE then
+
+-- wothout __gc method on socket object this counter is not correct
 function Context:_inc_socket_count(n)
   assert((n == 1) or (n == -1))
   self._private.scount = self._private.scount + n
   assert(self._private.scount >= 0)
 end
 
+else
+
+function Context:_inc_socket_count(n)
+  assert((n == 1) or (n == -1))
+end
+
+end
+
 function Context:_remove_socket(skt)
   self._private.sockets[skt:handle()] = nil
-  if HAS_GC_TABLE then
-    self:_inc_socket_count(-1)
-  end
+  self:_inc_socket_count(-1)
 end
 
 function Context:closed()

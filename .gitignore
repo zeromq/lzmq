@@ -8,5 +8,6 @@
 *.suo
 *.ncb
 *.user
+*.pdb
 msvc/Debug/
 msvc/Release/
