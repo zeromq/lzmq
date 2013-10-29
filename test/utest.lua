@@ -1375,4 +1375,79 @@ end
 
 end
 
+local _ENV = TEST_CASE'monitor'           if true then
+
+local loop, timer
+
+function setup()
+  loop  = assert(zloop.new())
+  timer = ztimer.monotonic()
+end
+
+function teardown()
+  loop:destroy()
+  wait(500) -- for TCP time to release IP address
+end
+
+function test_monitor()
+  local counter = 0
+  local monitor_called = false
+  local was_accepted = false
+
+  local function echo(skt)
+    local msg = assert_table(skt:recv_all())
+    assert_true(skt:send_all(msg))
+    counter = counter + 1
+  end
+
+  local srv, err = assert(is_zsocket(loop:create_socket(zmq.REP, {
+    linger = 0, sndtimeo = 100, rcvtimeo = 100;
+    bind = {
+      "inproc://test.zmq";
+      "tcp://*:9000";
+    }
+  })))
+  loop:add_socket(srv, echo)
+
+  if not srv.monitor then
+    return skip("this version of LZMQ does not support soket monitor")
+  end
+
+  assert_true(srv:monitor("inproc://monitor.srv"))
+
+  assert(is_zsocket(loop:add_new_connect(zmq.PAIR, "inproc://monitor.srv", function(sok)
+    monitor_called = true
+    local event, data, addr = sok:recv_event()
+    assert_number(event, data)
+    assert_number(data)
+    if addr then assert_string(addr) end
+
+    was_accepted = was_accepted or (event == zmq.EVENT_ACCEPTED)
+  end)))
+
+  wait()
+
+  local cli, err = assert(is_zsocket(loop:create_socket(zmq.REQ, {
+    linger = 0, sndtimeo = 100, rcvtimeo = 100;
+    connect = "tcp://127.0.0.1:9000";
+  })))
+  loop:add_socket(cli, echo)
+
+  -- run ball
+  loop:add_once(10, function() cli:send_all{'hello', 'world'} end)
+
+  -- time to play
+  loop:add_once(500, function() loop:interrupt() end)
+
+  loop:start()
+
+  loop:destroy()
+
+  assert_true(monitor_called)
+  assert_true(was_accepted)
+end
+
+end
+
+
 if not HAS_RUNNER then lunit.run() end

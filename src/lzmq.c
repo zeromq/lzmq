@@ -314,6 +314,29 @@ const luazmq_int_const device_types[] ={
   {NULL, 0}
 };
 
+const luazmq_int_const events_types[] ={
+  DEFINE_ZMQ_CONST( EVENT_CONNECTED       ),
+  DEFINE_ZMQ_CONST( EVENT_CONNECT_DELAYED ),
+  DEFINE_ZMQ_CONST( EVENT_CONNECT_RETRIED ),
+ 
+  DEFINE_ZMQ_CONST( EVENT_LISTENING       ),
+  DEFINE_ZMQ_CONST( EVENT_BIND_FAILED     ),
+
+  DEFINE_ZMQ_CONST( EVENT_ACCEPTED        ),
+  DEFINE_ZMQ_CONST( EVENT_ACCEPT_FAILED   ),
+
+  DEFINE_ZMQ_CONST( EVENT_CLOSED          ),
+  DEFINE_ZMQ_CONST( EVENT_CLOSE_FAILED    ),
+  DEFINE_ZMQ_CONST( EVENT_DISCONNECTED    ),
+#ifdef ZMQ_EVENT_MONITOR_STOPPED
+  DEFINE_ZMQ_CONST( EVENT_MONITOR_STOPPED ),
+#endif
+
+  DEFINE_ZMQ_CONST( EVENT_ALL             ),
+
+  {NULL, 0}
+};
+
 static void luazmq_init_lib(lua_State *L){
   lua_newtable(L); 
   luazmq_context_initlib(L);
@@ -324,6 +347,7 @@ static void luazmq_init_lib(lua_State *L){
   luazmq_zutils_initlib(L);
 
   luazmq_register_consts(L, device_types);
+  luazmq_register_consts(L, events_types);
 
   luazmq_setfuncs(L, luazmqlib, 0);
 }
