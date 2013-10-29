@@ -887,6 +887,10 @@ function zmq.proxy(frontend, backend, capture)
   return true
 end
 
+zmq.z85_encode = api.zmq_z85_encode
+
+zmq.z85_decode = api.zmq_z85_decode
+
 end
 
 return zmq

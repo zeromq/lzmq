@@ -107,6 +107,11 @@ ffi.cdef[[
   int zmq_device (int type, void *frontend, void *backend);
 ]]
 
+ffi.cdef[[
+  char *zmq_z85_encode (char *dest, const char *data, size_t size);
+  char *zmq_z85_decode (char *dest, const char *string);
+]]
+
 local aint_t          = ffi.typeof("int[1]")
 local aint64_t        = ffi.typeof("int64_t[1]")
 local auint64_t       = ffi.typeof("uint64_t[1]")
@@ -397,6 +402,28 @@ end
 
 function _M.zmq_msg_set(msg, option, optval)
   return libzmq3.zmq_msg_set(msg, option, optval)
+end
+
+end
+
+-- zmq_z85_encode, zmq_z85_decode
+if pget(libzmq3, "zmq_z85_encode") then
+
+function _M.zmq_z85_encode(data)
+  local len = math.floor(#data * 1.25 + 1.0001)
+  local buf = ffi.new(vla_char_t, len)
+  local ret = libzmq3.zmq_z85_encode(buf, data, #data)
+  if ret == NULL then error("size of the block must be divisible by 4") end
+  return ffi.string(buf, len - 1)
+end
+
+function _M.zmq_z85_decode(data)
+  local len = math.floor(#data * 0.8 + 0.0001)
+  local buf = ffi.new(vla_char_t, len)
+  local ret = libzmq3.zmq_z85_decode(buf, data)
+  if ret == NULL then error("size of the block must be divisible by 5") end
+  return ffi.string(buf, len)
+
 end
 
 end

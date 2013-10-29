@@ -1342,4 +1342,37 @@ end
 
 end
 
+local _ENV = TEST_CASE'z85 encode'        if true and zmq.z85_encode then
+
+local key_bin = "\084\252\186\036\233\050\073\150\147\022\251\097\124\135\043\176" ..
+                "\193\209\255\020\128\004\039\197\148\203\250\207\027\194\214\082"
+
+local key_txt = "rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7";
+
+local function dump(str)
+  return (string.gsub(str,".", function(ch)
+    return (string.format("\\%.3d", string.byte(ch)))
+  end))
+end
+
+function test_encode()
+  local encoded = assert_string(zmq.z85_encode(key_bin))
+  assert_equal(key_txt, encoded)
+end
+
+function test_decode()
+  local decoded = assert_string(zmq.z85_decode(key_txt))
+  assert_equal(dump(key_bin), dump(decoded))
+end
+
+function test_encode_wrong_size()
+  assert_error(function() zmq.z85_encode(key_bin .. "1") end)
+end
+
+function test_decode_wrong_size()
+  assert_error(function() zmq.z85_decode(key_txt .. "2") end)
+end
+
+end
+
 if not HAS_RUNNER then lunit.run() end

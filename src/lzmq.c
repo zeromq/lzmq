@@ -18,6 +18,10 @@ const char *LUAZMQ_MESSAGE = LUAZMQ_PREFIX "Message";
 
 static const char *LUAZMQ_STOPWATCH = LUAZMQ_PREFIX "stopwatch";
 
+#if ZMQ_VERSION_MAJOR >= 4
+#  define LUAZMQ_SUPPORT_Z85
+#endif
+
 //-----------------------------------------------------------  
 // common
 //{----------------------------------------------------------
@@ -224,13 +228,65 @@ static int luazmq_error_tostring(lua_State *L){
   return 1;
 }
 
+
+#ifdef LUAZMQ_SUPPORT_Z85
+
+static int luazmq_z85_encode(lua_State *L){
+  size_t len; const char *data = luaL_checklstring(L, 1, &len);
+  LUAZMQ_DEFINE_TEMP_BUFFER(buffer_storage);
+  size_t dest_len; char *dest;
+
+#ifndef LZMQ_DEBUG
+  if(len == 32) dest_len = 41; else
+#endif
+  {
+    dest_len = len >> 2;
+    luaL_argcheck(L, len == (dest_len << 2), 1, "size of the block must be divisible by 4");
+    dest_len += len + 1;
+  }
+
+  dest = LUAZMQ_ALLOC_TEMP(buffer_storage, dest_len);
+  if(!zmq_z85_encode(dest, (char*)data, len))lua_pushnil(L);
+  else lua_pushlstring(L, dest, dest_len - 1);
+  LUAZMQ_FREE_TEMP(buffer_storage, dest);
+
+  return 1;
+}
+
+static int luazmq_z85_decode(lua_State *L){
+  size_t len; const char *data = luaL_checklstring(L, 1, &len);
+  LUAZMQ_DEFINE_TEMP_BUFFER(buffer_storage);
+  size_t dest_len; char *dest;
+#ifndef LZMQ_DEBUG
+  if(len == 40) dest_len = 32; else
+#endif
+  {
+    dest_len = 0.8 * len;
+    luaL_argcheck(L, len == (dest_len + (dest_len >> 2)), 1, "size of the block must be divisible by 5");
+  }
+
+  dest = LUAZMQ_ALLOC_TEMP(buffer_storage, dest_len);
+  if(!zmq_z85_decode(dest, (char*)data)) lua_pushnil(L);
+  else lua_pushlstring(L, dest, dest_len);
+  LUAZMQ_FREE_TEMP(buffer_storage, dest);
+
+  return 1;
+}
+
+#endif
+
 //}----------------------------------------------------------  
 
 static const struct luaL_Reg luazmqlib[]   = {
   { "version",        luazmq_version          },
 
 #if(ZMQ_VERSION_MAJOR >= 3)&&(ZMQ_VERSION_MINOR >= 3)
-  { "proxy",          luazmq_proxy           },
+  { "proxy",          luazmq_proxy            },
+#endif
+
+#ifdef LUAZMQ_SUPPORT_Z85
+  { "z85_encode",     luazmq_z85_encode       },
+  { "z85_decode",     luazmq_z85_decode       },
 #endif
 
   { "device",         luazmq_device           },

@@ -277,7 +277,7 @@ static int luazmq_skt_destroy (lua_State *L) {
     ret = zmq_close(skt->skt);
     if(ret == -1)return luazmq_fail(L, skt);
 
-#ifdef LZMQ_SOCKET_COUNT
+#if LZMQ_SOCKET_COUNT
     skt->ctx->socket_count--;
     assert(skt->ctx->socket_count >= 0);
 #endif
