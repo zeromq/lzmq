@@ -46,10 +46,12 @@ local IS_LUA_51 = (LUA_MAJOR == 5) and (LUA_MINOR == 1)
 local IS_LUA_52 = (LUA_MAJOR == 5) and (LUA_MINOR == 2)
 
 local LUA_INIT = "LUA_INIT"
+local LUA_INIT_VER
 if not IS_LUA_51 then
-  LUA_INIT = LUA_INIT .. LUA_MAJOR .. "_" .. LUA_MINOR
+  LUA_INIT_VER = LUA_INIT .. "_" .. LUA_MAJOR .. "_" .. LUA_MINOR
 end
-LUA_INIT  = os.getenv( LUA_INIT ) or ""
+
+LUA_INIT = LUA_INIT_VER and os.getenv( LUA_INIT_VER ) or os.getenv( LUA_INIT ) or ""
 
 local thread_mt = {}
 thread_mt.__index = thread_mt
