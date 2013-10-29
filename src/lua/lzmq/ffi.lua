@@ -1,3 +1,18 @@
+local lua_version_t
+local function lua_version()
+  if not lua_version_t then 
+    local version = rawget(_G,"_VERSION")
+    local maj,min = version:match("^Lua (%d+)%.(%d+)$")
+    if maj then                         lua_version_t = {tonumber(maj),tonumber(min)}
+    elseif not math.mod then            lua_version_t = {5,2}
+    elseif table.pack and not pack then lua_version_t = {5,2}
+    else                                lua_version_t = {5,2} end
+  end
+  return lua_version_t[1], lua_version_t[2]
+end
+
+local LUA_MAJOR, LUA_MINOR = lua_version()
+local HAS_GC_TABLE = (LUA_MAJOR > 5) or ((LUA_MAJOR == 5) and (LUA_MINOR >= 2))
 
 local api = require "lzmq.ffi.api"
 local ffi = require "ffi"
@@ -65,7 +80,6 @@ Context.__index = Context
 local function check_context(self)
   assert(not self:closed())
   if self.shutdowned then assert(not self:shutdowned()) end
-  assert(self._private.scount >= 0)
 end
 
 function Context:new(ptr)
@@ -110,15 +124,20 @@ function Context:new(ptr)
   return o
 end
 
+-- !IMPORTANT!
+-- wothout __gc method on socket object this counter is not correct,
+-- but still it should be >= 0
 function Context:_inc_socket_count(n)
   assert((n == 1) or (n == -1))
-  check_context(self)
   self._private.scount = self._private.scount + n
   assert(self._private.scount >= 0)
 end
 
 function Context:_remove_socket(skt)
   self._private.sockets[skt:handle()] = nil
+  if HAS_GC_TABLE then
+    self:_inc_socket_count(-1)
+  end
 end
 
 function Context:closed()
@@ -259,9 +278,21 @@ function Context:autoclose(skt)
   return true
 end
 
-function Context:socket_count()
-  check_context(self)
-  return self._private.scount
+-- wothout __gc method on socket object we can not support counter.
+if HAS_GC_TABLE then
+  function Context:socket_count()
+    check_context(self)
+    return self._private.scount
+  end
+else
+  function Context:socket_count()
+    check_context(self)
+    local cnt = 0
+    for _ in pairs(self._private.sockets) do
+      cnt = cnt + 1;
+    end
+    return cnt
+  end
 end
 
 end
@@ -281,12 +312,13 @@ function Socket:close()
   end
 
   self._private.ctx:_remove_socket(self)
-  self._private.ctx:_inc_socket_count(-1)
 
   api.zmq_close(self._private.skt)
   self._private.skt = nil
   return true
 end
+
+Socket.__gc = Socket.close
 
 function Socket:handle()
   return self._private.skt

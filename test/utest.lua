@@ -463,8 +463,13 @@ function test_context_shutdown()
     return skip("shutdown support since ZMQ 4.0.0")
   end
 
-  skt = assert(is_zsocket(ctx:socket(zmq.SUB)))
+  local ptr  = assert(is_zcontext_ud(ctx:lightuserdata()))
+  local ctx2 = assert(is_zcontext(zmq.init_ctx(ptr)))
+
+  -- to prevent autoclose socket
+  skt = assert(is_zsocket(ctx2:socket(zmq.SUB)))
   skt:set_rcvtimeo(1)
+
   local ok, err = skt:recv()
   assert(not ok, 'EAGAIN expected got: ' .. tostring(ok))
   assert(error_is(err, zmq.errors.EAGAIN))
@@ -510,8 +515,8 @@ end
 function test_socket_autoclose()
   ctx = assert(is_zcontext(zmq.context()))
   skt = assert(is_zsocket(ctx:socket(zmq.SUB)))
-  assert_equal(socket_count(ctx, 1))
   ctx:autoclose(skt)
+  assert_equal(socket_count(ctx, 1))
   assert_true(ctx:destroy())
   assert_true(skt:closed())
 
