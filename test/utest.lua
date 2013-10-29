@@ -1410,7 +1410,7 @@ function test_monitor()
   loop:add_socket(srv, echo)
 
   if not srv.monitor then
-    return skip("this version of LZMQ does not support soket monitor")
+    return skip("this version of LZMQ does not support socket monitor")
   end
 
   assert_true(srv:monitor("inproc://monitor.srv"))

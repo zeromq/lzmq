@@ -178,9 +178,9 @@ static int luazmq_skt_recv_event (lua_State *L) {
   zmq_msg_close(&msg);
 
   lua_pushnumber(L, event.event);
-  lua_pushnumber(L, event.connected.fd);
-  if(event.connected.addr){
-    lua_pushlstring(L, zmq_msg_data(&msg2), zmq_msg_size(&msg2));
+  lua_pushnumber(L, event.data.connected.fd);
+  if(event.data.connected.addr){
+    lua_pushstring(L, event.data.connected.addr);
     return 3;
   }
   return 2;
