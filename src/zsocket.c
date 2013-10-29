@@ -3,6 +3,7 @@
 #include "lzutils.h"
 #include "lzmq.h"
 #include <stdint.h>
+#include <assert.h>
 
 #define DEFINE_SKT_METHOD_1(NAME)              \
                                                \
@@ -117,6 +118,7 @@ static int luazmq_skt_recv_len (lua_State *L) {
     LUAZMQ_FREE_TEMP(tmp, buffer);
     return luazmq_fail(L, skt);
   }
+  assert(ret >= 0);
 
   lua_pushlstring(L, buffer, (ret < len)?ret:len);
   LUAZMQ_FREE_TEMP(tmp, buffer);
@@ -275,8 +277,9 @@ static int luazmq_skt_destroy (lua_State *L) {
     ret = zmq_close(skt->skt);
     if(ret == -1)return luazmq_fail(L, skt);
 
-#ifdef LZMQ_DEBUG
+#ifdef LZMQ_SOCKET_COUNT
     skt->ctx->socket_count--;
+    assert(skt->ctx->socket_count >= 0);
 #endif
 
     skt->flags |= LUAZMQ_FLAG_CLOSED;

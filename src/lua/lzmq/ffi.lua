@@ -65,6 +65,7 @@ Context.__index = Context
 local function check_context(self)
   assert(not self:closed())
   if self.shutdowned then assert(not self:shutdowned()) end
+  assert(self._private.scount >= 0)
 end
 
 function Context:new(ptr)
@@ -87,6 +88,7 @@ function Context:new(ptr)
       owner   = not ptr;
       sockets = make_weak_kv();
       ctx     = ctx;
+      scount  = 0;
     }
   }, self)
 
@@ -106,6 +108,17 @@ function Context:new(ptr)
   end
 
   return o
+end
+
+function Context:_inc_socket_count(n)
+  assert((n == 1) or (n == -1))
+  check_context(self)
+  self._private.scount = self._private.scount + n
+  assert(self._private.scount >= 0)
+end
+
+function Context:_remove_socket(skt)
+  self._private.sockets[skt:handle()] = nil
 end
 
 function Context:closed()
@@ -199,6 +212,7 @@ function Context:socket(stype, opt)
       skt = skt;
     }
   },Socket)
+  self:_inc_socket_count(1)
 
   if opt then
     for k, v in pairs(opt) do
@@ -232,6 +246,7 @@ function Context:socket(stype, opt)
 
   end
 
+  self:autoclose(o)
   return o
 end
 
@@ -242,6 +257,11 @@ function Context:autoclose(skt)
     self._private.sockets[skt:handle()] = skt
   end
   return true
+end
+
+function Context:socket_count()
+  check_context(self)
+  return self._private.scount
 end
 
 end
@@ -260,7 +280,8 @@ function Socket:close()
     pcall(self._private.on_close)
   end
 
-  self._private.ctx._private.sockets[ self._private.skt ] = nil
+  self._private.ctx:_remove_socket(self)
+  self._private.ctx:_inc_socket_count(-1)
 
   api.zmq_close(self._private.skt)
   self._private.skt = nil

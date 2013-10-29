@@ -14,6 +14,13 @@
 #  define LUAZMQ_EXPORT
 #endif
 
+#ifndef LZMQ_SOCKET_COUNT
+#  define LZMQ_SOCKET_COUNT 1
+#endif
+
+#ifndef LZMQ_AUTOCLOSE_SOCKET
+#  define LZMQ_AUTOCLOSE_SOCKET 1
+#endif
 
 #define LUAZMQ_PREFIX  "LuaZMQ3: "
 
@@ -29,7 +36,7 @@ typedef unsigned char uchar;
 typedef struct{
   void  *ctx;
   uchar flags;
-#ifdef LZMQ_DEBUG
+#if LZMQ_SOCKET_COUNT
   int socket_count;
 #endif
   int autoclose_ref;
@@ -38,7 +45,7 @@ typedef struct{
 typedef struct{
   void  *skt;
   uchar flags;
-#ifdef LZMQ_DEBUG
+#if LZMQ_SOCKET_COUNT
   zcontext *ctx;
 #endif
   int onclose_ref;

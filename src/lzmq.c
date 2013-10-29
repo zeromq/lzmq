@@ -34,8 +34,9 @@ static int luazmq_geterrno(lua_State *L, zsocket *skt){
       /*int ret = */zmq_close(skt->skt);
       skt->flags |= LUAZMQ_FLAG_CLOSED;
       luazmq_skt_before_close(L, skt);
-#ifdef LZMQ_DEBUG
+#if LZMQ_SOCKET_COUNT
       skt->ctx->socket_count--;
+      assert(skt->ctx->socket_count >= 0);
 #endif
     }
   }

@@ -438,9 +438,10 @@ end
 
 function test_context_options_fail_on_ctor()
   assert_true(ctx:destroy())
-  assert_nil(zmq.context{
+  local ctx, err = zmq.context{
     max_sockets = -1;
-  })
+  }
+  assert_nil(ctx, err)
 end
 
 end
@@ -837,7 +838,7 @@ function test_fail_bind()
       "error address"
     };
   })
-  assert_nil(ok)
+  assert_nil(pub)
   assert_equal("error address", str)
   assert_equal(socket_count(ctx, 0))
 end

@@ -140,3 +140,13 @@ int luazmq_pcall_method(lua_State *L, const char *name, int nargs, int nresults,
   return lua_pcall(L, nargs + 1, nresults, errfunc);
 }
 
+int luazmq_new_weak_table(lua_State*L, const char *mode){
+  int top = lua_gettop(L);
+  lua_newtable(L);
+  lua_newtable(L);
+  lua_pushstring(L, mode);
+  lua_setfield(L, -2, "__mode");
+  lua_setmetatable(L,-2);
+  assert((top+1) == lua_gettop(L));
+  return 1;
+}
