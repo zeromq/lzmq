@@ -185,7 +185,7 @@ static int luazmq_skt_recv_event (lua_State *L) {
   }
   return 2;
 
-#else 4.0+
+#else // 4.0+
 
   zmq_msg_t msg1, msg2;  // binary and address parts
 
@@ -308,22 +308,53 @@ static int luazmq_skt_recv_all (lua_State *L) {
 
 static int luazmq_skt_monitor (lua_State *L) {
   zsocket *skt = luazmq_getsocket(L);
-  const char *bind = luaL_checkstring(L, 2);
-  int events = luaL_optint(L, 3, ZMQ_EVENT_ALL);
-  int ret = zmq_socket_monitor (skt->skt, bind, events);
+  char endpoint[128];
+  const char *bind;
+  int ret, events;
+
+  
+  if( 
+    (lua_gettop(L) == 1) ||         /* s:monitor()          */
+    (lua_type(L, 2) == LUA_TNUMBER) /* s:monitor(EVENT_ALL) */
+  ){
+#if _MSC_VER
+    sprintf_s(endpoint, sizeof(endpoint), "inproc://lzmq.monitor.%p", skt->skt);
+#else
+    sprintf_s(endpoint, "inproc://lzmq.monitor.%p", skt->skt);
+#endif
+    bind = endpoint;
+    events = luaL_optint(L, 2, ZMQ_EVENT_ALL);
+  }
+  else{
+    bind = luaL_checkstring(L, 2);
+    events = luaL_optint(L, 3, ZMQ_EVENT_ALL);
+  }
+
+  ret = zmq_socket_monitor (skt->skt, bind, events);
   if(-1 == ret){
     return luazmq_fail(L, skt);
   }
-  return luazmq_pass(L);
+
+  lua_pushstring(L, bind);
+  return 1;
+}
+
+static int luazmq_skt_context (lua_State *L) {
+  zsocket *skt = luazmq_getsocket(L);
+  lua_rawgeti(L, LUAZMQ_LUA_REGISTRY, skt->ctx_ref);
+  return 1;
 }
 
 int luazmq_skt_before_close (lua_State *L, zsocket *skt) {
+  luaL_unref(L, LUAZMQ_LUA_REGISTRY, skt->ctx_ref);
+  skt->ctx_ref = LUA_NOREF;
+
   if(LUA_NOREF == skt->onclose_ref) return 0;
-  lua_rawgeti(L, LUA_REGISTRYINDEX, skt->onclose_ref);
+  lua_rawgeti(L, LUAZMQ_LUA_REGISTRY, skt->onclose_ref);
 
   lua_pcall(L, 0, 0, 0);
 
-  luaL_unref(L, LUA_REGISTRYINDEX, skt->onclose_ref);
+  luaL_unref(L, LUAZMQ_LUA_REGISTRY, skt->onclose_ref);
   skt->onclose_ref = LUA_NOREF;
   return 0;
 }
@@ -333,12 +364,12 @@ static int luazmq_skt_on_close (lua_State *L) {
   lua_settop(L, 2);
   if(LUA_NOREF != skt->onclose_ref){
     if(lua_isnil(L, 2)){
-      luaL_unref(L, LUA_REGISTRYINDEX, skt->onclose_ref);
+      luaL_unref(L, LUAZMQ_LUA_REGISTRY, skt->onclose_ref);
       skt->onclose_ref = LUA_NOREF;
       return 0;
     }
   }
-  skt->onclose_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  skt->onclose_ref = luaL_ref(L, LUAZMQ_LUA_REGISTRY);
   return 0;
 }
 
@@ -350,7 +381,8 @@ static int luazmq_skt_destroy (lua_State *L) {
     luazmq_skt_before_close(L, skt);
 
     ret = zmq_close(skt->skt);
-    if(ret == -1)return luazmq_fail(L, skt);
+    assert(ret != -1);
+    // if(ret == -1)return luazmq_fail(L, skt);
 
 #if LZMQ_SOCKET_COUNT
     skt->ctx->socket_count--;
@@ -662,6 +694,7 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   {"recv_all",     luazmq_skt_recv_all     },
   {"more",         luazmq_skt_more         },
   {"monitor",      luazmq_skt_monitor      },
+  {"context",      luazmq_skt_context      },
 
   {"getopt_int",   luazmq_skt_getopt_int   },
   {"getopt_i64",   luazmq_skt_getopt_i64   },
@@ -1034,9 +1067,18 @@ static const luazmq_int_const skt_security_mechanism[] ={
   {NULL, 0}
 };
 
-void luazmq_socket_initlib (lua_State *L){
-  luazmq_createmeta(L, LUAZMQ_SOCKET, luazmq_skt_methods);
+void luazmq_socket_initlib (lua_State *L, int nup){
+#ifdef LUAZMQ_DEBUG
+  int top = lua_gettop(L);
+#endif
+
+  luazmq_createmeta(L, LUAZMQ_SOCKET, luazmq_skt_methods, nup);
   lua_pop(L, 1);
+
+#ifdef LUAZMQ_DEBUG
+  assert(top == (lua_gettop(L) + nup));
+#endif
+
   luazmq_register_consts(L, skt_types);
   luazmq_register_consts(L, skt_options);
   luazmq_register_consts(L, skt_flags);

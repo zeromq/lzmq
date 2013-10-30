@@ -562,21 +562,10 @@ static const struct luaL_Reg luazmq_abstimer_methods[] = {
   {NULL,NULL}
 };
 
-void luazmq_timer_initlib(lua_State *L){
-  InitMonotonicTimer();
-  luazmq_createmeta(L, LUAZMQ_MONOTONIC_TIMER,  luazmq_montimer_methods);
-  luazmq_createmeta(L, LUAZMQ_ABSULUTE_TIMER,   luazmq_abstimer_methods);
-  lua_pop(L, 2);
-
-  lua_newtable(L);
-  luazmq_setfuncs(L, luazmq_timerlib, 0);
-  lua_setfield(L,-2, "timer");
-}
-
 LUAZMQ_TIMER_EXPORT int luaopen_lzmq_timer (lua_State *L){
   InitMonotonicTimer();
-  luazmq_createmeta(L, LUAZMQ_MONOTONIC_TIMER,  luazmq_montimer_methods);
-  luazmq_createmeta(L, LUAZMQ_ABSULUTE_TIMER,   luazmq_abstimer_methods);
+  luazmq_createmeta(L, LUAZMQ_MONOTONIC_TIMER,  luazmq_montimer_methods, 0);
+  luazmq_createmeta(L, LUAZMQ_ABSULUTE_TIMER,   luazmq_abstimer_methods, 0);
   lua_pop(L, 2);
 
   lua_newtable(L);

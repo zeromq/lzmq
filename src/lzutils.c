@@ -70,7 +70,7 @@ int luazmq_isudatap (lua_State *L, int ud, const void *p) {
   return 0;
 }
 
-void *luazmq_checkudatap (lua_State *L, int ud, const void *p) {
+void *luazmq_toudatap (lua_State *L, int ud, const void *p) {
   void *up = lua_touserdata(L, ud);
   if (up != NULL) {  /* value is a userdata? */
     if (lua_getmetatable(L, ud)) {  /* does it have a metatable? */
@@ -81,19 +81,26 @@ void *luazmq_checkudatap (lua_State *L, int ud, const void *p) {
       }
     }
   }
+  return NULL;  /* to avoid warnings */
+}
+
+void *luazmq_checkudatap (lua_State *L, int ud, const void *p) {
+  void *up = luazmq_toudatap(L, ud, p);
+  if (up != NULL) {
+    return up;
+  }
   luazmq_typerror(L, ud, p);  /* else error */
   return NULL;  /* to avoid warnings */
 }
 
-int luazmq_createmeta (lua_State *L, const char *name, const luaL_Reg *methods) {
+
+int luazmq_createmeta (lua_State *L, const char *name, const luaL_Reg *methods, int nup) {
   if (!luazmq_newmetatablep(L, name))
     return 0;
 
-  /* define methods */
-  luazmq_setfuncs (L, methods, 0);
-
-  /* define metamethods */
-  lua_pushliteral (L, "__index");
+  lua_insert(L, -1 - nup);           /* move mt prior upvalues */
+  luazmq_setfuncs (L, methods, nup); /* define methods */
+  lua_pushliteral (L, "__index");    /* define metamethods */
   lua_pushvalue (L, -2);
   lua_settable (L, -3);
 
@@ -140,6 +147,20 @@ int luazmq_pcall_method(lua_State *L, const char *name, int nargs, int nresults,
   return lua_pcall(L, nargs + 1, nresults, errfunc);
 }
 
+int luazmq_call_method(lua_State *L, const char *name, int nargs, int nresults){
+  int top = lua_gettop(L) - nargs;
+  int obj_index = -nargs - 1;
+  assert(top >= 0);
+
+  lua_getfield(L, obj_index, name);
+  lua_insert(L, obj_index - 1);
+  lua_call(L, nargs + 1, nresults);
+  top = lua_gettop(L) - top;
+  assert(top >= 0);
+  return top;
+}
+
+
 int luazmq_new_weak_table(lua_State*L, const char *mode){
   int top = lua_gettop(L);
   lua_newtable(L);
@@ -149,4 +170,33 @@ int luazmq_new_weak_table(lua_State*L, const char *mode){
   lua_setmetatable(L,-2);
   assert((top+1) == lua_gettop(L));
   return 1;
+}
+
+void luazmq_stack_dump (lua_State *L){
+  int i = 1, top = lua_gettop(L);
+
+  fprintf(stderr, " ----------------  Stack Dump ----------------\n" );
+  while( i <= top ) {
+    int t = lua_type(L, i);
+    switch (t) {
+      case LUA_TSTRING:
+        fprintf(stderr, "%d(%d):`%s'\n", i, i - top - 1, lua_tostring(L, i));
+        break;
+      case LUA_TBOOLEAN:
+        fprintf(stderr, "%d(%d): %s\n",  i, i - top - 1,lua_toboolean(L, i) ? "true" : "false");
+        break;
+      case LUA_TNUMBER:
+        fprintf(stderr, "%d(%d): %g\n",  i, i - top - 1, lua_tonumber(L, i));
+        break;
+      default:
+        lua_getglobal(L, "tostring");
+        lua_pushvalue(L, i);
+        lua_call(L, 1, 1);
+        fprintf(stderr, "%d(%d): %s(%s)\n", i, i - top - 1, lua_typename(L, t), lua_tostring(L, -1));
+        lua_pop(L, 1);
+        break;
+    }
+    i++;
+  }
+  fprintf(stderr, " ------------ Stack Dump Finished ------------\n" );
 }

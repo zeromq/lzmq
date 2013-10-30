@@ -181,8 +181,17 @@ static const luazmq_int_const poll_flags[] ={
 };
 
 
-void luazmq_poller_initlib (lua_State *L){
-  luazmq_createmeta(L, LUAZMQ_POLLER,  luazmq_plr_methods);
+void luazmq_poller_initlib (lua_State *L, int nup){
+#ifdef LUAZMQ_DEBUG
+  int top = lua_gettop(L);
+#endif
+
+  luazmq_createmeta(L, LUAZMQ_POLLER,  luazmq_plr_methods, nup);
   lua_pop(L, 1);
+
+#ifdef LUAZMQ_DEBUG
+  assert(top == (lua_gettop(L) + nup));
+#endif
+
   luazmq_register_consts(L, poll_flags);
 }

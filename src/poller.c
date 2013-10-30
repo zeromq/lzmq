@@ -212,7 +212,6 @@ int poller_poll(ZMQ_Poller *poller, long timeout) {
 
 int poller_next_revents(ZMQ_Poller *poller, int *revents) {
 	zmq_pollitem_t *items;
-	int count;
 	int idx;
 
 	idx = poller->next;

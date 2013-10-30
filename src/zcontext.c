@@ -142,7 +142,7 @@ static int luazmq_ctx_get (lua_State *L) {
 
 static int create_autoclose_list(lua_State *L){
   luazmq_new_weak_table(L, "k");
-  return luaL_ref(L, lua_upvalueindex(1));
+  return luaL_ref(L, LUAZMQ_LUA_REGISTRY);
 }
 
 static void call_socket_destroy(lua_State *L){
@@ -163,7 +163,7 @@ static int luazmq_ctx_autoclose (lua_State *L) {
     ctx->autoclose_ref = create_autoclose_list(L);
   }
 
-  lua_rawgeti(L, lua_upvalueindex(1), ctx->autoclose_ref);
+  lua_rawgeti(L, LUAZMQ_LUA_REGISTRY, ctx->autoclose_ref);
   lua_pushvalue(L, -2);
   lua_pushboolean(L, 1);
   lua_rawset(L, -3);
@@ -175,7 +175,7 @@ static int luazmq_ctx_autoclose (lua_State *L) {
 static int luazmq_ctx_close_sockets (lua_State *L, zcontext *ctx) {
   if(LUA_NOREF == ctx->autoclose_ref) return 0;
 
-  lua_rawgeti(L, lua_upvalueindex(1), ctx->autoclose_ref);
+  lua_rawgeti(L, LUAZMQ_LUA_REGISTRY, ctx->autoclose_ref);
   assert(lua_istable(L, -1));
   lua_pushnil(L);
   while(lua_next(L, -2)){
@@ -250,6 +250,7 @@ static int luazmq_create_socket (lua_State *L) {
   zskt = luazmq_newudata(L, zsocket, LUAZMQ_SOCKET);
   zskt->skt = skt;
   zskt->onclose_ref = LUA_NOREF;
+  zskt->ctx_ref = LUA_NOREF;
 
 #if LZMQ_SOCKET_COUNT
   ctx->socket_count++;
@@ -258,7 +259,7 @@ static int luazmq_create_socket (lua_State *L) {
 #endif
 
   {
-#ifdef LZMQ_DEBUG
+#ifdef LUAZMQ_DEBUG
     int top = lua_gettop(L);
 #endif
     int n = apply_options(L, 3, "close");
@@ -267,7 +268,7 @@ static int luazmq_create_socket (lua_State *L) {
     if(n != 0) return n;
     n = apply_bind_connect(L, 3, "connect");
     if(n != 0) return n;
-#ifdef LZMQ_DEBUG
+#ifdef LUAZMQ_DEBUG
     assert(top == lua_gettop(L));
 #endif
   }
@@ -289,6 +290,9 @@ static int luazmq_create_socket (lua_State *L) {
   }
 #endif
 
+  lua_pushvalue(L, 1);
+  zskt->ctx_ref = luaL_ref(L, LUAZMQ_LUA_REGISTRY);
+
   return 1;
 }
 
@@ -309,6 +313,12 @@ DEFINE_CTX_OPT(io_threads,  ZMQ_IO_THREADS)
 DEFINE_CTX_OPT(max_sockets, ZMQ_MAX_SOCKETS)
 
 static const struct luaL_Reg luazmq_ctx_methods[] = {
+  {"__gc",          luazmq_ctx_destroy       },
+  {"destroy",       luazmq_ctx_destroy       },
+  {"closed",        luazmq_ctx_closed        },
+  {"socket",        luazmq_create_socket     },
+  {"autoclose",     luazmq_ctx_autoclose     },
+  {"term",          luazmq_ctx_destroy       },
   {"set",           luazmq_ctx_set           },
   {"get",           luazmq_ctx_get           },
   {"lightuserdata", luazmq_ctx_lightuserdata },
@@ -317,28 +327,26 @@ static const struct luaL_Reg luazmq_ctx_methods[] = {
   {"socket_count",  luazmq_ctx_skt_count     },
 #endif
 
+#ifdef LUAZMQ_SUPPORT_CTX_SHUTDOWN
+  {"shutdown",      luazmq_ctx_shutdown      },
+  {"shutdowned",    luazmq_ctx_shutdowned    },
+#endif
+
   REGISTER_CTX_OPT(io_threads),
   REGISTER_CTX_OPT(max_sockets),
 
-  {"closed",     luazmq_ctx_closed },
-  {NULL,NULL}
-};
-static const struct luaL_Reg luazmq_ctx_methods_2[] = {
-  {"socket",     luazmq_create_socket  },
-  {"autoclose",  luazmq_ctx_autoclose  },
-  {"__gc",       luazmq_ctx_destroy    },
-  {"destroy",    luazmq_ctx_destroy    },
-  {"term",       luazmq_ctx_destroy    },
-#ifdef LUAZMQ_SUPPORT_CTX_SHUTDOWN
-  {"shutdown",   luazmq_ctx_shutdown   },
-  {"shutdowned", luazmq_ctx_shutdowned },
-#endif
   {NULL,NULL}
 };
 
-void luazmq_context_initlib (lua_State *L){
-  luazmq_createmeta(L, LUAZMQ_CONTEXT, luazmq_ctx_methods);
-  lua_newtable(L);
-  luazmq_setfuncs(L, luazmq_ctx_methods_2, 1);
+void luazmq_context_initlib (lua_State *L, int nup){
+#ifdef LUAZMQ_DEBUG
+  int top = lua_gettop(L);
+#endif
+
+  luazmq_createmeta(L, LUAZMQ_CONTEXT, luazmq_ctx_methods, nup);
   lua_pop(L, 1);
+
+#ifdef LUAZMQ_DEBUG
+  assert(top == (lua_gettop(L) + nup));
+#endif
 }

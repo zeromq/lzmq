@@ -258,6 +258,7 @@ function test_context()
 end
 
 function test_socket()
+  assert_function(skt.context)
   assert_function(skt.bind)
   assert_function(skt.unbind)
   assert_function(skt.connect)
@@ -442,6 +443,10 @@ function test_context_options_fail_on_ctor()
     max_sockets = -1;
   }
   assert_nil(ctx, err)
+end
+
+function test_socket_context()
+  assert_equal(ctx, skt:context())
 end
 
 end
@@ -1400,7 +1405,7 @@ function test_monitor()
     counter = counter + 1
   end
 
-  local srv, err = assert(is_zsocket(loop:create_socket(zmq.REP, {
+  local srv = assert(is_zsocket(loop:create_socket(zmq.REP, {
     linger = 0, sndtimeo = 100, rcvtimeo = 100;
     bind = {
       "inproc://test.zmq";
@@ -1413,9 +1418,9 @@ function test_monitor()
     return skip("this version of LZMQ does not support socket monitor")
   end
 
-  assert_true(srv:monitor("inproc://monitor.srv"))
+  local monitor_endpoint = assert_string(srv:monitor())
 
-  assert(is_zsocket(loop:add_new_connect(zmq.PAIR, "inproc://monitor.srv", function(sok)
+  assert(is_zsocket(loop:add_new_connect(zmq.PAIR, monitor_endpoint, function(sok)
     monitor_called = true
     local event, data, addr = sok:recv_event()
     assert_number(event, data)
@@ -1427,7 +1432,7 @@ function test_monitor()
 
   wait()
 
-  local cli, err = assert(is_zsocket(loop:create_socket(zmq.REQ, {
+  local cli = assert(is_zsocket(loop:create_socket(zmq.REQ, {
     linger = 0, sndtimeo = 100, rcvtimeo = 100;
     connect = "tcp://127.0.0.1:9000";
   })))
@@ -1447,7 +1452,31 @@ function test_monitor()
   assert_true(was_accepted)
 end
 
+function test_monitor_with_addr()
+  local srv = assert(is_zsocket(loop:create_socket(zmq.REP)))
+  local addr = "inproc://lzmq.monitor.test"
+  assert_equal(addr, srv:monitor(addr))
 end
 
+function test_monitor_with_wrong_addr()
+  local srv = assert(is_zsocket(loop:create_socket(zmq.REP)))
+  local addr = "lzmq.monitor.test"
+  local ok, err = srv:monitor(addr)
+  assert_nil(ok)
+  assert(error_is(err, zmq.errors.EINVAL))
+end
+
+function test_monitor_without_addr()
+  local srv = assert(is_zsocket(loop:create_socket(zmq.REP)))
+  assert_match("^inproc://lzmq%.monitor%.[0-9a-fA-F]+$", srv:monitor())
+end
+
+function test_monitor_without_addr_with_event()
+  local srv = assert(is_zsocket(loop:create_socket(zmq.REP)))
+  assert_match("^inproc://lzmq%.monitor%.[0-9a-fA-F]+$", srv:monitor(1))
+end
+
+
+end
 
 if not HAS_RUNNER then lunit.run() end

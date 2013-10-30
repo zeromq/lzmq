@@ -284,10 +284,18 @@ static const luazmq_int_const msg_options[] ={
   {NULL, 0}
 };
 
-void luazmq_message_initlib(lua_State *L){
+void luazmq_message_initlib(lua_State *L, int nup){
+#ifdef LUAZMQ_DEBUG
+  int top = lua_gettop(L);
+#endif
 
-  luazmq_createmeta(L, LUAZMQ_MESSAGE,  luazmq_msg_methods);
+  luazmq_createmeta(L, LUAZMQ_MESSAGE, luazmq_msg_methods, nup);
   lua_pop(L, 1);
+
+#ifdef LUAZMQ_DEBUG
+  assert(top == (lua_gettop(L) + nup));
+#endif
+
   luazmq_register_consts(L, msg_options);
 }
 

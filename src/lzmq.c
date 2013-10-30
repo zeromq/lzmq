@@ -167,12 +167,33 @@ static const struct luaL_Reg luazmq_stopwatch_methods[] = {
   {NULL,NULL}
 };
 
-static void luazmq_zutils_initlib(lua_State *L){
-  luazmq_createmeta(L, LUAZMQ_STOPWATCH, luazmq_stopwatch_methods);
+static void luazmq_zutils_initlib(lua_State *L, int nup){
+#ifdef LUAZMQ_DEBUG
+  int top = lua_gettop(L);
+#endif
+
+  int i = 0;
+  for (i = 0; i < nup; i++)
+    lua_pushvalue(L, -nup);
+
+#ifdef LUAZMQ_DEBUG
+  {int top = lua_gettop(L);
+#endif
+
+  luazmq_createmeta(L, LUAZMQ_STOPWATCH, luazmq_stopwatch_methods, nup);
   lua_pop(L, 1);
+
+#ifdef LUAZMQ_DEBUG
+  assert(top == (lua_gettop(L) + nup));}
+#endif
+
   lua_newtable(L);
-  luazmq_setfuncs(L, luazmq_utilslib, 0);
-  lua_setfield(L,-2, "utils");
+  luazmq_setfuncs(L, luazmq_utilslib, nup);
+  lua_setfield(L, -2, "utils");
+
+#ifdef LUAZMQ_DEBUG
+  assert(top == (lua_gettop(L) + nup));
+#endif
 }
 
 //}
@@ -236,7 +257,7 @@ static int luazmq_z85_encode(lua_State *L){
   LUAZMQ_DEFINE_TEMP_BUFFER(buffer_storage);
   size_t dest_len; char *dest;
 
-#ifndef LZMQ_DEBUG
+#ifndef LUAZMQ_DEBUG
   if(len == 32) dest_len = 41; else
 #endif
   {
@@ -257,7 +278,7 @@ static int luazmq_z85_decode(lua_State *L){
   size_t len; const char *data = luaL_checklstring(L, 1, &len);
   LUAZMQ_DEFINE_TEMP_BUFFER(buffer_storage);
   size_t dest_len; char *dest;
-#ifndef LZMQ_DEBUG
+#ifndef LUAZMQ_DEBUG
   if(len == 40) dest_len = 32; else
 #endif
   {
@@ -338,18 +359,20 @@ const luazmq_int_const events_types[] ={
 };
 
 static void luazmq_init_lib(lua_State *L){
-  lua_newtable(L); 
-  luazmq_context_initlib(L);
-  luazmq_socket_initlib(L);
-  luazmq_poller_initlib(L);
-  luazmq_error_initlib(L);
-  luazmq_message_initlib(L);
-  luazmq_zutils_initlib(L);
+  lua_newtable(L); /* registry */
+  lua_newtable(L); /* library  */
+
+  lua_pushvalue(L, -2); luazmq_setfuncs(L, luazmqlib, 1);
+  lua_pushvalue(L, -2); luazmq_context_initlib(L, 1);
+  lua_pushvalue(L, -2); luazmq_socket_initlib (L, 1);
+  lua_pushvalue(L, -2); luazmq_poller_initlib (L, 1);
+  lua_pushvalue(L, -2); luazmq_error_initlib  (L, 1);
+  lua_pushvalue(L, -2); luazmq_message_initlib(L, 1);
+  lua_pushvalue(L, -2); luazmq_zutils_initlib (L, 1);
+  lua_remove(L, -2);/* registry */
 
   luazmq_register_consts(L, device_types);
   luazmq_register_consts(L, events_types);
-
-  luazmq_setfuncs(L, luazmqlib, 0);
 }
 
 LUAZMQ_EXPORT int luaopen_lzmq (lua_State *L){

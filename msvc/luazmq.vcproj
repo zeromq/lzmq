@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(ZMQ4_DIR)\include&quot;;&quot;$(LUA_DIR)\include&quot;;&quot;$(CPPLIB_DIR)\msvc&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LUAZMQ_EXPORTS;LUAZMQ_USE_SEND_AS_BUF"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LUAZMQ_EXPORTS;LUAZMQ_USE_SEND_AS_BUF;LUAZMQ_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"

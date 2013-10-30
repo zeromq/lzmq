@@ -4,7 +4,7 @@
 #include "lua.h"
 #include "lzmq.h"
 
-void luazmq_socket_initlib (lua_State *L);
+void luazmq_socket_initlib (lua_State *L, int nup);
 
 int luazmq_skt_before_close (lua_State *L, zsocket *skt);
 

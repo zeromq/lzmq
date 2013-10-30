@@ -16,5 +16,5 @@ int luazmq_msg_init_data_array(lua_State *L);
 int luazmq_msg_close(lua_State *L);
 
 
-void luazmq_message_initlib(lua_State *L);
+void luazmq_message_initlib(lua_State *L, int nup);
 #endif

@@ -1,6 +1,7 @@
 #include "zerror.h"
 #include "lzutils.h"
 #include "lzmq.h"
+#include <assert.h>
 
 static const char* luazmq_err_getmnemo(int err);
 
@@ -206,9 +207,18 @@ static const luazmq_int_const zmq_err_codes[] ={
   {NULL, 0}
 };
 
-void luazmq_error_initlib(lua_State *L){
-  luazmq_createmeta(L, LUAZMQ_ERROR,   luazmq_err_methods);
+void luazmq_error_initlib(lua_State *L, int nup){
+#ifdef LUAZMQ_DEBUG
+  int top = lua_gettop(L);
+#endif
+
+  luazmq_createmeta(L, LUAZMQ_ERROR, luazmq_err_methods, nup);
   lua_pop(L, 1);
+
+#ifdef LUAZMQ_DEBUG
+  assert(top == (lua_gettop(L) + nup));
+#endif
+
   luazmq_register_consts(L, zmq_err_codes);
 
   lua_newtable(L);

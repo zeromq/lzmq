@@ -29,9 +29,10 @@ void  luazmq_setfuncs  (lua_State *L, const luaL_Reg *l, int nup);
 int   luazmq_newmetatablep (lua_State *L, const void *p);
 void  luazmq_getmetatablep (lua_State *L, const void *p);
 int   luazmq_isudatap      (lua_State *L, int ud, const void *p);
+void *luazmq_toudatap      (lua_State *L, int ud, const void *p);
 void *luazmq_checkudatap   (lua_State *L, int ud, const void *p);
 
-int   luazmq_createmeta    (lua_State *L, const char *name, const luaL_Reg *methods);
+int   luazmq_createmeta    (lua_State *L, const char *name, const luaL_Reg *methods, int nup);
 void  luazmq_setmeta       (lua_State *L, const char *name);
 
 void *luazmq_newudata_     (lua_State *L, size_t size, const char *name);
@@ -68,6 +69,10 @@ void luazmq_register_consts_invers(lua_State *L, const luazmq_int_const *c);
 
 int luazmq_pcall_method(lua_State *L, const char *name, int nargs, int nresults, int errfunc);
 
+int luazmq_call_method(lua_State *L, const char *name, int nargs, int nresults);
+
 int luazmq_new_weak_table(lua_State*L, const char *mode);
+
+void luazmq_stack_dump(lua_State *L);
 
 #endif

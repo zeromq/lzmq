@@ -48,6 +48,7 @@ typedef struct{
 #if LZMQ_SOCKET_COUNT
   zcontext *ctx;
 #endif
+  int ctx_ref;
   int onclose_ref;
 } zsocket;
 
@@ -98,6 +99,12 @@ int luazmq_fail_no(lua_State *L, zsocket *skt);
 #  define luazmq_fail luazmq_fail_str
 #else /* default */
 #  define luazmq_fail luazmq_fail_no
+#endif
+
+#ifdef LUAZMQ_USE_LUA_REGISTRY
+#  define LUAZMQ_LUA_REGISTRY LUA_REGISTRYINDEX
+#else
+#  define LUAZMQ_LUA_REGISTRY lua_upvalueindex(1)
 #endif
 
 int luazmq_allocfail(lua_State *L);

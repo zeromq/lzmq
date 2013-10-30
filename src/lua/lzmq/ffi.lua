@@ -499,6 +499,10 @@ function Socket:on_close(fn)
   return true
 end
 
+function Socket:context()
+  return self._private.ctx
+end
+
 end
 
 do -- Message

@@ -15,9 +15,10 @@ loop:add_socket(srv, function(sok)
   sok:send(", world!");
 end)
 
-srv:monitor("inproc://monitor.srv")
-
-loop:add_new_connect(zmq.PAIR, "inproc://monitor.srv", function(sok)
+local mon = loop:create_socket(zmq.PAIR,{
+  connect = zmq.assert(srv:monitor());
+})
+loop:add_socket(mon, function(sok)
   local event, data, addr = sok:recv_event()
   print("MONITOR:", event, data, addr)
 end)
