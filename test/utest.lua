@@ -1418,6 +1418,10 @@ function test_monitor()
     return skip("this version of LZMQ does not support socket monitor")
   end
 
+  if not srv.recv_event then
+    return skip("this version of LZMQ does not support receive event")
+  end
+
   local monitor_endpoint = assert_string(srv:monitor())
 
   assert(is_zsocket(loop:add_new_connect(zmq.PAIR, monitor_endpoint, function(sok)
@@ -1454,12 +1458,20 @@ end
 
 function test_monitor_with_addr()
   local srv = assert(is_zsocket(loop:create_socket(zmq.REP)))
+  if not srv.monitor then
+    return skip("this version of LZMQ does not support socket monitor")
+  end
+
   local addr = "inproc://lzmq.monitor.test"
   assert_equal(addr, srv:monitor(addr))
 end
 
 function test_monitor_with_wrong_addr()
   local srv = assert(is_zsocket(loop:create_socket(zmq.REP)))
+  if not srv.monitor then
+    return skip("this version of LZMQ does not support socket monitor")
+  end
+
   local addr = "lzmq.monitor.test"
   local ok, err = srv:monitor(addr)
   assert_nil(ok)
@@ -1468,11 +1480,19 @@ end
 
 function test_monitor_without_addr()
   local srv = assert(is_zsocket(loop:create_socket(zmq.REP)))
+  if not srv.monitor then
+    return skip("this version of LZMQ does not support socket monitor")
+  end
+
   assert_match("^inproc://lzmq%.monitor%.[0-9a-fA-F]+$", srv:monitor())
 end
 
 function test_monitor_without_addr_with_event()
   local srv = assert(is_zsocket(loop:create_socket(zmq.REP)))
+  if not srv.monitor then
+    return skip("this version of LZMQ does not support socket monitor")
+  end
+
   assert_match("^inproc://lzmq%.monitor%.[0-9a-fA-F]+$", srv:monitor(1))
 end
 

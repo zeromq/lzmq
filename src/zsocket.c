@@ -317,10 +317,10 @@ static int luazmq_skt_monitor (lua_State *L) {
     (lua_gettop(L) == 1) ||         /* s:monitor()          */
     (lua_type(L, 2) == LUA_TNUMBER) /* s:monitor(EVENT_ALL) */
   ){
-#if _MSC_VER
+#ifdef _MSC_VER
     sprintf_s(endpoint, sizeof(endpoint), "inproc://lzmq.monitor.%p", skt->skt);
 #else
-    sprintf_s(endpoint, "inproc://lzmq.monitor.%p", skt->skt);
+    sprintf(endpoint, "inproc://lzmq.monitor.%p", skt->skt);
 #endif
     bind = endpoint;
     events = luaL_optint(L, 2, ZMQ_EVENT_ALL);

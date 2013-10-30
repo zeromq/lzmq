@@ -503,6 +503,23 @@ function Socket:context()
   return self._private.ctx
 end
 
+function Socket:monitor(addr, events)
+  if type(addr) == 'number' then
+    events, addr = addr
+  end
+
+  if not addr then
+    addr = "inproc://lzmq.monitor." .. api.ptrtoint(self._private.skt)
+  end
+
+  events = events or api.EVENTS.ZMQ_EVENT_ALL
+
+  local ret = api.zmq_socket_monitor(self._private.skt, addr, events)
+  if -1 == ret then return nil, zerror() end
+
+  return addr  
+end
+
 end
 
 do -- Message
@@ -867,6 +884,7 @@ for name, value in pairs(api.SOCKET_OPTIONS)     do zmq[ name:sub(5) ] = value[1
 for name, value in pairs(api.FLAGS)              do zmq[ name:sub(5) ] = value end
 for name, value in pairs(api.DEVICE)             do zmq[ name:sub(5) ] = value end
 for name, value in pairs(api.SECURITY_MECHANISM) do zmq[ name:sub(5) ] = value end
+for name, value in pairs(api.EVENTS)             do zmq[ name:sub(5) ] = value end
 
 zmq.errors = {}
 for name, value in pairs(api.ERRORS) do 

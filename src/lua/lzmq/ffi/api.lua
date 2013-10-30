@@ -178,6 +178,12 @@ end
 
 end
 
+local ZMQ_VERSION_MAJOR, ZMQ_VERSION_MINOR, ZMQ_VERSION_PATCH = _M.zmq_version()
+assert(
+  ((ZMQ_VERSION_MAJOR == 3) and (ZMQ_VERSION_MINOR >= 2)) or (ZMQ_VERSION_MAJOR == 4),
+  "Unsupported ZMQ version: " .. ZMQ_VERSION_MAJOR .. "." .. ZMQ_VERSION_MINOR .. "." .. ZMQ_VERSION_PATCH
+)
+
 -- zmq_ctx_new, zmq_ctx_term, zmq_ctx_get, zmq_ctx_set
 do
 
@@ -217,6 +223,7 @@ end
 -- zmq_socket, zmq_close, zmq_connect, zmq_bind, zmq_unbind, zmq_disconnect,
 -- zmq_skt_setopt_int, zmq_skt_setopt_i64, zmq_skt_setopt_u64, zmq_skt_setopt_str,
 -- zmq_skt_getopt_int, zmq_skt_getopt_i64, zmq_skt_getopt_u64, zmq_skt_getopt_str
+-- zmq_socket_monitor
 do
 
 function _M.zmq_socket(ctx, stype)
@@ -308,6 +315,10 @@ end
 
 function _M.zmq_recvmsg(skt, msg, flags)
   return libzmq3.zmq_recvmsg(skt, msg, flags)
+end
+
+function _M.zmq_socket_monitor(skt, addr, events)
+  return libzmq3.zmq_socket_monitor(skt, addr, events)
 end
 
 end
@@ -529,6 +540,30 @@ _M.SECURITY_MECHANISM = {
  ZMQ_CURVE = 2;
 }
 
+_M.EVENTS = {
+  ZMQ_EVENT_CONNECTED        = 1;
+  ZMQ_EVENT_CONNECT_DELAYED  = 2;
+  ZMQ_EVENT_CONNECT_RETRIED  = 4;
+  ZMQ_EVENT_LISTENING        = 8;
+  ZMQ_EVENT_BIND_FAILED      = 16;
+  ZMQ_EVENT_ACCEPTED         = 32;
+  ZMQ_EVENT_ACCEPT_FAILED    = 64;
+  ZMQ_EVENT_CLOSED           = 128;
+  ZMQ_EVENT_CLOSE_FAILED     = 256;
+  ZMQ_EVENT_DISCONNECTED     = 512;
+}
+
+if ZMQ_VERSION_MAJOR >= 4 then
+  _M.EVENTS.ZMQ_EVENT_MONITOR_STOPPED = 1024
+end
+
+do local ZMQ_EVENT_ALL = 0
+for _, v in pairs(_M.EVENTS) do
+  ZMQ_EVENT_ALL = ZMQ_EVENT_ALL + v
+end
+_M.EVENTS.ZMQ_EVENT_ALL = ZMQ_EVENT_ALL
+end
+
 end
 
 _M.ptrtoint = ptrtoint
@@ -539,11 +574,7 @@ _M.vla_pollitem_t = vla_pollitem_t
 _M.zmq_pollitem_t = zmq_pollitem_t
 _M.NULL           = NULL
 _M.bit            = bit
-
-local ZMQ_MAJOR, ZMQ_MINOR, ZMQ_PATCH = _M.zmq_version()
-assert(
-  ((ZMQ_MAJOR == 3) and (ZMQ_MINOR >= 2)) or (ZMQ_MAJOR == 4),
-  "Unsupported ZMQ version: " .. ZMQ_MAJOR .. "." .. ZMQ_MINOR .. "." .. ZMQ_PATCH
-)
+_M.ZMQ_VERSION_MAJOR, _M.ZMQ_VERSION_MINOR, _M.ZMQ_VERSION_PATCH =
+  ZMQ_VERSION_MAJOR, ZMQ_VERSION_MINOR, ZMQ_VERSION_PATCH
 
 return _M
