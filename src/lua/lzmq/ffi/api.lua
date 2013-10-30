@@ -508,16 +508,24 @@ if ZMQ_VERSION_MAJOR == 3 then
   local event_size  = ffi.sizeof(zmq_event_t)
 
   function _M.zmq_recv_event(skt, flags)
-    local buf, len, flen = zmq_recv_buf(skt, event_size, flags)
-    if not buf then return end
-    assert(len == event_size)
+    local msg = _M.zmq_msg_init()
+    if not msg then return end
+    local ret = _M.zmq_msg_recv(msg, skt, flags)
+    if ret == -1 then
+      _M.zmq_msg_close(msg)
+      return 
+    end
+    assert(_M.zmq_msg_size(msg) >= event_size)
+    assert(_M.zmq_msg_more(msg) == 0)
 
     local event = ffi.new(zmq_event_t)
-    ffi.copy(event, buf, event_size)
+    ffi.copy(event, _M.zmq_msg_data(msg), event_size)
     local addr
     if event.data.connected.addr ~= NULL then
       addr = ffi.string(event.data.connected.addr)
     end
+
+    _M.zmq_msg_close(msg)
     return event.event, event.data.connected.fd, addr
   end
 

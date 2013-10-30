@@ -175,14 +175,15 @@ static int luazmq_skt_recv_event (lua_State *L) {
   }
 
   memcpy (&event, zmq_msg_data (&msg), sizeof (event));
-  zmq_msg_close(&msg);
 
   lua_pushnumber(L, event.event);
   lua_pushnumber(L, event.data.connected.fd);
   if(event.data.connected.addr){
     lua_pushstring(L, event.data.connected.addr);
+    zmq_msg_close(&msg);
     return 3;
   }
+  zmq_msg_close(&msg);
   return 2;
 
 #else // 4.0+
