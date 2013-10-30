@@ -1484,7 +1484,7 @@ function test_monitor_without_addr()
     return skip("this version of LZMQ does not support socket monitor")
   end
 
-  assert_match("^inproc://lzmq%.monitor%.[0-9a-fA-F]+$", srv:monitor())
+  assert_match("^inproc://lzmq%.monitor%.[0-9a-fA-FxX]+$", srv:monitor())
 end
 
 function test_monitor_without_addr_with_event()
@@ -1493,7 +1493,7 @@ function test_monitor_without_addr_with_event()
     return skip("this version of LZMQ does not support socket monitor")
   end
 
-  assert_match("^inproc://lzmq%.monitor%.[0-9a-fA-F]+$", srv:monitor(1))
+  assert_match("^inproc://lzmq%.monitor%.[0-9a-fA-FxX]+$", srv:monitor(1))
 end
 
 

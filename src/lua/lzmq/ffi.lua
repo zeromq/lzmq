@@ -430,6 +430,13 @@ function Socket:recv_new_msg(flags)
   return msg, err
 end
 
+if api.zmq_recv_event then
+function Socket:recv_event(flags)
+  assert(not self:closed())
+  return api.zmq_recv_event(self._private.skt)
+end
+end
+
 local function gen_getopt(getopt)
   return function(self, option)
     assert(not self:closed())

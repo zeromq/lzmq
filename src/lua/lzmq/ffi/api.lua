@@ -113,6 +113,10 @@ ffi.cdef[[
 ]]
 
 local aint_t          = ffi.typeof("int[1]")
+local aint16_t        = ffi.typeof("int16_t[1]")
+local auint16_t       = ffi.typeof("uint16_t[1]")
+local aint32_t        = ffi.typeof("int32_t[1]")
+local auint32_t       = ffi.typeof("uint32_t[1]")
 local aint64_t        = ffi.typeof("int64_t[1]")
 local auint64_t       = ffi.typeof("uint64_t[1]")
 local asize_t         = ffi.typeof("size_t[1]")
@@ -125,6 +129,8 @@ local vla_pollitem_t  = ffi.typeof("zmq_pollitem_t[?]")
 local zmq_pollitem_t  = ffi.typeof("zmq_pollitem_t")
 local pollitem_size   = ffi.sizeof(zmq_pollitem_t)
 local NULL            = ffi.cast(pvoid_t, 0)
+local int16_size      = ffi.sizeof("int16_t")
+local int32_size      = ffi.sizeof("int32_t")
 
 local function ptrtoint(ptr)
   return tonumber(ffi.cast(uintptr_t, ptr))
@@ -439,6 +445,112 @@ end
 
 end
 
+
+do -- zmq_recv_event
+
+local function zmq_recv_buf(skt, len, flags)
+  local buf = ffi.new(vla_char_t, len)
+  local flen = libzmq3.zmq_recv(skt, buf, len, flags or 0)
+  if flen < 0 then return end
+  if len > flen then len = flen end
+  return buf, len, flen
+end
+
+if ZMQ_VERSION_MAJOR == 3 then
+  ffi.cdef([[
+    typedef struct {
+        int event;
+        union {
+        struct {
+            char *addr;
+            int fd;
+        } connected;
+        struct {
+            char *addr;
+            int err;
+        } connect_delayed;
+        struct {
+            char *addr;
+            int interval;
+        } connect_retried;
+        struct {
+            char *addr;
+            int fd;
+        } listening;
+        struct {
+            char *addr;
+            int err;
+        } bind_failed;
+        struct {
+            char *addr;
+            int fd;
+        } accepted;
+        struct {
+            char *addr;
+            int err;
+        } accept_failed;
+        struct {
+            char *addr;
+            int fd;
+        } closed;
+        struct {
+            char *addr;
+            int err;
+        } close_failed;
+        struct {
+            char *addr;
+            int fd;
+        } disconnected;
+        } data;
+    } zmq_event_t;
+  ]])
+  local zmq_event_t = ffi.typeof("zmq_event_t")
+  local event_size  = ffi.sizeof(zmq_event_t)
+
+  function _M.zmq_recv_event(skt, flags)
+    local buf, len, flen = zmq_recv_buf(skt, event_size, flags)
+    if not buf then return end
+    assert(len == event_size)
+
+    local event = ffi.new(zmq_event_t)
+    ffi.copy(event, buf)
+    local addr
+    if event.data.connected.addr ~= NULL then
+      addr = ffi.string(event.data.connected.addr)
+    end
+    return event.event, event.data.connected.fd, addr
+  end
+
+else
+  ffi.cdef([[
+    typedef struct {
+        uint16_t event;
+        int32_t  value;
+    } zmq_event_t;
+  ]])
+  local zmq_event_t  = ffi.typeof("zmq_event_t")
+  local event_size   = ffi.sizeof(zmq_event_t)
+
+  function _M.zmq_recv_event(skt, flags)
+    local buf, len, flen = zmq_recv_buf(skt, event_size, flags)
+    if not buf then return end
+    assert(len == (int16_size + int32_size))
+
+  
+    local addr = _M.zmq_recv(skt, 1025, _M.FLAGS.ZMQ_DONTWAIT)
+    if not addr then return end
+  
+    local event = ffi.new(auint16_t)
+    local value = ffi.new(aint32_t)
+    ffi.copy(event, buf, int16_size)
+    ffi.copy(value, buf + int16_size, int32_size)
+    return event[0], value[0], addr
+  end
+
+end
+
+end
+
 _M.ERRORS = require"lzmq.ffi.error"
 local ERRORS_MNEMO = {}
 for k,v in pairs(_M.ERRORS) do ERRORS_MNEMO[v] = k end
@@ -446,7 +558,6 @@ for k,v in pairs(_M.ERRORS) do ERRORS_MNEMO[v] = k end
 function _M.zmq_mnemoerror(errno)
   return ERRORS_MNEMO[errno] or "UNKNOWN"
 end
-
 
 do -- const
 
