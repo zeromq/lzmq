@@ -513,7 +513,7 @@ if ZMQ_VERSION_MAJOR == 3 then
     assert(len == event_size)
 
     local event = ffi.new(zmq_event_t)
-    ffi.copy(event, buf)
+    ffi.copy(event, buf, event_size)
     local addr
     if event.data.connected.addr ~= NULL then
       addr = ffi.string(event.data.connected.addr)

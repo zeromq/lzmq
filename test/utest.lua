@@ -1397,7 +1397,7 @@ end
 function test_monitor()
   local counter = 0
   local monitor_called = false
-  local was_accepted = false
+  local address = "<NOT ACCEPTED>"
 
   local function echo(skt)
     local msg = assert_table(skt:recv_all())
@@ -1431,7 +1431,9 @@ function test_monitor()
     assert_number(data)
     if addr then assert_string(addr) end
 
-    was_accepted = was_accepted or (event == zmq.EVENT_ACCEPTED)
+    if event == zmq.EVENT_ACCEPTED then
+      address = addr
+    end
   end)))
 
   wait()
@@ -1453,7 +1455,8 @@ function test_monitor()
   loop:destroy()
 
   assert_true(monitor_called)
-  assert_true(was_accepted)
+  assert_string(address)
+  assert_match("^tcp://%d+%.%d+%.%d+%.%d+:%d+$", address)
 end
 
 function test_monitor_with_addr()
