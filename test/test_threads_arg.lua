@@ -3,7 +3,7 @@ local LZMQ     = "lzmq" .. (TEST_FFI and ".ffi" or "")
 
 local zthreads = require (LZMQ .. ".threads" )
 
-local thread = zthreads.runstring(ctx, [[
+local thread = zthreads.run(ctx, [[
   local function assert_equal(name, a, b, ...)
     if a == b then return b, ... end
     print(name .. " Fail! Expected `" .. tostring(a) .. "` got `" .. tostring(b) .. "`")

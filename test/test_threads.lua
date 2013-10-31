@@ -8,7 +8,7 @@ local ctx = zmq:context()
 local skt = ctx:socket(zmq.REP)
 zmq.assert(skt:bind("inproc://test.inproc"))
 
-local thread = zthreads.runstring(ctx, [[ 
+local thread = zthreads.run(ctx, [[ 
   local LZMQ     = ]] .. ("%q"):format(LZMQ) .. [[
   local zmq      = require (LZMQ)
   local zthreads = require (LZMQ .. ".threads" )
