@@ -156,8 +156,8 @@ local function Context_cleanup(self)
   end
   -- lua can remove skt from sockets but do not call finalizer
   -- for skt._private.skt so we enforce gc
-  -- collectgarbage("collect")
-  -- collectgarbage("collect")
+  collectgarbage("collect")
+  collectgarbage("collect")
 end
 
 function Context:destroy()
