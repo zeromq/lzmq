@@ -229,6 +229,9 @@ end
 
 function Context:socket(stype, opt)
   check_context(self)
+  if type(stype) == "table" then
+    stype, opt = stype[1], stype
+  end
   local skt = api.zmq_socket(self._private.ctx, stype)
   if not skt then return nil, zerror() end
   local o = setmetatable({

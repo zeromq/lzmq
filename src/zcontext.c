@@ -186,7 +186,6 @@ static int luazmq_ctx_close_sockets (lua_State *L, zcontext *ctx) {
   return 0;
 }
 
-
 #if LZMQ_SOCKET_COUNT
 
 static int luazmq_ctx_skt_count (lua_State *L) {
@@ -240,10 +239,25 @@ static int luazmq_ctx_closed (lua_State *L) {
   return 1;
 }
 
+static int socket_type(lua_State *L, int pos){
+  if(lua_isnumber(L, pos))
+    return lua_tonumber(L, pos);
+  if(lua_istable(L, pos)){
+    lua_rawgeti(L, pos, 1);
+    if(lua_isnumber(L, -1)){
+      int n = lua_tonumber(L, -1);
+      lua_pop(L, 1);
+      return n;
+    }
+    lua_pop(L, 1);
+  }
+  return luaL_argerror(L, pos, "Socket type expected");
+}
+
 static int luazmq_create_socket (lua_State *L) {
   zsocket *zskt;
   zcontext *ctx = luazmq_getcontext(L);
-  int stype = luaL_checkint(L,2);
+  int stype = socket_type(L,2);
   void *skt = zmq_socket(ctx->ctx, stype);
   if(!skt)return luazmq_fail(L,NULL);
 
@@ -262,11 +276,12 @@ static int luazmq_create_socket (lua_State *L) {
 #ifdef LUAZMQ_DEBUG
     int top = lua_gettop(L);
 #endif
-    int n = apply_options(L, 3, "close");
+    int opt_pos = lua_istable(L, 2)?2:3;
+    int n = apply_options(L, opt_pos, "close");
     if(n != 0) return n;
-    n = apply_bind_connect(L, 3, "bind");
+    n = apply_bind_connect(L, opt_pos, "bind");
     if(n != 0) return n;
-    n = apply_bind_connect(L, 3, "connect");
+    n = apply_bind_connect(L, opt_pos, "connect");
     if(n != 0) return n;
 #ifdef LUAZMQ_DEBUG
     assert(top == lua_gettop(L));

@@ -402,6 +402,17 @@ function test_socket_options_ctor()
   assert_equal(123, skt:get_linger())
 end
 
+function test_socket_options2_ctor()
+  assert_true(skt:close())
+  skt = assert(is_zsocket(ctx:socket{zmq.SUB,
+    subscribe = { "sub 1", "sub 2", "sub 3" };
+    linger    = 123;
+  }))
+  ctx:autoclose(skt)
+  assert_true(skt:set_unsubscribe{"sub 1", "sub 2"})
+  assert_equal(123, skt:get_linger())
+end
+
 function test_context_options()
   assert_true(ctx:set_io_threads(2))
   assert_equal(2, ctx:get_io_threads())
