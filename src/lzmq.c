@@ -22,6 +22,10 @@ static const char *LUAZMQ_STOPWATCH = LUAZMQ_PREFIX "stopwatch";
 #  define LUAZMQ_SUPPORT_Z85
 #endif
 
+#if(ZMQ_VERSION_MAJOR>=4)||((ZMQ_VERSION_MAJOR==3)&&((ZMQ_VERSION_MINOR>2)||(ZMQ_VERSION_PATCH>2)))
+#  define LUAZMQ_SUPPORT_PROXY
+#endif
+
 //-----------------------------------------------------------  
 // common
 //{----------------------------------------------------------
@@ -223,7 +227,8 @@ static int luazmq_device(lua_State *L){
   return luazmq_pass(L);
 }
 
-#if(ZMQ_VERSION_MAJOR >= 3)&&(ZMQ_VERSION_MINOR >= 3)
+#ifdef LUAZMQ_SUPPORT_PROXY
+
 static int luazmq_proxy(lua_State *L){
   zsocket *fe = luazmq_getsocket_at(L,1);
   zsocket *be = luazmq_getsocket_at(L,2);
@@ -236,6 +241,7 @@ static int luazmq_proxy(lua_State *L){
   assert(0 && "The zmq_proxy() function always returns -1 and errno set to ETERM");
   return luazmq_pass(L);
 }
+
 #endif
 
 static int luazmq_error_create_(lua_State *L){
@@ -301,7 +307,7 @@ static int luazmq_z85_decode(lua_State *L){
 static const struct luaL_Reg luazmqlib[]   = {
   { "version",        luazmq_version          },
 
-#if(ZMQ_VERSION_MAJOR >= 3)&&(ZMQ_VERSION_MINOR >= 3)
+#ifdef LUAZMQ_SUPPORT_PROXY
   { "proxy",          luazmq_proxy            },
 #endif
 
