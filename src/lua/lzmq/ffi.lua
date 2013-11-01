@@ -106,6 +106,10 @@ function Context:new(ptr)
     }
   }, self)
 
+  if not HAS_GC_TABLE then
+    ffi.gc(ctx, function() o:destroy() end)
+  end
+
   if opt then
     for k, v in pairs(opt) do
       if type(k) == 'string' then
@@ -156,18 +160,29 @@ local function Context_cleanup(self)
   end
   -- lua can remove skt from sockets but do not call finalizer
   -- for skt._private.skt so we enforce gc
-  collectgarbage("collect")
-  collectgarbage("collect")
+  -- collectgarbage("collect")
+  -- collectgarbage("collect")
 end
 
 function Context:destroy()
   if self:closed() then return true end
   Context_cleanup(self)
 
+  if self._private.on_close then
+    pcall(self._private.on_close)
+  end
+
   if self._private.owner then
     api.zmq_ctx_term(self._private.ctx)
   end
   self._private.ctx = nil
+  return true
+end
+
+Context.__gc = Context.destroy
+
+function Context:on_close(fn)
+  self._private.on_close = fn
   return true
 end
 
@@ -241,6 +256,10 @@ function Context:socket(stype, opt)
     }
   },Socket)
   self:_inc_socket_count(1)
+
+  if not HAS_GC_TABLE then
+    ffi.gc(skt, function() o:close() end)
+  end
 
   if opt then
     for k, v in pairs(opt) do
