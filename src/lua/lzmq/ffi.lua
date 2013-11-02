@@ -257,9 +257,9 @@ function Context:socket(stype, opt)
   },Socket)
   self:_inc_socket_count(1)
 
-  if not HAS_GC_TABLE then
-    ffi.gc(skt, function() o:close() end)
-  end
+  -- if not HAS_GC_TABLE then
+  --   ffi.gc(skt, function() o:close() end)
+  -- end
 
   if opt then
     for k, v in pairs(opt) do
