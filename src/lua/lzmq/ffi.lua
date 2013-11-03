@@ -406,7 +406,7 @@ function Socket:send_all(msg, flags, i, n)
   assert(n >= i, "invalid range")
 
   if(flags ~= 0) and (flags ~= FLAGS.ZMQ_SNDMORE) then
-    return nil, zerror(ERRORS.NOTSUP)
+    return nil, zerror(ERRORS.ENOTSUP)
   end
   for i = i, n - 1 do
     local str = assert(msg[i])
