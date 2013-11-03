@@ -995,6 +995,62 @@ function test_recv_all()
   assert_equal('hello, world', table.concat(t))
 end
 
+function test_sendx()
+  assert_true(pub:sendx('hello', ', ', 'world'))
+  local a,b,c = assert_string(sub:recvx())
+  assert_string(b)
+  assert_string(c)
+  assert_equal('hello, world', a .. b .. c)
+end
+
+function test_sendx_more()
+  assert_true(pub:sendx_more('hello', ', '))
+  assert_true(pub:send('world'))
+  local a,b,c = assert_string(sub:recvx())
+  assert_string(b)
+  assert_string(c)
+  assert_equal('hello, world', a .. b .. c)
+end
+
+function test_send_all_wrong_flag()
+  local ok, err = pub:send_all({'hello', ', ', 'world'}, zmq.DONTWAIT)
+  assert_nil(ok)
+  assert(error_is(err, zmq.errors.ENOTSUP))
+end
+
+function test_send_all_more()
+  assert_true(pub:send_all({'hello', ', '},zmq.SNDMORE))
+  assert_true(pub:send('world'))
+  local t = assert_table(sub:recv_all())
+  assert_equal(3, #t)
+  assert_equal('hello, world', table.concat(t))
+end
+
+function test_send_all_position()
+  local msg = {
+    [-1] = 'hello';
+    [ 0] = ', ';
+    [ 1] = 'world';
+  }
+  
+  local ok, err = pub:send_all(msg, 0, -1, 1)
+  local t = assert_table(sub:recv_all())
+  assert_equal(3, #t)
+  assert_equal('hello, world', table.concat(t))
+end
+
+function test_send_all_hole()
+  assert_error(function()
+    pub:send_all({"1", nil, "2"}, 0, 1, 3)
+  end)
+end
+
+function test_sendx_hole()
+  assert_error(function()
+    pub:sendx("1", nil, "2")
+  end)
+end
+
 end
 
 local _ENV = TEST_CASE'loop'              if true then

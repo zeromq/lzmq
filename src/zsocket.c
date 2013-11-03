@@ -2,6 +2,7 @@
 #include "zmsg.h"
 #include "lzutils.h"
 #include "lzmq.h"
+#include "zerror.h"
 #include <stdint.h>
 #include <assert.h>
 
@@ -250,14 +251,28 @@ static int luazmq_skt_more (lua_State *L) {
 
 static int luazmq_skt_send_all (lua_State *L) {
   zsocket *skt = luazmq_getsocket(L);
-  size_t i = luaL_optint(L,3,1);
-  size_t n = lua_objlen(L, 2);
+  int flags = luaL_optint(L,3,0);
+  int n, i = luaL_optint(L,4,1);
+  if(lua_isnoneornil(L, 5)){
+    n = lua_objlen(L, 2);
+  }
+  else{
+    n = luaL_checkint(L, 5);
+    luaL_argcheck(L, n >= i, 5, "invalid range");
+  }
+
+  if(flags & (~ZMQ_SNDMORE)){
+    lua_pushnil(L);
+    luazmq_error_create(L, ENOTSUP);
+    return 2;
+  }
+  
   for(;i <= n; ++i){
     zmq_msg_t msg;
     const char *data;size_t len;
     int ret;
     lua_rawgeti(L, 2, i);
-    data = lua_tolstring(L,-1, &len);
+    data = luaL_checklstring(L, -1, &len);
     ret = zmq_msg_init_size(&msg, len);
     if(-1 == ret){
       ret = luazmq_fail(L, skt);
@@ -265,7 +280,7 @@ static int luazmq_skt_send_all (lua_State *L) {
       return ret + 1;
     }
     memcpy(zmq_msg_data(&msg), data, len);
-    ret = zmq_msg_send(&msg, skt->skt, (i == n)?0:ZMQ_SNDMORE);
+    ret = zmq_msg_send(&msg, skt->skt, (i == n)?flags:ZMQ_SNDMORE);
     zmq_msg_close(&msg);
     if(-1 == ret){
       ret = luazmq_fail(L, skt);
@@ -274,6 +289,38 @@ static int luazmq_skt_send_all (lua_State *L) {
     }
   }
   return luazmq_pass(L);
+}
+
+static int luazmq_skt_sendx_impl(lua_State *L, int last_flag) {
+  zsocket *skt = luazmq_getsocket(L);
+  size_t i, n = lua_gettop(L);
+  for(i = 2; i<=n; ++i){
+    zmq_msg_t msg;
+    size_t len; const char *data = luaL_checklstring(L, i, &len);
+    int ret = zmq_msg_init_size(&msg, len);
+    if(-1 == ret){
+      ret = luazmq_fail(L, skt);
+      lua_pushinteger(L, i);
+      return ret + 1;
+    }
+    memcpy(zmq_msg_data(&msg), data, len);
+    ret = zmq_msg_send(&msg, skt->skt, (i == n)?last_flag:ZMQ_SNDMORE);
+    zmq_msg_close(&msg);
+    if(-1 == ret){
+      ret = luazmq_fail(L, skt);
+      lua_pushinteger(L, i);
+      return ret + 1;
+    }
+  }
+  return luazmq_pass(L);
+}
+
+static int luazmq_skt_sendx(lua_State *L){
+  return luazmq_skt_sendx_impl(L, 0);
+}
+
+static int luazmq_skt_sendx_more(lua_State *L){
+  return luazmq_skt_sendx_impl(L, ZMQ_SNDMORE);
 }
 
 static int luazmq_skt_recv_all (lua_State *L) {
@@ -306,6 +353,43 @@ static int luazmq_skt_recv_all (lua_State *L) {
     if(!ret) break;
   }
   return 1;
+}
+
+static int luazmq_skt_recvx (lua_State *L) {
+  zsocket *skt = luazmq_getsocket(L);
+  zmq_msg_t msg;
+  int flags = luaL_optint(L,2,0);
+  int i = 0;
+  lua_settop(L, 1);
+
+  while(1){
+    int ret = zmq_msg_init(&msg);
+    if(-1 == ret){
+      ret = luazmq_fail(L, skt);
+      {int j;for(j = ret; j >= 0; --j){
+        lua_insert(L, 1);
+      }}
+      return ret + i;
+    }
+
+    ret = zmq_msg_recv(&msg, skt->skt, flags);
+    if(-1 == ret){
+      zmq_msg_close(&msg);
+      ret = luazmq_fail(L, skt);
+      {int j;for(j = ret; j >= 0; --j){
+        lua_insert(L, 1);
+      }}
+      return ret + i;
+    }
+
+    i++;
+    lua_checkstack(L, i);
+    lua_pushlstring(L, zmq_msg_data(&msg), zmq_msg_size(&msg));
+    ret = zmq_msg_more(&msg);
+    zmq_msg_close(&msg);
+    if(!ret) break;
+  }
+  return i;
 }
 
 static int luazmq_skt_monitor (lua_State *L) {
@@ -686,8 +770,11 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   {"disconnect",   luazmq_skt_disconnect   },
   {"send",         luazmq_skt_send         },
   {"send_msg",     luazmq_skt_send_msg     },
+  {"sendx",        luazmq_skt_sendx        },
+  {"sendx_more",   luazmq_skt_sendx_more   },
   {"send_more",    luazmq_skt_send_more    },
   {"recv",         luazmq_skt_recv         },
+  {"recvx",        luazmq_skt_recvx        },
   {"recv_msg",     luazmq_skt_recv_msg     },
   {"recv_new_msg", luazmq_skt_recv_new_msg },
   {"recv_len",     luazmq_skt_recv_len     },

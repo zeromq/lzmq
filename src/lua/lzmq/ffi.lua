@@ -33,8 +33,11 @@ local make_weak_kv do
 end
 
 local FLAGS = api.FLAGS
+local ERRORS = api.ERRORS
 
 local ptrtoint = api.ptrtoint
+
+local unpack = unpack or table.unpack
 
 local zmq     = {}
 local Error   = {}
@@ -396,15 +399,31 @@ function Socket:recv(flags)
   return data, more ~= 0
 end
 
-function Socket:send_all(msg)
-  for i = 1, #msg - 1 do
-    local str = msg[i]
+function Socket:send_all(msg, flags, i, n)
+  flags = flags or 0
+  i = i or 1
+  n = n or #msg
+  assert(n >= i, "invalid range")
+
+  if(flags ~= 0) and (flags ~= FLAGS.ZMQ_SNDMORE) then
+    return nil, zerror(ERRORS.NOTSUP)
+  end
+  for i = i, n - 1 do
+    local str = assert(msg[i])
     local ok, err = self:send(str, FLAGS.ZMQ_SNDMORE)
     if not ok then return nil, err, i end
   end
-  local ok, err = self:send(msg[#msg])
-  if not ok then return nil, err, #msg end
+  local ok, err = self:send(msg[n], flags)
+  if not ok then return nil, err, n end
   return true
+end
+
+function Socket:sendx(...)
+  return self:send_all({...}, 0, 1, select("#", ...))
+end
+
+function Socket:sendx_more(...)
+  return self:send_all({...}, FLAGS.ZMQ_SNDMORE, 1, select("#", ...))
 end
 
 function Socket:send_more(msg, flags)
@@ -425,6 +444,15 @@ function Socket:recv_all(flags)
     if not more then break end
   end
   return res
+end
+
+function Socket:recvx(flags)
+  local ok, err, t = self:recv_all(flags)
+  if not ok then
+    if t then return nil, err, unpack(t) end
+    return nil, err
+  end
+  return unpack(ok)
 end
 
 function Socket:recv_len(len, flags)
