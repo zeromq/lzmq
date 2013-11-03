@@ -1,0 +1,410 @@
+--- lzmq is the Lua bindings for ZeroMQ.
+--
+-- lzmq supports ZMQ >=3.2.2, >=4.0.0
+--
+-- @module lzmq
+
+--- return the version of libzmq as a array
+--
+-- @tparam[opt=false] unpack unpack zmq version
+-- @treturn[1] {major,minor,patch} version of libzmq if unpack=false
+-- @treturn[2] number major version of libzmq if unpack=true
+-- @treturn[2] number minor version of libzmq if unpack=true 
+-- @treturn[2] number patch version of libzmq if unpack=true
+function version() end
+
+--- Create a zmq Context
+--
+-- This function ignores unknown options.
+-- @tparam[opt] table options {opt_name=opt_value, ...} map of options
+-- @treturn[1] context new zmq context
+-- @treturn[2] nil
+-- @treturn[2] error error object
+-- @usage ctx = zmq.context{io_threads = 1, max_sockets = 255}
+function context() end
+
+--- Create a zmq Context based on lightuserdata.
+-- For this context @{\context.destroy} does not call `zmq_ctx_term`.
+function init_ctx() end
+
+--- ZMQ API error
+-- @type error
+--
+
+--- Get the number value of error
+-- 
+-- @treturn number number of error (e.g. zmq.errors.ETERM).
+function error:no             ()end
+
+--- Get the error name
+--
+-- @treturn string error name (e.g. "ETERM").
+function error:mnemo          ()end
+
+--- Get the error description
+-- 
+-- @treturn string result from `zmq_strerror`(e.g. "Context was terminated").
+function error:msg           ()end
+
+--- ZMQ context
+-- @type context
+--
+
+--- Close all sockets associated with this context, and then terminate the context.
+--
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+function context:destroy      () end
+
+--- This is alias for @{\context.destroy}
+--
+function context:term         () end
+
+--- Check if this Context has been terminated
+--
+-- @treturn bool true - you can no longer use this Context
+function context:closed       () end
+
+--- Get the value of a Context option.
+--
+-- @tparam number option the option to get
+-- @treturn[1] number the option value
+-- @treturn[2] nil
+-- @treturn[2] error
+--
+-- @usage iot = ctx:get(zmq.IO_THREADS)
+function context:get          () end
+
+--- Set the value of a Context option.
+--
+-- @tparam number option the option to get
+-- @tparam number value the option value
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+-- @usage ctx:set(zmq.MAX_SOCKETS, 255)
+function context:set          () end
+
+--- Get internal value of zmq Context as lightuser data.
+-- You can use this value to pass a zmq Context to another lua_State.
+--
+-- @see lzmq.init_ctx
+-- @treturn lightuserdata
+function context:lightuserdata() end
+
+--- Return number of sockets associated with this context
+-- @treturn number number of sockets
+function context:socket_count () end
+
+--- Shutdown a zmq Context
+--
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+function context:shutdown     () end
+
+--- Check if this Context has been shutdowned
+--
+-- @treturn bool true - you can only destroy this Context
+function context:shutdowned   () end
+
+--- Create a Socket associated with this Context.
+-- Ignores unknown options.
+--
+-- @tparam number socket_type
+-- @tparam[opt] table socket_options {opt_name=opt_value,...}
+-- @treturn[1] socket
+-- @treturn[2] nil
+-- @treturn[2] error
+-- @usage skt = ctx:socket(zmq.PUB,{bind = {
+--    "tcp://*:5555";
+--    "ipc://test.pub.ipc";
+-- }})
+function context:socket       () end
+
+--- Create a Socket associated with this Context.
+-- Ignores unknown options.
+--
+-- @tparam table socket_options {socket_type, opt_name=opt_value, ...}
+-- @treturn[1] socket
+-- @treturn[2] nil
+-- @treturn[2] error
+-- @usage skt = ctx:socket{zmq.SUB, 
+--    subscribe = {"101:", "102:"};
+--    connect = "tcp://127.0.0.1:5555";
+-- }
+function context:socket       () end
+
+--- ZMQ socket
+-- @type socket
+--
+
+---Close the socket
+--
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+function socket:close         () end
+
+--- Check if this Socket has been closed.
+--
+-- @treturn bool true - you can no longer use this Socket
+function socket:closed        () end
+
+--- Connect Socket to a remote zmq Socket.
+--
+-- @tparam string address zmq address
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+--
+-- @usage  skt:connect("tcp://127.0.0.1:5555")
+function socket:connect       () end
+
+--- Connect Socket to a remote zmq Sockets.
+--
+-- @tparam table addresses {address, ...} array of zmq address
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+-- @treturn[2] string error address. Socket connected to previews addresses.
+--
+-- @usage  skt:connect{"tcp://127.0.0.1:5555","ipc://test.pub.ipc"}
+function socket:connect       () end
+
+--- Disconnect Socket from a remote zmq Socket.
+--
+-- @tparam string address zmq address
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+--
+-- @usage  skt:disconnect("tcp://127.0.0.1:5555")
+function socket:disconnect    () end
+
+--- Disconnect Socket from a remote zmq Sockets.
+--
+-- @tparam table addresses {address, ...} array of zmq address
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+-- @treturn[2] string error address. Socket disconnected from previews addresses.
+--
+-- @usage  skt:disconnect{"tcp://127.0.0.1:5555","ipc://test.pub.ipc"}
+function socket:disconnect    () end
+
+--- Bind Socket to a local address.
+--
+-- @tparam string address zmq address
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+--
+-- @usage  skt:bind("tcp://*:5555")
+function socket:bind          () end
+
+--- Bind Socket to a local addresses.
+--
+-- @tparam table addresses {address, ...} array of zmq address
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+-- @treturn[2] string error address. Socket binded to previews addresses.
+--
+-- @usage  skt:bind{"tcp://*:5555","ipc://test.pub.ipc"}
+function socket:bind          () end
+
+--- Unbind Socket from a local address.
+--
+-- @tparam string address zmq address
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+--
+-- @usage  skt:unbind("tcp://*:5555")
+function socket:unbind        () end
+
+--- Unbind Socket from a local addresses.
+--
+-- @tparam table addresses {address, ...} array of zmq address
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+-- @treturn[2] string error address. Socket unbinded from previews addresses.
+--
+-- @usage  skt:bind{"tcp://*:5555","ipc://test.pub.ipc"}
+function socket:unbind        () end
+
+--- Send message over Socket.
+--
+-- @tparam string message content of message.
+-- @tparam[opt=0] number flags zmq send flags.
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+--
+-- @usage
+-- skt:send("Hello", zmq.SNDMORE)
+-- skt:send("World")
+function socket:send          () end
+
+--- Send message over Socket.
+-- This function always set flag zmq.SNDMORE to message
+--
+-- @tparam string message content of message.
+-- @tparam[opt=zmq.SNDMORE] number flags zmq send flags.
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+--
+-- @usage
+-- skt:send_more("Hello")
+-- skt:send_more("World", zmq.DONTWAIT) -- zmq.SNDMORE also setted
+function socket:send_more     () end
+
+--- Send message over Socket.
+--
+-- @tparam message message content of message.
+-- @tparam[opt=0] number flags zmq send flags.
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+--
+function socket:send_msg      () end
+
+--- Send a multipart message over Socket.
+-- This function always set flag zmq.SNDMORE to message
+--
+-- @tparam table message {string,...} parts of message.
+-- @tparam[opt=0] number flags zmq send flags.
+--    Support only zmq.SNDMORE flag. Any other flag cause error ENOTSUP.
+-- @tparam[opt=1] number begin_pos position of first part in message
+-- @tparam[opt=#message] number end_pos position of last part in message
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+-- @treturn[2] number index of error part
+-- @raise "invalid internal"
+--
+-- @usage
+-- skt:send_multipart{"Hello","World"}
+function socket:send_all() end
+
+--- Send a multipart message over Socket.
+--
+-- @param ... string parts of message.
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+-- @treturn[2] number index of error part
+--
+-- @usage
+-- skt:sendx("Hello","World")
+function socket:sendx() end
+
+--- Send a multipart message over Socket.
+-- This function always set flag zmq.SNDMORE to message
+--
+-- @param ... string parts of message.
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+-- @treturn[2] number index of error part
+function socket:sendx_more() end
+
+--- Receive a message.
+-- 
+-- @tparam[opt=0] number flags zmq receive flags.
+-- @treturn[1] string message
+-- @treturn[1] bool more flag
+-- @treturn[2] nil
+-- @treturn[2] error
+--
+-- @usage 
+-- more = true
+-- while more do
+--   msg, more = skt:recv()
+--   ...
+-- emd
+function socket:recv          () end
+
+--- Receive first bytes from message.
+--
+-- @tparam number len number of bytes to receive
+-- @tparam[opt=0] number flags zmq receive flags.
+-- @treturn[1] first bytes from message
+-- @treturn[1] bool more flag
+-- @treturn[1] number full size of message
+-- @treturn[2] nil
+-- @treturn[2] error
+function socket:recv_len      () end
+
+
+--- Receive a message.
+-- 
+-- @tparam message number flags zmq receive flags.
+-- @tparam[opt=0] number flags zmq receive flags.
+-- @treturn[1] message message
+-- @treturn[1] bool more flag
+-- @treturn[2] nil
+-- @treturn[2] error
+function socket:recv_msg      () end
+
+--- Receive a message.
+-- This function create new `message` object.
+--
+-- @tparam[opt=0] number flags zmq receive flags.
+-- @treturn[1] message message
+-- @treturn[1] bool more flag
+-- @treturn[2] nil
+-- @treturn[2] error
+function socket:recv_new_msg  () end
+
+--- Receive multipart message.
+--
+-- @tparam[opt=0] number flags zmq receive flags.
+-- @treturn[1] table array of parts of message
+-- @treturn[2] nil
+-- @treturn[2] error
+-- @treturn[2] table received part of message
+function socket:recv_all() end
+
+--- Receive multipart message.
+--
+-- @tparam[opt=0] number flags zmq receive flags.
+-- @treturn[1] ... parts of message
+-- @treturn[2] nil
+-- @treturn[2] error
+-- @treturn[2] ... received parts of message
+function socket:recvx         () end
+
+--- Receive zmq event message.
+--
+-- @tparam[opt=0] number flags zmq receive flags.
+-- @treturn[1] number envet
+-- @treturn[1] number value
+-- @treturn[1] string address
+-- @treturn[2] nil
+-- @treturn[2] error
+function socket:recv_event    () end
+
+--- Start publishing socket events on inproc.
+-- This function generate unique address if it not provided.
+-- Also you could provide only event bitmask.
+--
+-- @tparam[opt] string address address used for monitoring
+-- @tparam[opt=zmq.EVENT_ALL] number enents zmq envent bitmask
+-- @treturn[1] string address used for monitoring
+-- @treturn[2] nil
+-- @treturn[2] error
+--
+-- @usage
+-- -- create monitor socket
+-- local mon = ctx:socket{zmq.PAIR, connect = skt:monitor()}
+function socket:monitor       () end
+
+--- ZMQ message
+-- @type message
+--
+

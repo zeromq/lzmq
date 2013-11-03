@@ -163,13 +163,13 @@ static int luazmq_skt_recv_msg (lua_State *L) {
 static int luazmq_skt_recv_event (lua_State *L) {
   zsocket *skt  = luazmq_getsocket(L);
   zmq_event_t event;
-  int rc;
+  int rc, flags = luaL_optint(L, 2, 0);
 
 #if ZMQ_VERSION_MAJOR == 3
   zmq_msg_t msg;
   zmq_msg_init (&msg);
 
-  rc = zmq_msg_recv (&msg, skt->skt, 0);
+  rc = zmq_msg_recv (&msg, skt->skt, flags);
   if(rc == -1){
     zmq_msg_close(&msg);
     return luazmq_fail(L, skt);
@@ -193,7 +193,7 @@ static int luazmq_skt_recv_event (lua_State *L) {
 
   zmq_msg_init (&msg1); zmq_msg_init (&msg2);
 
-  rc = zmq_msg_recv (&msg1, skt->skt, 0);
+  rc = zmq_msg_recv (&msg1, skt->skt, flags);
   if(rc == -1){
     zmq_msg_close(&msg1);
     zmq_msg_close(&msg2);
@@ -202,7 +202,7 @@ static int luazmq_skt_recv_event (lua_State *L) {
 
   assert (zmq_msg_more(&msg1) != 0);
 
-  rc = zmq_msg_recv (&msg2, skt->skt, 0);
+  rc = zmq_msg_recv (&msg2, skt->skt, flags);
   if(rc == -1){
     zmq_msg_close(&msg1);
     zmq_msg_close(&msg2);
@@ -780,6 +780,7 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   {"recv_len",     luazmq_skt_recv_len     },
   {"recv_event",   luazmq_skt_recv_event   },
   {"send_all",     luazmq_skt_send_all     },
+  {"recv_all",     luazmq_skt_recv_all     },
   {"recv_all",     luazmq_skt_recv_all     },
   {"more",         luazmq_skt_more         },
   {"monitor",      luazmq_skt_monitor      },

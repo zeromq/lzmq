@@ -208,12 +208,18 @@ static void luazmq_zutils_initlib(lua_State *L, int nup){
 
 static int luazmq_version(lua_State *L){
   int major, minor, patch;
-  zmq_version (&major, &minor, &patch); 
-  lua_newtable(L);
-  lua_pushinteger(L, major); lua_rawseti(L, -2, 1);
-  lua_pushinteger(L, minor); lua_rawseti(L, -2, 2);
-  lua_pushinteger(L, patch); lua_rawseti(L, -2, 3);
-  return 1;
+  zmq_version (&major, &minor, &patch);
+  if(!lua_toboolean(L, 1)){
+    lua_newtable(L);
+    lua_pushinteger(L, major); lua_rawseti(L, -2, 1);
+    lua_pushinteger(L, minor); lua_rawseti(L, -2, 2);
+    lua_pushinteger(L, patch); lua_rawseti(L, -2, 3);
+    return 1;
+  }
+  lua_pushinteger(L, major);
+  lua_pushinteger(L, minor);
+  lua_pushinteger(L, patch);
+  return 3;
 }
 
 static int luazmq_device(lua_State *L){

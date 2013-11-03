@@ -890,9 +890,12 @@ end
 
 do -- zmq
 
-function zmq.version()
+function zmq.version(unpack)
   local mj,mn,pt = api.zmq_version()
-  if mj then return {mj,mn,pt} end
+  if mj then
+    if unpack then return mj,mn,pt end
+    return {mj,mn,pt}
+  end
   return nil, zerror()
 end
 

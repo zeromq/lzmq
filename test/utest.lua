@@ -221,6 +221,14 @@ function test_interface()
   if zmq.proxy then assert_function(zmq.proxy) end
 end
 
+function test_version()
+  local version = assert_table(zmq.version())
+  local major,minor,patch = assert_number(zmq.version(true))
+  assert_equal(major, version[1])
+  assert_equal(minor, version[2])
+  assert_equal(patch, version[3])
+end
+
 end
 
 local _ENV = TEST_CASE'ctx/skt interface' if true then
@@ -911,6 +919,14 @@ function test_recv_len()
   assert_equal(("0"):rep(8), str, more)
   assert_false(more)
   assert_equal(8, len)
+end
+
+function test_recv_len_0()
+  assert_true(pub:send(("0"):rep(32)))
+
+  local str, more, len = assert_equal("", sub:recv_len(0))
+  assert_false(more)
+  assert_equal(32, len)
 end
 
 function test_recv_msg()
