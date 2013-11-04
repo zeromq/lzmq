@@ -1463,6 +1463,34 @@ end
 
 end
 
+local _ENV = TEST_CASE'curve keypair'     if true and zmq.curve_keypair then
+
+function test_generate_z85()
+  local pub, sec = zmq.curve_keypair()
+  if not pub then
+    assert(error_is(sec, zmq.errors.ENOTSUP))
+    return skip("you need build libzmq with libsodium")
+  end
+  assert_string(pub)
+  assert_string(sec)
+  assert_equal(40, #pub)
+  assert_equal(40, #sec)
+end
+
+function test_generate_bin()
+  local pub, sec = zmq.curve_keypair(true)
+  if not pub then
+    assert(error_is(sec, zmq.errors.ENOTSUP))
+    return skip("you need build libzmq with libsodium")
+  end
+  assert_string(pub)
+  assert_string(sec)
+  assert_equal(32, #pub)
+  assert_equal(32, #sec)
+end
+
+end
+
 local _ENV = TEST_CASE'monitor'           if true then
 
 local loop, timer

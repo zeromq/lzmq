@@ -58,6 +58,14 @@ install:
       sudo make install;
     fi
   - cd $TRAVIS_BUILD_DIR
+  - if [ $ZMQ_VER = "zeromq4" ]; then
+      git clone git://github.com/jedisct1/libsodium.git;
+      cd libsodium;
+      ./autogen.sh;
+      ./configure && make check;
+      sudo make install;
+      sudo ldconfig;
+    fi
   - sudo luarocks install https://raw.github.com/moteus/lunit/moteus-skip/rockspecs/lunitx-scm.mot.skip-0.rockspec
   - sudo luarocks install https://raw.github.com/Neopallium/lua-llthreads/master/rockspecs/lua-llthreads-scm-0.rockspec
   - if [ $LZMQ = "ffi-lua" ]; then

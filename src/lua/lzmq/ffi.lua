@@ -973,6 +973,8 @@ zmq.z85_encode = api.zmq_z85_encode
 
 zmq.z85_decode = api.zmq_z85_decode
 
+zmq.curve_keypair = api.zmq_curve_keypair
+
 end
 
 return zmq

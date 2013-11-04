@@ -26,6 +26,10 @@ static const char *LUAZMQ_STOPWATCH = LUAZMQ_PREFIX "stopwatch";
 #  define LUAZMQ_SUPPORT_PROXY
 #endif
 
+#if(ZMQ_VERSION_MAJOR==4)&&((ZMQ_VERSION_MAJOR>0)||(ZMQ_VERSION_PATCH>0))
+#  define LUAZMQ_SUPPORT_CURVE_KEYPAIR
+#endif
+
 //-----------------------------------------------------------  
 // common
 //{----------------------------------------------------------
@@ -157,8 +161,8 @@ static int luazmq_utils_sleep(lua_State *L){
 }
 
 static const struct luaL_Reg luazmq_utilslib[]   = {
-  { "stopwatch",    luazmq_stopwatch_create },
-  { "sleep",        luazmq_utils_sleep },
+  { "stopwatch",     luazmq_stopwatch_create },
+  { "sleep",         luazmq_utils_sleep      },
 
   {NULL, NULL}
 };
@@ -261,7 +265,6 @@ static int luazmq_error_tostring(lua_State *L){
   return 1;
 }
 
-
 #ifdef LUAZMQ_SUPPORT_Z85
 
 static int luazmq_z85_encode(lua_State *L){
@@ -308,6 +311,33 @@ static int luazmq_z85_decode(lua_State *L){
 
 #endif
 
+#ifdef LUAZMQ_SUPPORT_CURVE_KEYPAIR
+
+static int luazmq_curve_keypair(lua_State *L){
+  int as_bin = lua_toboolean(L, 1);
+  char public_key [41];
+  char secret_key [41];
+  int rc = zmq_curve_keypair(public_key, secret_key);
+  if(rc == -1)
+    return luazmq_fail(L, 0);
+
+  if(as_bin){
+    uint8_t public_key_bin[32];
+    uint8_t secret_key_bin[32];
+    zmq_z85_decode (public_key_bin, public_key);
+    zmq_z85_decode (secret_key_bin, secret_key);
+    lua_pushlstring(L, public_key_bin, 32);
+    lua_pushlstring(L, secret_key_bin, 32);
+    return 2;
+  }
+
+  lua_pushlstring(L, public_key, 40);
+  lua_pushlstring(L, secret_key, 40);
+  return 2;
+}
+
+#endif
+
 //}----------------------------------------------------------  
 
 static const struct luaL_Reg luazmqlib[]   = {
@@ -320,6 +350,10 @@ static const struct luaL_Reg luazmqlib[]   = {
 #ifdef LUAZMQ_SUPPORT_Z85
   { "z85_encode",     luazmq_z85_encode       },
   { "z85_decode",     luazmq_z85_decode       },
+#endif
+
+#ifdef LUAZMQ_SUPPORT_CURVE_KEYPAIR
+  { "curve_keypair",  luazmq_curve_keypair    },
 #endif
 
   { "device",         luazmq_device           },

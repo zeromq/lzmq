@@ -110,6 +110,7 @@ ffi.cdef[[
 ffi.cdef[[
   char *zmq_z85_encode (char *dest, const char *data, size_t size);
   char *zmq_z85_decode (char *dest, const char *string);
+  int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key);
 ]]
 
 local aint_t          = ffi.typeof("int[1]")
@@ -445,6 +446,27 @@ end
 
 end
 
+-- zmq_curve_keypair
+if pget(libzmq3, "zmq_curve_keypair") then
+
+function _M.zmq_curve_keypair(as_binary)
+  local public_key = ffi.new(vla_char_t, 41)
+  local secret_key = ffi.new(vla_char_t, 41)
+  local rc = libzmq3.zmq_curve_keypair(public_key, secret_key)
+  if ret == -1 then return -1 end
+  if not as_binary then
+    return ffi.string(public_key, 40), ffi.string(secret_key, 40)
+  end
+  local public_key_bin = ffi.new(vla_char_t, 32)
+  local secret_key_bin = ffi.new(vla_char_t, 32)
+
+  libzmq3.zmq_z85_decode(public_key_bin, public_key)
+  libzmq3.zmq_z85_decode(secret_key_bin, secret_key)
+
+  return ffi.string(public_key_bin, 32), ffi.string(secret_key_bin, 32)
+end
+
+end
 
 do -- zmq_recv_event
 
