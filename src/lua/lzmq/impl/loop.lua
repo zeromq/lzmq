@@ -532,7 +532,7 @@ end
 local M = {}
 
 function M.new(p, ...)
-  if p == _M then return zmq_loop:new(...) end
+  if p == M then return zmq_loop:new(...) end
   return zmq_loop:new(p, ...)
 end
 

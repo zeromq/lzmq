@@ -19,7 +19,7 @@ LUADIR  = LUADIR or J(ROOT, 'share')
 LIBDIR  = LIBDIR or J(ROOT, 'share')
 DYNAMIC = as_bool(DYNAMIC, false)
 
-ERR = (ERR or 'number'):upper()
+ERR = (ERR or 'object'):upper()
 ERRORS = {
   OBJECT = 'LUAZMQ_USE_ERR_TYPE_OBJECT',
   OBJ    = 'LUAZMQ_USE_ERR_TYPE_OBJECT',
