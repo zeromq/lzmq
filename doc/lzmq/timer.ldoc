@@ -1,0 +1,122 @@
+--- Working with time intervals.
+--
+-- @module lzmq.timer
+
+
+--- Sleep current thread.
+--
+-- @tparam number ms timeout in milliseconds.
+function sleep() end
+
+--- Create monotonic timer.
+--
+-- @tparam[opt] number duration milliseconds to fire
+-- @treturn timer
+function monotonic() end
+
+--- Create absolute timer.
+-- Absolute timer works with UTC unix time.
+--
+-- @tparam[opt] number time fire time.
+-- @treturn timer
+function absolute() end
+
+--- Get absolute time.
+--
+-- @treturn number time
+function absolute_time() end
+
+--- Get duration between two absolute times.
+--
+-- @tparam number start
+-- @tparam number finish
+-- @treturn number duration in milliseconds
+function absolute_delta() end
+
+--- Get duration since specific absolute time.
+--
+-- @tparam number start
+-- @treturn number duration in milliseconds
+function absolute_elapsed() end
+
+
+--- Get monotonic time.
+--
+-- @treturn number time
+function monotonic_time() end
+
+--- Get duration between two monotonic times.
+--
+-- @tparam number start
+-- @tparam number finish
+-- @treturn number duration in milliseconds
+function monotonic_delta() end
+
+--- Get duration since specific monotonic time.
+--
+-- @tparam number start
+-- @treturn number duration in milliseconds
+function monotonic_elapsed() end
+
+--- Timer interface
+--
+-- @type timer
+
+--- Close timer
+--
+function timer:close        ()end
+
+--- Check if this timer has been closed.
+--
+function timer:closed       ()end
+
+--- Set fire time.
+--
+-- @tparam number time For absolute timer this is UTC unix time.
+--  For monotonic timer this is duration in milliseconds.
+function timer:set          ()end
+
+--- Get fire time.
+--
+-- @treturn number time 
+function timer:get          ()end
+
+--- Clear fire time.
+--
+function timer:reset        ()end
+
+--- Check if timer has setted fire time.
+--
+function timer:setted       ()end
+
+--- Start/Restart the timer.
+--
+-- @tparam[opt] number time fire time
+function timer:start        ()end
+
+--- Check if this timer has been started.
+--
+function timer:started      ()end
+
+--- Get duration since start.
+--
+-- @treturn number duration in milliseconds
+function timer:elapsed      ()end
+
+--- Get rest time to fire.
+--
+-- @treturn number duration in milliseconds
+function timer:rest         ()end
+
+--- Stop timer.
+--
+-- @treturn number duration in milliseconds
+function timer:stop         ()end
+
+--- Chick if this timer is absolute
+--
+function timer:is_absolute  ()end
+
+--- Chick if this timer is monotonic
+--
+function timer:is_monotonic ()end

@@ -1,0 +1,70 @@
+--- Create threads and pass Context to it.
+--
+-- @module lzmq.threads
+
+
+--- Create new thread.
+-- This function create thread in suspended mode.
+--
+-- @tparam lzmq.context ctx ZMQ Context
+-- @tparam string code if first char is '@' then this is filename else this is Lua chunk
+-- @param ... arguments for thread
+-- @treturn[1] thread new thread
+-- @treturn[2] nil
+-- @treturn[2] string error message
+--
+-- @usage
+-- local thread, pipe = zthreads.run(ctx, [[
+--   local ctx = require"lzmq.threads".get_parent_ctx()
+--   ...
+-- ]]):start(true)
+function run() end
+
+--- Create new thread and pipe.
+-- This function create thread in suspended mode.
+-- 
+-- @tparam lzmq.context ctx ZMQ Context
+-- @tparam string code if first char is '@' then this is filename else this is Lua chunk
+-- @param ... arguments for thread
+-- @treturn[1] thread new thread
+-- @treturn[1] lzmq.socket pipe
+-- @treturn[2] nil
+-- @treturn[2] lzmq.error error object
+-- @treturn[3] nil
+-- @treturn[3] string error message
+--
+-- @usage
+-- local thread, pipe = zthreads.fork(ctx, [[
+--   local pipe = ...
+--   pipe:send("READY")
+--   pipe:recv()
+-- ]])
+-- thread:start()
+-- 
+-- pipe:recv()
+-- pipe:send("START")
+function fork() end
+
+--- Get context from parent thread.
+-- 
+-- @treturn lzmq.context
+function get_parent_ctx() end
+
+--- ZMQ thread
+-- @type thread
+--
+
+--- Resume thread.
+--
+-- Warning: If you don't call thread:join() on a joinable child thread, it will be called
+-- by the garbage collector, which may cause random pauses/freeze of the parent thread.
+--
+-- @tparam[opt=false] bool detached start non-joinable detached thread
+-- @return true
+function thread:start() end
+
+--- Join to joinable thread.
+--
+-- @treturn ... return values from thread
+function thread:join() end
+

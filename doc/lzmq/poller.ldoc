@@ -1,0 +1,78 @@
+--- ZMQ Socket poller.
+--
+-- @module lzmq.poller
+
+
+--- Create new poller object.
+-- 
+-- @tparam[opt] number pre_alloc pre-size the poller for the number of sockets it will handle.
+--  The size can grow dynamically as-needed.
+-- @treturn poller
+function new() end
+
+
+--- Socket poller
+--
+-- @type poller
+
+--- Add a ZMQ Socket or fd to the poller.
+-- You can add one socket multiple times.
+--
+-- @tparam (lzmq.socket|number) socket ZMQ socket or fd
+-- @tparam number events zmq poll events bitmask
+-- @tparam callable callback called when event is raised
+--
+-- @usage
+-- poller:add(sock, zmq.POLLIN, function(sock) print(sock, " is readable.") end)
+-- poller:add(sock, zmq.POLLOUT, function(sock) print(sock, " is writable.") end)
+-- poller:add(sock, zmq.POLLIN+zmq.POLLOUT, function(sock, revents)
+--     print(sock, " has events:", revents)
+-- end)
+function poller:add()end
+
+--- Change the events or callback for a socket/fd.
+-- Note. You can modify only `last` socket.
+-- 
+-- @tparam (lzmq.socket|number) socket ZMQ socket or fd
+-- @tparam number events zmq poll events bitmask
+--  if this parameter is 0 then socket will be removed.
+-- @tparam callable callback called when event is raised
+--  if this parameter is absent then socket will be removed.
+--
+-- @usage
+-- -- first wait for read event.
+-- poller:add(sock, zmq.POLLIN, function(sock) print(sock, " is readable.") end)
+-- -- now wait for write event.
+-- poller:modify(sock, zmq.POLLOUT, function(sock) print(sock, " is writable.") end)
+function poller:modify()end
+
+--- Remove a socket/fd from the poller.
+-- Note. You can remove only `last` socket.
+-- 
+-- @tparam (lzmq.socket|number) socket ZMQ socket or fd
+--
+-- @usage
+-- poller:add(sock, zmq.POLLIN, function(sock) print(sock, " is readable.") end)
+-- poller:add(sock, zmq.POLLOUT, function(sock) print(sock, " is writable.") end)
+-- -- remove socket from poller (POLLIN)
+-- poller:remove(sock)
+-- -- remove socket from poller (POLLOUT)
+-- poller:remove(sock)
+function poller:remove()end
+
+--- Wait for events on the registered sockets.
+--
+-- @tparam[opt=-1] number timeout msec to wait events. -1 - wait indefinitely.
+-- @treturn[1] number of events that has been dispatched.
+-- @treturn[2] nil
+-- @treturn[2] lzmq.error error object
+function poller:poll()end
+
+--- Start an event loop waiting for and dispatching events.
+--
+function poller:start()end
+
+--- Stop the event loop.
+--
+function poller:stop()end
+
