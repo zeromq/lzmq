@@ -14,7 +14,7 @@
 -- @treturn[2] string error message
 --
 -- @usage
--- local thread, pipe = zthreads.run(ctx, [[
+-- local thread = zthreads.run(ctx, [[
 --   local ctx = require"lzmq.threads".get_parent_ctx()
 --   ...
 -- ]]):start(true)
