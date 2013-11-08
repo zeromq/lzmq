@@ -9,7 +9,8 @@ But this library is not dropin replacement for lua-zmq library.
 
 ##API
 This is almost 1:1 binding to ZeromMQ 3.2 library.
-See [exampes](https://github.com/moteus/lzmq-zguide) form [OMQ - The Guide](http://zguide.zeromq.org)
+This is short [API](http://moteus.github.io/lzmq/index.html) description.
+See also [exampes](https://github.com/moteus/lzmq-zguide) form [OMQ - The Guide](http://zguide.zeromq.org).
 ###Constant
 ZMQ_CONSTANT_NAME in the C API turns into zmq.CONSTANT_NAME in Lua.
 ###Error codes
