@@ -785,6 +785,13 @@ function Poller:ensure(n)
   return true
 end
 
+local function skt2number(skt)
+  if type(skt) == "number" then
+    return skt
+  end
+  return ptrtoint(skt:handle())
+end
+
 function Poller:add(skt, events, cb)
   assert(type(events) == 'number')
   assert(cb)
@@ -798,7 +805,7 @@ function Poller:add(skt, events, cb)
   else
     self._private.items[n].socket = skt:handle()
     self._private.items[n].fd     = 0
-    h = api.ptrtoint(skt:handle())
+    h = ptrtoint(skt:handle())
   end
   self._private.items[n].events  = events
   self._private.items[n].revents = 0
@@ -809,16 +816,21 @@ end
 
 function Poller:remove(skt)
   local items, nitems, sockets = self._private.items, self._private.nitems, self._private.sockets
-  local params = sockets[ptrtoint(skt:handle())]
+  local h = skt2number(skt)
+  local params = sockets[h]
   if not params  then return true end
+
+  sockets[h] = nil
+
   if nitems == 0 then return true end
   local skt_no =  params[3]
   assert(skt_no < nitems)
   
-  self._private.nitems = nitems - 1
-  nitems = self._private.nitems
+  nitems = nitems - 1
+  self._private.nitems = nitems
 
-  if nitems == 0 then return true end
+  -- if we remove last socket
+  if skt_no == nitems then return true end
 
   local last_item  = items[ nitems ]
   local last_param = sockets[ ptrtoint(last_item.socket) ]

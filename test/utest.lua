@@ -569,6 +569,25 @@ function test_socket_autoclose()
   assert_true(ctx:destroy())
 end
 
+function test_socket_autoclose_poller()
+  ctx = assert(is_zcontext(zmq.context()))
+
+  local poller = zpoller.new(1)
+  local ptr
+  do 
+    local skt = assert(is_zsocket(ctx:socket(zmq.SUB)))
+    assert_equal(socket_count(ctx, 1))
+
+    poller:add(skt, zmq.POLLIN, function() end)
+    poller:remove(skt)
+    ptr = weak_ptr(skt)
+  end
+  gc_collect()
+  assert_nil(ptr.value)
+  assert_equal(socket_count(ctx, 0))
+  assert_true(ctx:destroy())
+end
+
 end
 
 local _ENV = TEST_CASE'message'           if true then
