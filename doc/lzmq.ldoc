@@ -288,7 +288,7 @@ function socket:send_msg      () end
 -- @raise "invalid internal"
 --
 -- @usage
--- skt:send_multipart{"Hello","World"}
+-- skt:send_all{"Hello","World"}
 function socket:send_all() end
 
 --- Send a multipart message over Socket.
