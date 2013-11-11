@@ -18,6 +18,11 @@ const char *LUAZMQ_MESSAGE = LUAZMQ_PREFIX "Message";
 
 static const char *LUAZMQ_STOPWATCH = LUAZMQ_PREFIX "stopwatch";
 
+#define LUAZMQ_VERSION_MAJOR 0
+#define LUAZMQ_VERSION_MINOR 3
+#define LUAZMQ_VERSION_PATCH 0
+#define LUAZMQ_VERSION_COMMENT "dev"
+
 #if ZMQ_VERSION_MAJOR >= 4
 #  define LUAZMQ_SUPPORT_Z85
 #endif
@@ -30,7 +35,7 @@ static const char *LUAZMQ_STOPWATCH = LUAZMQ_PREFIX "stopwatch";
 #  define LUAZMQ_SUPPORT_CURVE_KEYPAIR
 #endif
 
-//-----------------------------------------------------------  
+//-----------------------------------------------------------
 // common
 //{----------------------------------------------------------
 
@@ -118,7 +123,7 @@ zmessage *luazmq_getmessage_at (lua_State *L, int i) {
 
 //}----------------------------------------------------------
 
-//-----------------------------------------------------------  
+//-----------------------------------------------------------
 // zmq.utils
 //{----------------------------------------------------------
 
@@ -206,9 +211,26 @@ static void luazmq_zutils_initlib(lua_State *L, int nup){
 
 //}
 
-//-----------------------------------------------------------  
+//-----------------------------------------------------------
 // zmq
 //{----------------------------------------------------------
+
+static int luazmq_push_version(lua_State *L){
+  lua_pushnumber(L, LUAZMQ_VERSION_MAJOR);
+  lua_pushliteral(L, ".");
+  lua_pushnumber(L, LUAZMQ_VERSION_MINOR);
+  lua_pushliteral(L, ".");
+  lua_pushnumber(L, LUAZMQ_VERSION_PATCH);
+#ifdef LUAZMQ_VERSION_COMMENT
+  if(LUAZMQ_VERSION_COMMENT[0]){
+    lua_pushliteral(L, "-"LUAZMQ_VERSION_COMMENT);
+    lua_concat(L, 6);
+  }
+  else
+#endif
+  lua_concat(L, 5);
+  return 1;
+}
 
 static int luazmq_version(lua_State *L){
   int major, minor, patch;
@@ -338,7 +360,7 @@ static int luazmq_curve_keypair(lua_State *L){
 
 #endif
 
-//}----------------------------------------------------------  
+//}----------------------------------------------------------
 
 static const struct luaL_Reg luazmqlib[]   = {
   { "version",        luazmq_version          },
@@ -419,6 +441,10 @@ static void luazmq_init_lib(lua_State *L){
 
   luazmq_register_consts(L, device_types);
   luazmq_register_consts(L, events_types);
+
+  lua_pushliteral(L, "_VERSION");
+  luazmq_push_version(L);
+  lua_rawset(L, -3);
 }
 
 LUAZMQ_EXPORT int luaopen_lzmq (lua_State *L){

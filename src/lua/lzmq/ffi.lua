@@ -907,6 +907,8 @@ end
 
 do -- zmq
 
+zmq._VERSION = "0.3.0-dev"
+
 function zmq.version(unpack)
   local mj,mn,pt = api.zmq_version()
   if mj then
