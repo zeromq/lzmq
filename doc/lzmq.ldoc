@@ -3,7 +3,7 @@
 -- lzmq supports ZMQ >=3.2.2, >=4.0.0
 --
 -- @module lzmq
-
+do
 --- return the version of libzmq as a array
 --
 -- @tparam[opt=false] unpack unpack zmq version
@@ -74,10 +74,12 @@ function msg_init_size() end
 -- @treturn message
 function msg_init_data() end
 
+end
 
 --- ZMQ API error
 -- @type error
 --
+do
 
 --- Get the number value of error
 -- 
@@ -94,12 +96,16 @@ function error:mnemo          ()end
 -- @treturn string result from `zmq_strerror`(e.g. "Context was terminated").
 function error:msg           ()end
 
+end
+
 --- ZMQ context
 -- @type context
 --
+do
 
 --- Close all sockets associated with this context, and then terminate the context.
 --
+-- @tparam[opt] number linger if present set zmq.LINGER option for socket before close it
 -- @return[1] true
 -- @treturn[2] nil
 -- @treturn[2] error
@@ -147,6 +153,7 @@ function context:socket_count () end
 
 --- Shutdown a zmq Context
 --
+-- @tparam[opt] number linger if present set zmq.LINGER option before shutdown
 -- @return[1] true
 -- @treturn[2] nil
 -- @treturn[2] error
@@ -184,12 +191,16 @@ function context:socket       () end
 -- }
 function context:socket       () end
 
+end
+
 --- ZMQ socket
 -- @type socket
 --
+do
 
 ---Close the socket
 --
+-- @tparam[opt] number linger if present set zmq.LINGER option before close
 -- @return[1] true
 -- @treturn[2] nil
 -- @treturn[2] error
@@ -452,12 +463,15 @@ function socket:recv_event    () end
 -- local mon = ctx:socket{zmq.PAIR, connect = skt:monitor()}
 function socket:monitor       () end
 
+end
+
 --- ZMQ message.
 -- This is wrapper around zmq_msg_t.
 -- But `message` object could reallocate and copy data to new zmq_msg_t object if needed.
 -- So you always could use same object while you do not call close method.
 --
 -- @type message
+do
 
 --- Close message.
 --
@@ -592,3 +606,5 @@ function message:send_more  () end
 -- @treturn[2] nil
 -- @treturn[2] error
 function message:recv       () end
+
+end

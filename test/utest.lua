@@ -85,7 +85,7 @@ end
 
 local ECHO_ADDR = "inproc://echo"
 
-local _ENV = TEST_CASE'interface'         if true then
+local _ENV = TEST_CASE'interface'            if true then
 
 function setup() end
 
@@ -231,7 +231,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'ctx/skt interface' if true then
+local _ENV = TEST_CASE'ctx/skt interface'    if true then
 
 local ctx, skt
 
@@ -470,7 +470,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'context'           if true then
+local _ENV = TEST_CASE'context'              if true then
 
 local ctx, skt
 
@@ -525,7 +525,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'socket autoclose'  if true then
+local _ENV = TEST_CASE'socket autoclose'     if true then
 
 local ctx, skt
 
@@ -590,7 +590,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'message'           if true then
+local _ENV = TEST_CASE'message'              if true then
 
 local msg
 
@@ -751,7 +751,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'bind/connect'      if true then
+local _ENV = TEST_CASE'bind/connect'         if true then
 
 local ctx, pub, sub1, sub2, sub3, msg
 
@@ -893,7 +893,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'Send Recv'         if true then
+local _ENV = TEST_CASE'Send Recv'            if true then
 
 local ctx, pub, sub, msg
 
@@ -1088,7 +1088,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'loop'              if true then
+local _ENV = TEST_CASE'loop'                 if true then
 
 local loop, timer
 
@@ -1228,7 +1228,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'timer'             if true then
+local _ENV = TEST_CASE'timer'                if true then
 
 local timer
 
@@ -1341,7 +1341,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'poller'            if true then
+local _ENV = TEST_CASE'poller'               if true then
 local ctx, pub, sub1, sub2, sub3, msg
 local poller
 local names
@@ -1449,7 +1449,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'z85 encode'        if true and zmq.z85_encode then
+local _ENV = TEST_CASE'z85 encode'           if true and zmq.z85_encode then
 
 local key_bin = "\084\252\186\036\233\050\073\150\147\022\251\097\124\135\043\176" ..
                 "\193\209\255\020\128\004\039\197\148\203\250\207\027\194\214\082"
@@ -1482,7 +1482,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'curve keypair'     if true and zmq.curve_keypair then
+local _ENV = TEST_CASE'curve keypair'        if true and zmq.curve_keypair then
 
 function test_generate_z85()
   local pub, sec = zmq.curve_keypair()
@@ -1510,7 +1510,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'monitor'           if true then
+local _ENV = TEST_CASE'monitor'              if true then
 
 local loop, timer
 

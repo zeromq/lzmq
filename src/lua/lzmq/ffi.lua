@@ -34,6 +34,7 @@ end
 
 local FLAGS = api.FLAGS
 local ERRORS = api.ERRORS
+local ZMQ_LINGER = api.SOCKET_OPTIONS.ZMQ_LINGER
 
 local ptrtoint = api.ptrtoint
 
@@ -157,9 +158,9 @@ function Context:closed()
   return not self._private.ctx
 end
 
-local function Context_cleanup(self)
+local function Context_cleanup(self, linger)
   for _, skt in pairs(self._private.sockets) do
-    skt:close()
+    skt:close(linger)
   end
   -- lua can remove skt from sockets but do not call finalizer
   -- for skt._private.skt so we enforce gc
@@ -167,9 +168,9 @@ local function Context_cleanup(self)
   -- collectgarbage("collect")
 end
 
-function Context:destroy()
+function Context:destroy(linger)
   if self:closed() then return true end
-  Context_cleanup(self)
+  Context_cleanup(self, linger)
 
   if self._private.on_close then
     pcall(self._private.on_close)
@@ -191,9 +192,9 @@ end
 
 if api.zmq_ctx_shutdown then
 
-function Context:shutdown()
+function Context:shutdown(linger)
   check_context(self)
-  Context_cleanup(self)
+  Context_cleanup(self, linger)
 
   if self._private.owner then
     api.zmq_ctx_shutdown(self._private.ctx)
@@ -335,7 +336,7 @@ function Socket:closed()
   return not self._private.skt
 end
 
-function Socket:close()
+function Socket:close(linger)
   if self:closed() then return true end
 
   if self._private.on_close then
@@ -343,6 +344,10 @@ function Socket:close()
   end
 
   self._private.ctx:_remove_socket(self)
+
+  if linger then
+    api.zmq_skt_setopt_int(self._private.skt, ZMQ_LINGER, linger)
+  end
 
   api.zmq_close(self._private.skt)
   self._private.skt = nil

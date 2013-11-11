@@ -465,7 +465,10 @@ static int luazmq_skt_destroy (lua_State *L) {
   if(!(skt->flags & LUAZMQ_FLAG_CLOSED)){
     int ret;
     luazmq_skt_before_close(L, skt);
-
+    if(lua_isnumber(L, 2)){
+      int linger = luaL_optint(L, 2, 0);
+      zmq_setsockopt(skt->skt, ZMQ_LINGER, &linger, sizeof(linger));
+    }
     ret = zmq_close(skt->skt);
     assert(ret != -1);
     // if(ret == -1)return luazmq_fail(L, skt);

@@ -145,11 +145,17 @@ static int create_autoclose_list(lua_State *L){
   return luaL_ref(L, LUAZMQ_LUA_REGISTRY);
 }
 
-static void call_socket_destroy(lua_State *L){
+static void call_socket_destroy(lua_State *L, int linger){
   int top = lua_gettop(L);
   assert(luazmq_checkudatap (L, -1, LUAZMQ_SOCKET));
   lua_pushvalue(L, -1);
-  luazmq_pcall_method(L, "close", 0, 0, 0);
+  if(linger < -1){
+    luazmq_pcall_method(L, "close", 0, 0, 0);
+  }
+  else{
+    lua_pushnumber(L, linger);
+    luazmq_pcall_method(L, "close", 1, 0, 0);
+  }
   lua_settop(L, top);
 }
 
@@ -172,7 +178,7 @@ static int luazmq_ctx_autoclose (lua_State *L) {
   return 0;
 }
 
-static int luazmq_ctx_close_sockets (lua_State *L, zcontext *ctx) {
+static int luazmq_ctx_close_sockets (lua_State *L, zcontext *ctx, int linger){
   if(LUA_NOREF == ctx->autoclose_ref) return 0;
 
   lua_rawgeti(L, LUAZMQ_LUA_REGISTRY, ctx->autoclose_ref);
@@ -180,7 +186,7 @@ static int luazmq_ctx_close_sockets (lua_State *L, zcontext *ctx) {
   lua_pushnil(L);
   while(lua_next(L, -2)){
     lua_pop(L, 1); // we do not need value
-    call_socket_destroy(L);
+    call_socket_destroy(L, linger);
   }
 
   return 0;
@@ -200,7 +206,7 @@ static int luazmq_ctx_skt_count (lua_State *L) {
 
 static int luazmq_ctx_shutdown (lua_State *L) {
   zcontext *ctx = luazmq_getcontext(L);
-  luazmq_ctx_close_sockets(L, ctx);
+  luazmq_ctx_close_sockets(L, ctx, luaL_optint(L, 2, -2));
   if(!(ctx->flags & LUAZMQ_FLAG_DONT_DESTROY)){
     int ret = zmq_ctx_shutdown(ctx->ctx);
     if(ret == -1)return luazmq_fail(L,NULL);
@@ -222,7 +228,7 @@ static int luazmq_ctx_destroy (lua_State *L) {
   zcontext *ctx = (zcontext *)luazmq_checkudatap (L, 1, LUAZMQ_CONTEXT);
   luaL_argcheck (L, ctx != NULL, 1, LUAZMQ_PREFIX"context expected");
   if(!(ctx->flags & LUAZMQ_FLAG_CLOSED)){
-    luazmq_ctx_close_sockets(L, ctx);
+    luazmq_ctx_close_sockets(L, ctx, luaL_optint(L, 2, -2));
     if(!(ctx->flags & LUAZMQ_FLAG_DONT_DESTROY)){
       int ret = zmq_ctx_destroy(ctx->ctx);
       if(ret == -1)return luazmq_fail(L,NULL);
