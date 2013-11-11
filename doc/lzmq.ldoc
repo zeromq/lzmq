@@ -27,6 +27,54 @@ function context() end
 -- For this context @{\context.destroy} does not call `zmq_ctx_term`.
 function init_ctx() end
 
+--- Create ZMQ device
+--
+-- @tparam number device type
+-- @tparam socket frontend
+-- @tparam socket backend
+-- @treturn nil
+-- @treturn error
+function device() end
+
+--- Raise error if condition is false.
+-- This function could work with `error` objects on Lua 5.1.
+--
+-- @tparam ... ...
+-- @treturn ...
+function assert() end
+
+--- Create new `error` object based on error number.
+--
+-- @tparam number errno
+-- @treturn error error object
+function error() end
+
+--- Get string description for errno.
+--
+-- @tparam number errno
+-- @treturn string description
+function strerror() end
+
+--- Create new `message` object.
+--
+-- @treturn message
+function msg_init() end
+
+--- Create new `message` object.
+-- This function allocate message to specific bytes.
+--
+-- @tparam number size
+-- @treturn message
+function msg_init_size() end
+
+--- Create new `message` object.
+-- This function copy data to message from source string.
+--
+-- @tparam string source
+-- @treturn message
+function msg_init_data() end
+
+
 --- ZMQ API error
 -- @type error
 --
@@ -404,7 +452,143 @@ function socket:recv_event    () end
 -- local mon = ctx:socket{zmq.PAIR, connect = skt:monitor()}
 function socket:monitor       () end
 
---- ZMQ message
--- @type message
+--- ZMQ message.
+-- This is wrapper around zmq_msg_t.
+-- But `message` object could reallocate and copy data to new zmq_msg_t object if needed.
+-- So you always could use same object while you do not call close method.
 --
+-- @type message
 
+--- Close message.
+--
+-- @treturn bool true - you can no longer use this Message
+function message:close      () end
+
+--- Check if this Message has been closed.
+--
+-- @treturn bool true - you can no longer use this Message
+function message:closed     () end
+
+--- Move current message to new one.
+-- Afetr that function current message has no data.
+--
+-- @treturn[1] message new created message.
+-- @treturn[2] nil
+-- @treturn[2] error
+--
+-- @usage
+-- local new_msg = msg:move()
+-- assert (msg:data() == "")
+function message:move       () end
+
+--- Move source message to current one.
+-- After a call of this function the source message has no data.
+--
+-- @tparam message source
+-- @treturn[1] message current message.
+-- @treturn[2] nil
+-- @treturn[2] error
+--
+-- @usage
+-- new_msg = zmq.msg_init():move(msg)
+-- assert (msg:data() == "")
+function message:move       () end
+
+--- Copy current message to new one.
+--
+-- @treturn[1] message new created message.
+-- @treturn[2] nil
+-- @treturn[2] error
+function message:copy       () end
+
+--- Copy source message to current one.
+--
+-- @tparam message source
+-- @treturn[1] message current message.
+-- @treturn[2] nil
+-- @treturn[2] error
+function message:copy       () end
+
+--- Get size of message in bytes.
+--
+-- @treturn number size in bytes.
+function message:size       () end
+
+--- Set size of message in bytes.
+-- This function create new zmq_msg_t and copy data from current message.
+--
+-- @tparam number size
+-- @treturn bool true
+function message:set_size   () end
+
+--- Get internal pointer to zmq_msg_t data.
+-- This pounter can be invalidate with some functions (e.g. message:set_size()).
+--
+-- @treturn lightuserdata
+function message:pointer    () end
+
+--- Get data of message as string.
+--
+-- @treturn string
+function message:data       () end
+
+--- Set data of message.
+-- This function can resize message if it is necessary.
+--
+-- @tparam[opt=1] number position start position to data
+-- @tparam string data
+-- @treturn true
+--
+-- @usage
+-- msg:set_data("Hello")
+-- msg:set_data(6, ", world!")
+function message:set_data   () end
+
+--- Check if this message is not last in multipart message.
+--
+-- @treturn bool
+function message:more       () end
+
+--- Get ZMQ message property.
+--
+-- @tparam number property
+-- @treturn[1] number property value
+-- @treturn[2] nil
+-- @treturn[2] error
+function message:get        () end
+
+--- Set ZMQ message property.
+--
+-- @tparam number property
+-- @tparam number value
+-- @treturn[1] bool true
+-- @treturn[2] nil
+-- @treturn[2] error
+function message:set        () end
+
+--- Send message.
+-- 
+-- @tparam socket socket
+-- @tparam[opt=0] number flags
+-- @treturn[1] bool true
+-- @treturn[2] nil
+-- @treturn[2] error
+function message:send       () end
+
+--- Send message.
+-- This function always set zmq.SNDMORE flag.
+-- 
+-- @tparam socket socket
+-- @tparam[opt=zmq.SNDMORE] number flags
+-- @treturn[1] bool true
+-- @treturn[2] nil
+-- @treturn[2] error
+function message:send_more  () end
+
+--- Receive message.
+--
+-- @tparam socket socket
+-- @treturn[1] bool true
+-- @treturn[2] nil
+-- @treturn[2] error
+function message:recv       () end
