@@ -423,6 +423,8 @@ function Socket:send_all(msg, flags, i, n)
   return true
 end
 
+Socket.send_multipart = Socket.send_all
+
 function Socket:sendx(...)
   return self:send_all({...}, 0, 1, select("#", ...))
 end
@@ -450,6 +452,8 @@ function Socket:recv_all(flags)
   end
   return res
 end
+
+Socket.recv_multipart = Socket.recv_all
 
 function Socket:recvx(flags)
   local ok, err, t = self:recv_all(flags)
@@ -992,7 +996,11 @@ zmq.z85_encode = api.zmq_z85_encode
 
 zmq.z85_decode = api.zmq_z85_decode
 
-zmq.curve_keypair = api.zmq_curve_keypair
+function zmq.curve_keypair(...)
+  local pub, sec = api.zmq_curve_keypair(...)
+  if pub == -1 then return nil, zerror() end
+  return pub, sec
+end
 
 end
 
