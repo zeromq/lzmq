@@ -996,10 +996,14 @@ zmq.z85_encode = api.zmq_z85_encode
 
 zmq.z85_decode = api.zmq_z85_decode
 
+if api.zmq_curve_keypair then
+
 function zmq.curve_keypair(...)
   local pub, sec = api.zmq_curve_keypair(...)
   if pub == -1 then return nil, zerror() end
   return pub, sec
+end
+
 end
 
 end
