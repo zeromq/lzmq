@@ -350,6 +350,10 @@ function socket:send_msg      () end
 -- skt:send_all{"Hello","World"}
 function socket:send_all() end
 
+--- This is alias for `socket:send_all`
+--
+function socket:send_multipart() end
+
 --- Send a multipart message over Socket.
 --
 -- @param ... string parts of message.
@@ -428,6 +432,11 @@ function socket:recv_new_msg  () end
 -- @treturn[2] error
 -- @treturn[2] table received part of message
 function socket:recv_all() end
+
+
+--- This is alias for `socket:recv_all`
+--
+function socket:recv_multipart() end
 
 --- Receive multipart message.
 --
