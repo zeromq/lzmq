@@ -84,6 +84,7 @@ script:
   - lua$LUA_SFX test_threads_fork.lua
   - lua$LUA_SFX test_threads_file.lua
   - if [ $PERF = "YES" ]; then
+      cd $TRAVIS_BUILD_DIR;
       cd ./$ZMQ_VER/perf;
       echo "ZMQ Latency Test:";
       sudo ./inproc_lat 1 100000;
