@@ -9,6 +9,7 @@
 #include "poller.h"
 #include "zpoller.h"
 #include <assert.h>
+#include "zsupport.h"
 
 const char *LUAZMQ_CONTEXT = LUAZMQ_PREFIX "Context";
 const char *LUAZMQ_SOCKET  = LUAZMQ_PREFIX "Socket";
@@ -18,22 +19,43 @@ const char *LUAZMQ_MESSAGE = LUAZMQ_PREFIX "Message";
 
 static const char *LUAZMQ_STOPWATCH = LUAZMQ_PREFIX "stopwatch";
 
+LUAZMQ_EXPORT int luazmq_context (lua_State *L, void *ctx, unsigned char own) {
+  zcontext *zctx;
+  assert(ctx);
+  zctx = luazmq_newudata(L, zcontext, LUAZMQ_CONTEXT);
+  zctx->ctx = ctx;
+  zctx->autoclose_ref = LUA_NOREF;
+
+#if LZMQ_SOCKET_COUNT
+  zctx->socket_count = 0;
+#endif
+
+  if(!own){
+    zctx->flags = LUAZMQ_FLAG_DONT_DESTROY;
+  }
+
+  return 1;
+}
+
+LUAZMQ_EXPORT int luazmq_socket (lua_State *L, void *skt, unsigned char own) {
+  zsocket *zskt;
+  assert(skt);
+
+  zskt = luazmq_newudata(L, zsocket, LUAZMQ_SOCKET);
+  zskt->skt = skt;
+  zskt->onclose_ref = LUA_NOREF;
+  zskt->ctx_ref = LUA_NOREF;
+  if(!own){
+    zskt->flags = LUAZMQ_FLAG_DONT_DESTROY;
+  }
+
+  return 1;
+}
+
 #define LUAZMQ_VERSION_MAJOR 0
 #define LUAZMQ_VERSION_MINOR 3
 #define LUAZMQ_VERSION_PATCH 0
 #define LUAZMQ_VERSION_COMMENT "dev"
-
-#if ZMQ_VERSION_MAJOR >= 4
-#  define LUAZMQ_SUPPORT_Z85
-#endif
-
-#if(ZMQ_VERSION_MAJOR>=4)||((ZMQ_VERSION_MAJOR==3)&&((ZMQ_VERSION_MINOR>2)||(ZMQ_VERSION_PATCH>2)))
-#  define LUAZMQ_SUPPORT_PROXY
-#endif
-
-#if(ZMQ_VERSION_MAJOR==4)&&((ZMQ_VERSION_MINOR>0)||(ZMQ_VERSION_PATCH>0))
-#  define LUAZMQ_SUPPORT_CURVE_KEYPAIR
-#endif
 
 //-----------------------------------------------------------
 // common

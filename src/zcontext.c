@@ -2,10 +2,7 @@
 #include "lzutils.h"
 #include "lzmq.h"
 #include <assert.h>
-
-#if ZMQ_VERSION_MAJOR == 4
-#  define LUAZMQ_SUPPORT_CTX_SHUTDOWN
-#endif
+#include "zsupport.h"
 
 // apply options for object on top of stack
 // if set option fail call destroy method for object and return error
@@ -260,7 +257,7 @@ static int socket_type(lua_State *L, int pos){
   return luaL_argerror(L, pos, "Socket type expected");
 }
 
-static int luazmq_create_socket (lua_State *L) {
+static int luazmq_ctx_socket (lua_State *L) {
   zsocket *zskt;
   zcontext *ctx = luazmq_getcontext(L);
   int stype = socket_type(L,2);
@@ -337,7 +334,7 @@ static const struct luaL_Reg luazmq_ctx_methods[] = {
   {"__gc",          luazmq_ctx_destroy       },
   {"destroy",       luazmq_ctx_destroy       },
   {"closed",        luazmq_ctx_closed        },
-  {"socket",        luazmq_create_socket     },
+  {"socket",        luazmq_ctx_socket        },
   {"autoclose",     luazmq_ctx_autoclose     },
   {"term",          luazmq_ctx_destroy       },
   {"set",           luazmq_ctx_set           },

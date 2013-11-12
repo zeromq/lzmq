@@ -166,6 +166,7 @@ static int luazmq_skt_recv_event (lua_State *L) {
   int rc, flags = luaL_optint(L, 2, 0);
 
 #if ZMQ_VERSION_MAJOR == 3
+
   zmq_msg_t msg;
   zmq_msg_init (&msg);
 
@@ -465,17 +466,21 @@ static int luazmq_skt_destroy (lua_State *L) {
   if(!(skt->flags & LUAZMQ_FLAG_CLOSED)){
     int ret;
     luazmq_skt_before_close(L, skt);
-    if(lua_isnumber(L, 2)){
-      int linger = luaL_optint(L, 2, 0);
-      zmq_setsockopt(skt->skt, ZMQ_LINGER, &linger, sizeof(linger));
+    if(!(skt->flags & LUAZMQ_FLAG_DONT_DESTROY)){
+      if(lua_isnumber(L, 2)){
+        int linger = luaL_optint(L, 2, 0);
+        zmq_setsockopt(skt->skt, ZMQ_LINGER, &linger, sizeof(linger));
+      }
+      ret = zmq_close(skt->skt);
+      assert(ret != -1);
+      // if(ret == -1)return luazmq_fail(L, skt);
     }
-    ret = zmq_close(skt->skt);
-    assert(ret != -1);
-    // if(ret == -1)return luazmq_fail(L, skt);
 
 #if LZMQ_SOCKET_COUNT
-    skt->ctx->socket_count--;
-    assert(skt->ctx->socket_count >= 0);
+    if(skt->ctx){
+      skt->ctx->socket_count--;
+      assert(skt->ctx->socket_count >= 0);
+    }
 #endif
 
     skt->flags |= LUAZMQ_FLAG_CLOSED;

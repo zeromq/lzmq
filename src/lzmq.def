@@ -1,2 +1,4 @@
 EXPORTS
 	luaopen_lzmq
+	luazmq_context
+	luazmq_socket

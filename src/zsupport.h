@@ -1,0 +1,21 @@
+#ifndef _ZSUPPORT_H_
+#define _ZSUPPORT_H_
+#include "lua.h"
+
+#if ZMQ_VERSION_MAJOR >= 4
+#  define LUAZMQ_SUPPORT_Z85
+#endif
+
+#if ZMQ_VERSION_MAJOR >= 4
+#  define LUAZMQ_SUPPORT_CTX_SHUTDOWN
+#endif
+
+#if(ZMQ_VERSION_MAJOR>=4)||((ZMQ_VERSION_MAJOR==3)&&((ZMQ_VERSION_MINOR>2)||(ZMQ_VERSION_PATCH>2)))
+#  define LUAZMQ_SUPPORT_PROXY
+#endif
+
+#if(ZMQ_VERSION_MAJOR==4)&&((ZMQ_VERSION_MINOR>0)||(ZMQ_VERSION_PATCH>0))
+#  define LUAZMQ_SUPPORT_CURVE_KEYPAIR
+#endif
+
+#endif
