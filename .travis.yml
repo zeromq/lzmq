@@ -10,13 +10,13 @@ env:
     # - LUAROCKS_GITTAG=v$LUAROCKS_VER
   matrix:
     # todo: install libffi and test ffi binding on Lua 5.1/5.2
-    - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq3 LUA=lua5.1 LUA_DEV=liblua5.1-dev LUA_VER=5.1 LUA_SFX=5.1 LUA_INCDIR=/usr/include/lua5.1
-    - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq4 LUA=lua5.1 LUA_DEV=liblua5.1-dev LUA_VER=5.1 LUA_SFX=5.1 LUA_INCDIR=/usr/include/lua5.1
-    - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq3 LUA=lua5.2 LUA_DEV=liblua5.2-dev LUA_VER=5.2 LUA_SFX=5.2 LUA_INCDIR=/usr/include/lua5.2
-    - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
-    - PERF="NO"  LZMQ=ffi      ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
+    # - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq3 LUA=lua5.1 LUA_DEV=liblua5.1-dev LUA_VER=5.1 LUA_SFX=5.1 LUA_INCDIR=/usr/include/lua5.1
+    # - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq4 LUA=lua5.1 LUA_DEV=liblua5.1-dev LUA_VER=5.1 LUA_SFX=5.1 LUA_INCDIR=/usr/include/lua5.1
+    # - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq3 LUA=lua5.2 LUA_DEV=liblua5.2-dev LUA_VER=5.2 LUA_SFX=5.2 LUA_INCDIR=/usr/include/lua5.2
+    # - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
+    # - PERF="NO"  LZMQ=ffi      ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
     - PERF="YES" LZMQ=ffi      ZMQ_VER=zeromq4 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
-    - PERF="NO"  LZMQ=ffi-lua  ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
+    # - PERF="NO"  LZMQ=ffi-lua  ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
 
 branches:
   only:
@@ -76,41 +76,20 @@ install:
     fi
 
 script: 
-  - cd test 
-  - lunit.sh -i lua$LUA_SFX utest.lua
-  - lua$LUA_SFX test_threads.lua
-  - lua$LUA_SFX test_threads_arg.lua
-  - lua$LUA_SFX test_threads_fork_arg.lua
-  - lua$LUA_SFX test_threads_fork.lua
-  - lua$LUA_SFX test_threads_file.lua
+  # - cd test 
+  # - lunit.sh -i lua$LUA_SFX utest.lua
+  # - lua$LUA_SFX test_threads.lua
+  # - lua$LUA_SFX test_threads_arg.lua
+  # - lua$LUA_SFX test_threads_fork_arg.lua
+  # - lua$LUA_SFX test_threads_fork.lua
+  # - lua$LUA_SFX test_threads_file.lua
   - if [ $PERF = "YES" ]; then
       cd $TRAVIS_BUILD_DIR;
-      cd ./$ZMQ_VER/perf;
-      echo "ZMQ Latency Test:";
-      sudo ./inproc_lat 1 100000;
-      echo "-------------------------------";
-      echo "ZMQ Throughput Test:";
-      sudo ./inproc_thr 128 100000;
-      echo "*******************************";
-      cd $TRAVIS_BUILD_DIR;
-      cd ./examples/perf2/lat;
-      echo "LZMQ Latency Test:";
-      lua$LUA_SFX inproc_lat.lua 1 100000;
-      echo "-------------------------------";
-      if [ $LZMQ = "ffi" ]; then
-        echo "LZMQ(FFI) Latency Test:";
-        lua$LUA_SFX inproc_lat.lua 1 100000 ffi;
-        echo "-------------------------------";
-      fi;
-      cd ../thr;
-      echo "LZMQ Throughput Test:";
-      lua$LUA_SFX inproc_thr.lua 128 100000;
-      echo "-------------------------------";
-      if [ $LZMQ = "ffi" ]; then
-        echo "LZMQ(FFI) Throughput Test:";
-        lua$LUA_SFX inproc_thr.lua 128 100000 ffi;
-        echo "-------------------------------";
-      fi;
+      mkdir ./examples/perf2/libzmq;
+      sudo cp ./$ZMQ_VER/perf/inproc_lat ./examples/perf2/libzmq/;
+      sudo cp ./$ZMQ_VER/perf/inproc_thr ./examples/perf2/libzmq/;
+      cd ./examples/perf2;
+      sudo luajit runner.lua;
     fi
 
 notifications:
