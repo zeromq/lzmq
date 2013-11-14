@@ -333,6 +333,9 @@ end
 do -- Socket
 Socket.__index = Socket
 
+-- we need only one zmq_msg_t struct to handle all recv
+local tmp_msg = ffi.new(api.zmq_msg_t)
+
 function Socket:closed()
   return not self._private.skt
 end
@@ -392,7 +395,7 @@ end
 
 function Socket:recv(flags)
   assert(not self:closed())
-  local msg = api.zmq_msg_init()
+  local msg = api.zmq_msg_init(tmp_msg)
   if not msg then return nil, zerror() end
   local ret = api.zmq_msg_recv(msg, self._private.skt)
   if ret == -1 then
