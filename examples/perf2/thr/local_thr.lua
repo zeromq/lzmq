@@ -37,7 +37,8 @@ if msg:size() ~= message_size then
   return -1;
 end
 
-local watch, per_sec = ztimer.monotonic():start(), 1000
+-- local watch, per_sec = ztimer.monotonic():start(), 1000
+local watch, per_sec = zmq.utils.stopwatch():start(), 1000000
 
 for i = 1, message_count - 1 do
   zassert(msg:recv(s))

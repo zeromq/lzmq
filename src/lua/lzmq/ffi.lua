@@ -46,6 +46,7 @@ local Context = {}
 local Socket  = {}
 local Message = {}
 local Poller  = {}
+local StopWatch = {}
 
 
 local function zerror(...) return Error:new(...) end
@@ -909,6 +910,39 @@ end
 
 end
 
+do -- StopWatch
+
+StopWatch.__index = StopWatch
+
+function StopWatch:new()
+  return setmetatable({
+    _private = {}
+  }, self)
+end
+
+function StopWatch:start()
+  assert(not self._private.timer, "timer alrady started")
+  self._private.timer = api.zmq_stopwatch_start()
+  return self
+end
+
+function StopWatch:stop()
+  assert(self._private.timer, "timer not started")
+  local elapsed = api.zmq_stopwatch_stop(self._private.timer)
+  self._private.timer = nil
+  return elapsed
+end
+
+function StopWatch:close()
+  if self._private.timer then
+    api.zmq_stopwatch_stop(self._private.timer)
+    self._private.timer = nil
+  end
+  return true
+end
+
+end
+
 do -- zmq
 
 zmq._VERSION = "0.3.0"
@@ -1005,6 +1039,10 @@ function zmq.curve_keypair(...)
 end
 
 end
+
+zmq.utils = {
+  stopwatch = function() return StopWatch:new() end
+}
 
 end
 

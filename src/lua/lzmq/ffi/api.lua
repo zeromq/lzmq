@@ -113,6 +113,11 @@ ffi.cdef[[
   int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key);
 ]]
 
+ffi.cdef[[
+  void *zmq_stopwatch_start (void);
+  unsigned long zmq_stopwatch_stop (void *watch_);
+]]
+
 local aint_t          = ffi.typeof("int[1]")
 local aint16_t        = ffi.typeof("int16_t[1]")
 local auint16_t       = ffi.typeof("uint16_t[1]")
@@ -581,6 +586,19 @@ end
 
 end
 
+-- zmq_stopwatch_start, zmq_stopwatch_stop
+do
+
+  function _M.zmq_stopwatch_start()
+    return libzmq3.zmq_stopwatch_start()
+  end
+
+  function _M.zmq_stopwatch_stop(watch)
+    return libzmq3.zmq_stopwatch_stop(watch)
+  end
+
+end
+
 _M.ERRORS = require"lzmq.ffi.error"
 local ERRORS_MNEMO = {}
 for k,v in pairs(_M.ERRORS) do ERRORS_MNEMO[v] = k end
@@ -713,6 +731,7 @@ _M.inttoptr = inttoptr
 
 _M.vla_pollitem_t = vla_pollitem_t
 _M.zmq_pollitem_t = zmq_pollitem_t
+_M.zmq_msg_t      = zmq_msg_t
 _M.NULL           = NULL
 _M.bit            = bit
 _M.ZMQ_VERSION_MAJOR, _M.ZMQ_VERSION_MINOR, _M.ZMQ_VERSION_PATCH =
