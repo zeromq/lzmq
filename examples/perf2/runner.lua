@@ -116,19 +116,6 @@ msg_size  = 1
 msg_count = 10000
 N         = 10
 
-local libzmq_lat    = {}
-local nomsg_lat     = {}
-local nomsg_lat_ffi = {}
-local msg_lat       = {}
-local msg_lat_ffi   = {}
-
-   bin_lat(libzmq_lat,    "libzmq")
-luajit_lat(nomsg_lat,     "lat_nomsg", ""    )
-luajit_lat(nomsg_lat_ffi, "lat_nomsg", "ffi" )
-luajit_lat(msg_lat,       "lat",       ""    )
-luajit_lat(msg_lat_ffi,   "lat",       "ffi" )
-
-
 print("\n----")
 print("###Inproc Throughput Test:\n")
 print(string.format("message size: %d [B]<br/>",     msg_size  ))
@@ -161,6 +148,19 @@ for i = 1, N do
     field(12,"%.3f", msg_thr_ffi   [i][2]);
   }
 end
+
+
+local libzmq_lat    = {}
+local nomsg_lat     = {}
+local nomsg_lat_ffi = {}
+local msg_lat       = {}
+local msg_lat_ffi   = {}
+
+   bin_lat(libzmq_lat,    "libzmq")
+luajit_lat(nomsg_lat,     "lat_nomsg", ""    )
+luajit_lat(nomsg_lat_ffi, "lat_nomsg", "ffi" )
+luajit_lat(msg_lat,       "lat",       ""    )
+luajit_lat(msg_lat_ffi,   "lat",       "ffi" )
 
 
 print("\n----")

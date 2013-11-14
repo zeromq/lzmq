@@ -44,7 +44,7 @@ Of course you can run any test manually.
 ----
 ###Inproc Throughput Test:
 
-message size: 1 [B]<br/>
+message size: 30 [B]<br/>
 message count: 10000<br/>
 mean throughput [Mb/s]:<br/>
 
