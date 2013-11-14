@@ -29,7 +29,8 @@ local s = zassert(ctx:socket{zmq.REQ,
 
 local msg = ("0"):rep(message_size)
 
-local watch = ztimer.monotonic():start()
+-- local watch, us = ztimer.monotonic():start(), 1000
+local watch, us = zmq.utils.stopwatch():start(), 1
 
 for i = 1, roundtrip_count do
   zassert(s:send(msg))
@@ -41,7 +42,7 @@ for i = 1, roundtrip_count do
 end
 
 local elapsed = watch:stop()
-local latency = (elapsed * 1000) / (roundtrip_count * 2)
+local latency = (elapsed * us) / (roundtrip_count * 2)
 
 print(string.format("message size: %d [B]",       message_size   ))
 print(string.format("roundtrip count: %d",        roundtrip_count))

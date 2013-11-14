@@ -10,13 +10,13 @@ env:
     # - LUAROCKS_GITTAG=v$LUAROCKS_VER
   matrix:
     # todo: install libffi and test ffi binding on Lua 5.1/5.2
-    # - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq3 LUA=lua5.1 LUA_DEV=liblua5.1-dev LUA_VER=5.1 LUA_SFX=5.1 LUA_INCDIR=/usr/include/lua5.1
-    # - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq4 LUA=lua5.1 LUA_DEV=liblua5.1-dev LUA_VER=5.1 LUA_SFX=5.1 LUA_INCDIR=/usr/include/lua5.1
-    # - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq3 LUA=lua5.2 LUA_DEV=liblua5.2-dev LUA_VER=5.2 LUA_SFX=5.2 LUA_INCDIR=/usr/include/lua5.2
-    # - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
-    # - PERF="NO"  LZMQ=ffi      ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
+    - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq3 LUA=lua5.1 LUA_DEV=liblua5.1-dev LUA_VER=5.1 LUA_SFX=5.1 LUA_INCDIR=/usr/include/lua5.1
+    - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq4 LUA=lua5.1 LUA_DEV=liblua5.1-dev LUA_VER=5.1 LUA_SFX=5.1 LUA_INCDIR=/usr/include/lua5.1
+    - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq3 LUA=lua5.2 LUA_DEV=liblua5.2-dev LUA_VER=5.2 LUA_SFX=5.2 LUA_INCDIR=/usr/include/lua5.2
+    - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
+    - PERF="YES" LZMQ=ffi      ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
     - PERF="YES" LZMQ=ffi      ZMQ_VER=zeromq4 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
-    # - PERF="NO"  LZMQ=ffi-lua  ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
+    - PERF="NO"  LZMQ=ffi-lua  ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
 
 branches:
   only:
@@ -76,13 +76,13 @@ install:
     fi
 
 script: 
-  # - cd test 
-  # - lunit.sh -i lua$LUA_SFX utest.lua
-  # - lua$LUA_SFX test_threads.lua
-  # - lua$LUA_SFX test_threads_arg.lua
-  # - lua$LUA_SFX test_threads_fork_arg.lua
-  # - lua$LUA_SFX test_threads_fork.lua
-  # - lua$LUA_SFX test_threads_file.lua
+  - cd test 
+  - lunit.sh -i lua$LUA_SFX utest.lua
+  - lua$LUA_SFX test_threads.lua
+  - lua$LUA_SFX test_threads_arg.lua
+  - lua$LUA_SFX test_threads_fork_arg.lua
+  - lua$LUA_SFX test_threads_fork.lua
+  - lua$LUA_SFX test_threads_file.lua
   - if [ $PERF = "YES" ]; then
       cd $TRAVIS_BUILD_DIR;
       mkdir ./examples/perf2/libzmq;
