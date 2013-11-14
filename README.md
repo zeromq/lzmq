@@ -7,6 +7,7 @@ Support ZeromMQ 3.2/4.0
 This library use `zmq.poller` and `zmq.threads` from [lua-zmq](https://github.com/Neopallium/lua-zmq) binding.
 But this library is not dropin replacement for lua-zmq library.
 
+----
 ##API
 This is almost 1:1 binding to ZeromMQ 3.2 library.
 This is short [API](http://moteus.github.io/lzmq/index.html) description.
@@ -32,6 +33,32 @@ ZMQ_FD => skt:fd() / skt:get_fd()
 
 **For example:**
 ZMQ_SUBSCRIBE => skt:subscribe("") / skt:set_subscribe("")
+
+----
+##Performance
+To run same test you should copy original performance tests to `exampes/perf2/libzmq`
+and run `runner.lua` from `exampes/perf2`. For now it require LuaJIT and exists 
+C and FFI version of `lzmq` library.
+Of course you can run any test manually.
+
+###Inproc Throughput Test:
+
+message size: 30 [B]<br/>
+message count: 10000<br/>
+mean throughput [Mb/s]:<br/>
+
+| # | libzmq     | str        | str(ffi)   | msg        | msg(ffi)   |
+|---|------------|------------|------------|------------|------------|
+| 1 |386.972     |307.338     |414.794     |173.875     |265.928     |
+| 2 |361.663     |311.567     |412.584     |168.327     |323.799     |
+| 3 |344.927     |307.890     |395.062     |159.511     |320.299     |
+| 4 |437.079     |192.864     |414.222     |156.108     |324.368     |
+| 5 |400.668     |309.598     |398.142     |168.161     |317.502     |
+| 6 |101.613     |302.229     |393.185     |171.932     |315.126     |
+| 7 |378.847     |310.238     |398.473     |165.551     |315.748     |
+| 8 |381.679     |309.797     |417.246     |167.096     |330.761     |
+| 9 |309.517     |309.997     |412.442     |156.914     |331.858     |
+| 10|294.804     |306.083     |392.029     |163.310     |324.763     |
 
 ----
 ###Incompatibility list with lua-zmq (this is not full)

@@ -76,12 +76,12 @@ luajit_thr(msg_thr_ffi,   "thr",       "ffi" )
 
 print("\n----")
 print("###Inproc Throughput Test:\n")
-print(string.format("message size: %d [B]",   msg_size  ))
-print(string.format("message count: %d",      msg_count ))
-print(string.format("mean throughput [Mb/s]:"           ))
+print(string.format("message size: %d [B]<br/>",   msg_size  ))
+print(string.format("message count: %d<br/>",      msg_count ))
+print(string.format("mean throughput [Mb/s]:<br/>"           ))
 
 print_row{
-  field(2, " #");
+  field(3, " # ");
   field(12, " libzmq");
   field(12, " str");
   field(12, " str(ffi)");
@@ -89,7 +89,7 @@ print_row{
   field(12, " msg(ffi)");
 }
 print_row{
-  ("-"):rep(2);
+  ("-"):rep(3);
   ("-"):rep(12);
   ("-"):rep(12);
   ("-"):rep(12);
@@ -98,7 +98,7 @@ print_row{
 }
 for i = 1, N do
   print_row{
-    field(2, "%d",   i);
+    field(3, " %d",  i);
     field(12,"%.3f", libzmq_thr    [i][2]);
     field(12,"%.3f", nomsg_thr     [i][2]);
     field(12,"%.3f", nomsg_thr_ffi [i][2]);

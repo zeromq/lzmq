@@ -595,6 +595,13 @@ end
 do -- Message
 Message.__index = Message
 
+-- we need only one zmq_msg_t struct to handle resize Message.
+-- Because of ffi.gc is too slow tmp_msg is always set 
+-- ffi.gc(tmp_msg, api.zmq_msg_close).
+-- Double call zmq_msg_close is valid.
+local tmp_msg = ffi.gc(api.zmq_msg_init(), api.zmq_msg_close)
+api.zmq_msg_close(tmp_msg);api.zmq_msg_close(tmp_msg);
+
 function Message:new(str_or_len)
   local msg
   if not str_or_len then
@@ -667,17 +674,22 @@ function Message:set_size(nsize)
   assert(not self:closed())
   local osize = self:size()
   if nsize == osize then return true end
-  local msg = api.zmq_msg_init_size(nsize)
+  local msg = api.zmq_msg_init_size(tmp_msg, nsize)
   if nsize > osize then nsize = osize end
 
-  ffi.copy(
-    api.zmq_msg_data(msg),
-    api.zmq_msg_data(self._private.msg),
-    nsize
-  )
+  if nsize > 0 then
+    ffi.copy(
+      api.zmq_msg_data(msg),
+      api.zmq_msg_data(self._private.msg),
+      nsize
+    )
+  end
 
-  api.zmq_msg_close(ffi.gc(self._private.msg, nil))
-  self._private.msg = ffi.gc(msg, api.zmq_msg_close)
+  tmp_msg = self._private.msg
+  api.zmq_msg_close(tmp_msg)
+
+  -- we do not need set ffi.gc because of tmp_msg already set this
+  self._private.msg = msg
   return true
 end
 
@@ -700,17 +712,23 @@ function Message:set_data(pos, str)
     )
     return true
   end
-  local msg = api.zmq_msg_init_size(nsize)
+  local msg = api.zmq_msg_init_size(tmp_msg, nsize)
   if not msg then return nil, zerror() end
   if osize > pos then osize = pos end
-  ffi.copy(
-    api.zmq_msg_data(msg),
-    api.zmq_msg_data(self._private.msg),
-    osize
-  )
+  if osize > 0 then
+    ffi.copy(
+      api.zmq_msg_data(msg),
+      api.zmq_msg_data(self._private.msg),
+      osize
+    )
+  end
   ffi.copy(api.zmq_msg_data(msg, pos - 1),str)
-  api.zmq_close(ffi.gc(self._private.msg, nil))
-  self._private.msg = ffi.gc(msg, api.zmq_msg_close)
+
+  tmp_msg = self._private.msg
+  api.zmq_msg_close(tmp_msg)
+
+  -- we do not need set ffi.gc because of tmp_msg already set this
+  self._private.msg = msg
   return true
 end
 
