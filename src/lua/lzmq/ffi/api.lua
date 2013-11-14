@@ -594,7 +594,7 @@ do
   end
 
   function _M.zmq_stopwatch_stop(watch)
-    return libzmq3.zmq_stopwatch_stop(watch)
+    return tonumber(libzmq3.zmq_stopwatch_stop(watch))
   end
 
 end
