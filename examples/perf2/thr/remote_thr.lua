@@ -28,13 +28,50 @@ local s = zassert(ctx:socket{zmq.PUSH,
   connect = connect_to;
 })
 
-local msg = zassert(zmq.msg_init_data(
-  ("0"):rep(message_size)
-))
+local function version_1()
+  -- here we create two messages.
+  -- but zmq_msg_copy does not reallocate 
+  -- buffer but just copy reference and increment
+  -- couter. So this version is much faseter then
+  -- original version.
 
-local smsg = zassert(zmq.msg_init())
+  local msg = zassert(zmq.msg_init_data(
+    ("0"):rep(message_size)
+  ))
 
-for i = 1, message_count do
-  smsg:copy(msg)
-  zassert(smsg:send(s))
+  local smsg = zassert(zmq.msg_init())
+
+  for i = 1, message_count do
+    smsg:copy(msg)
+    zassert(smsg:send(s))
+  end
 end
+
+local function version_2()
+  -- here we create one messages.
+  -- msg:set_size create internal new zmq_msg_t
+  -- each time but does not init memory.
+  -- This is what do original version.
+  -- The main impact for ffi version is callind 
+  -- ffi.gc each time we create new zmq_msg_t struct
+
+  local msg = zmq.msg_init_size(message_size)
+  for i = 1, message_count do
+    zassert(msg:send(s))
+    msg:set_size(message_size)
+  end
+end
+
+local function version_3()
+  -- this is same as version_2 but we also copy data
+  -- to message
+
+  local data = ("o"):rep(message_size)
+  local msg = zmq.msg_init_data(data)
+  for i = 1, message_count do
+    zassert(msg:send(s))
+    msg:set_data(data)
+  end
+end
+
+version_2()
