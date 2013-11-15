@@ -112,10 +112,6 @@ luajit_thr(nomsg_thr_ffi, "thr_nomsg", "ffi" )
 luajit_thr(msg_thr,       "thr",       ""    )
 luajit_thr(msg_thr_ffi,   "thr",       "ffi" )
 
-msg_size  = 1
-msg_count = 10000
-N         = 10
-
 print("\n----")
 print("###Inproc Throughput Test:\n")
 print(string.format("message size: %d [B]<br/>",     msg_size  ))
@@ -149,6 +145,9 @@ for i = 1, N do
   }
 end
 
+msg_size  = 1
+msg_count = 10000
+N         = 10
 
 local libzmq_lat    = {}
 local nomsg_lat     = {}
