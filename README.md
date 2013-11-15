@@ -2,46 +2,31 @@
 
 [![Build Status](https://travis-ci.org/moteus/lzmq.png?branch=master)](https://travis-ci.org/moteus/lzmq)
 
-Support ZeromMQ 3.2/4.0
+Support ZeromMQ 3.2/4.0.<br/>
+This library is not dropin replacement for [lua-zmq](https://github.com/Neopallium/lua-zmq) library.<br/>
+This library has C and FFI version of binding.
 
-This library use `zmq.poller` and `zmq.threads` from [lua-zmq](https://github.com/Neopallium/lua-zmq) binding.
-But this library is not dropin replacement for lua-zmq library.
+##Source Code
+https://github.com/moteus/lzmq
 
-----
+##Install
+Using LuaRocks:<br/>
+`luarocks install lzmq` or install only ffi version `luarocks install lzmq-ffi`<br/>
+Because of LuaRocks repositories has latency you can use [MoonRocks](http://rocks.moonscript.org/) server.<br/>
+`luarocks install lzmq --server=http://rocks.moonscript.org`<br/>
+`lzmq.threads` module also requires [llthreads](https://github.com/Neopallium/lua-llthreads) library (version > 1.2).<br/>
+`luarocks install https://raw.github.com/Neopallium/lua-llthreads/master/rockspecs/lua-llthreads-scm-0.rockspec`
+
 ##API
-This is almost 1:1 binding to ZeromMQ 3.2 library.
-This is short [API](http://moteus.github.io/lzmq/index.html) description.
-See also [exampes](https://github.com/moteus/lzmq-zguide) form [OMQ - The Guide](http://zguide.zeromq.org).
-###Constant
-ZMQ_CONSTANT_NAME in the C API turns into zmq.CONSTANT_NAME in Lua.
-###Error codes
-EXXX in the C API turns into zmq.EXXX and zmq.errors.EXXX in Lua.
-###Options
-ZMQ_OPTION_NAME in the C API 
-- if this is read/write option then it turns into 2 functions 
-`obj:set_option_name(value)` and `obj:get_option_name()`
+This is short [API](http://moteus.github.io/lzmq/index.html) description.<br/>
+See also [exampes](https://github.com/moteus/lzmq-zguide) form [OMQ - The Guide](http://zguide.zeromq.org).<br/>
 
-**For example:**
-ZMQ_IO_THREADS => ctx:get_io_threads()/ ctx:set_io_threads(1)
-- if this is readonly  option then it turns into 2 functions 
-`obj:option_name()` and `obj:get_option_name()`
-
-**For example:**
-ZMQ_FD => skt:fd() / skt:get_fd()
-- if this is writeonly  option then it turns into 2 functions 
-`obj:option_name(value)` and `obj:set_option_name(value)`
-
-**For example:**
-ZMQ_SUBSCRIBE => skt:subscribe("") / skt:set_subscribe("")
-
-----
 ##Performance
 To run same test you should copy original performance tests to `exampes/perf2/libzmq`
 and run `runner.lua` from `exampes/perf2`. For now it require LuaJIT and exists 
-C and FFI version of `lzmq` library.
+C and FFI version of `lzmq` library.<br/>
 Of course you can run any test manually.
 
-----
 ###Inproc Throughput Test:
 
 message size: 30 [B]<br/>

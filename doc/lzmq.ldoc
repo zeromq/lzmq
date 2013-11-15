@@ -1,8 +1,28 @@
 --- lzmq is the Lua bindings for ZeroMQ.
 --
--- lzmq supports ZMQ >=3.2.2, >=4.0.0
+-- lzmq supports ZMQ >=3.2.2, >=4.0.0.
 --
+-- <h2>Constants</h2>
+-- ZMQ_CONSTANT_NAME in the C API turns into zmq.CONSTANT_NAME in Lua.<br/>
+-- <h3>Error codes</h3>
+-- EXXX in the C API turns into zmq.EXXX and zmq.errors.EXXX in Lua.
+-- <h3>Options</h3>
+-- ZMQ_OPTION_NAME in the C API:<br/><ul>
+-- <li> if this is read/write option then it turns into 2 functions 
+--  `obj:set_option_name(value)` and `obj:get_option_name()` <br/>
+-- For example:<br/>
+-- ZMQ_IO_THREADS => ctx:get_io_threads()/ ctx:set_io_threads(1)<br/>
+-- <li> if this is readonly  option then it turns into 2 functions 
+-- `obj:option_name()` and `obj:get_option_name()`<br/>
+-- For example:<br/>
+-- ZMQ_FD => skt:fd() / skt:get_fd()
+-- <li> if this is writeonly  option then it turns into 2 functions 
+-- `obj:option_name(value)` and `obj:set_option_name(value)`<br/>
+-- For example:<br/>
+-- ZMQ_SUBSCRIBE => skt:subscribe("") / skt:set_subscribe("")
+--</ul>
 -- @module lzmq
+
 do
 --- return the version of libzmq as a array
 --

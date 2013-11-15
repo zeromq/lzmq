@@ -3,14 +3,14 @@ require "utils"
 
 print_version(zmq)
 
-local ctx = zmq.init(1)
+local ctx = zmq.context()
 
-local skt = ctx:socket(zmq.REQ)
-skt:set_linger(0)
-skt:set_rcvtimeo(1000)
+local skt = ctx:socket{zmq.REQ,
+  linger = 0, rcvtimeo = 1000;
+  connect = "tcp://127.0.0.1:5555";
+}
 
-assert(skt:connect("tcp://127.0.0.1:5555"))
-assert(skt:send("hello from cli"))
+skt:send("hello from cli")
 print_msg("recv: ",skt:recv())
 
 skt:close()
