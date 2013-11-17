@@ -94,6 +94,35 @@ function msg_init_size() end
 -- @treturn message
 function msg_init_data() end
 
+--- Start built-in ZMQ proxy.
+--
+-- @tparam socket frontend
+-- @tparam socket backend
+-- @tparam[opt] socket capture
+-- @treturn nil
+-- @treturn error
+function proxy()         end
+
+--- Encode a binary data as Z85 printable text.
+--
+-- @tparam string src
+-- @treturn string
+function z85_encode()    end
+
+--- Decode a binary data from Z85 printable text.
+--
+-- @tparam string src
+-- @treturn string
+function z85_decode()    end
+
+--- Generate a new CURVE keypair.
+-- This function avaliable only for ZeroMQ >= 4.0.1. Also you need build ZeroMQ with libsodium.
+--
+-- @tparam[opt=false] bool binary if true thern keys return as binary string else they reuturn as Z85 encoded.
+-- @treturn string public key
+-- @treturn string secret key
+function curve_keypair() end
+
 end
 
 --- ZMQ API error
