@@ -77,3 +77,7 @@ average latency [us]:<br/>
 |message as ud         | msg:data()             | msg:pointer()            |
 |msg:close();msg:data()| AV                     | lua error                |
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/moteus/lzmq/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
