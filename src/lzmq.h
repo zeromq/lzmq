@@ -28,10 +28,8 @@ typedef unsigned char uchar;
 #define LUAZMQ_FLAG_CLOSED       (uchar)(0x01 << 0)
 /*context only*/
 #define LUAZMQ_FLAG_CTX_SHUTDOWN (uchar)(0x01 << 1)
-/*context only*/
 #define LUAZMQ_FLAG_DONT_DESTROY (uchar)(0x01 << 2)
-/*socket only*/
-#define LUAZMQ_FLAG_MORE         (uchar)(0x01 << 2)
+#define LUAZMQ_FLAG_MORE         (uchar)(0x01 << 3)
 
 typedef struct{
   void  *ctx;

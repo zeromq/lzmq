@@ -382,6 +382,13 @@ static int luazmq_curve_keypair(lua_State *L){
 
 #endif
 
+static int luazmq_init_socket(lua_State *L) {
+  void *src = lua_touserdata(L, 1);
+  luaL_argcheck(L, lua_islightuserdata(L, 1), 1, "lightuserdata expected");
+
+  return luazmq_socket(L, src, 0);
+}
+
 //}----------------------------------------------------------
 
 static const struct luaL_Reg luazmqlib[]   = {
@@ -408,6 +415,7 @@ static const struct luaL_Reg luazmqlib[]   = {
   { "poller",         luazmq_poller_create    },
   { "init",           luazmq_context_init     },
   { "init_ctx",       luazmq_init_ctx         },
+  { "init_socket",    luazmq_init_socket      },
   { "msg_init",       luazmq_msg_init         },
   { "msg_init_size",  luazmq_msg_init_size    },
   { "msg_init_data",  luazmq_msg_init_data    },

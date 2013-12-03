@@ -347,13 +347,18 @@ function Socket:close(linger)
     pcall(self._private.on_close)
   end
 
-  self._private.ctx:_remove_socket(self)
+  if not self._private.dont_destroy then
+    if self._private.ctx then
+      self._private.ctx:_remove_socket(self)
+    end
 
-  if linger then
-    api.zmq_skt_setopt_int(self._private.skt, ZMQ_LINGER, linger)
+    if linger then
+      api.zmq_skt_setopt_int(self._private.skt, ZMQ_LINGER, linger)
+    end
+
+    api.zmq_close(self._private.skt)
   end
 
-  api.zmq_close(self._private.skt)
   self._private.skt = nil
   return true
 end
@@ -981,12 +986,23 @@ function zmq.context(opt)
   return Context:new(opt)
 end
 
- function zmq.init(n)
+function zmq.init(n)
   return zmq.context{io_threads = n}
 end  
 
 function zmq.init_ctx(ctx)
   return Context:new(ctx)
+end
+
+function zmq.init_socket(skt)
+  local o = setmetatable({
+    _private = {
+      dont_destroy = true;
+      skt          = skt;
+    }
+  },Socket)
+
+  return o
 end
 
 local real_assert = assert

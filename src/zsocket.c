@@ -432,6 +432,12 @@ static int luazmq_skt_context (lua_State *L) {
   return 1;
 }
 
+static int luazmq_skt_handle (lua_State *L) {
+  zsocket *skt = luazmq_getsocket(L);
+  lua_pushlightuserdata(L, skt->skt);
+  return 1;
+}
+
 int luazmq_skt_before_close (lua_State *L, zsocket *skt) {
   luaL_unref(L, LUAZMQ_LUA_REGISTRY, skt->ctx_ref);
   skt->ctx_ref = LUA_NOREF;
@@ -793,6 +799,7 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   {"recv_multipart", luazmq_skt_recv_all     },
   {"more",           luazmq_skt_more         },
   {"monitor",        luazmq_skt_monitor      },
+  {"handle",         luazmq_skt_handle       },
   {"context",        luazmq_skt_context      },
 
   {"getopt_int",     luazmq_skt_getopt_int   },
