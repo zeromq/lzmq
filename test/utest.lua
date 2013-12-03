@@ -1650,18 +1650,18 @@ function teardown()
 end
 
 function test_handle()
-  local h = assert_userdata(s1:handle())
+  local h = assert(s1:handle())
 end
 
 function test_wrap_socket()
-  local h = assert_userdata(s1:handle())
+  local h = assert(s1:handle())
   s2 =  assert(is_zsocket(zmq.init_socket(h)))
   assert_nil(s2:context())
   assert_equal(socket_count(ctx, 2))
 end
 
 function test_send_recv()
-  local h = assert_userdata(s1:handle())
+  local h = assert(s1:handle())
   s2 =  assert(is_zsocket(zmq.init_socket(h)))
   assert_true(s1:send("hello"))
   assert_equal("hello", rep:recv())
