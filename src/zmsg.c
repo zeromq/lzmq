@@ -2,6 +2,8 @@
 #include "lzutils.h"
 #include "lzmq.h"
 #include <assert.h>
+#include <memory.h>
+#include <stdlib.h>
 
 int luazmq_msg_init(lua_State *L){
   zmessage *zmsg = luazmq_newudata(L, zmessage, LUAZMQ_MESSAGE);

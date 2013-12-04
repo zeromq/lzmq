@@ -22,6 +22,8 @@
 #include "poller.h"
 #include <memory.h>
 #include <assert.h>
+#include <memory.h>
+#include <stdlib.h>
 
 #define FREE_ITEM_EVENTS_TAG ((short)0xFFFF)
 

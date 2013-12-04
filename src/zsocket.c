@@ -5,6 +5,8 @@
 #include "zerror.h"
 #include <stdint.h>
 #include <assert.h>
+#include <memory.h>
+#include <stdlib.h>
 
 #define DEFINE_SKT_METHOD_1(NAME)              \
                                                \
