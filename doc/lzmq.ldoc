@@ -43,9 +43,13 @@ function version() end
 -- @usage ctx = zmq.context{io_threads = 1, max_sockets = 255}
 function context() end
 
---- Create a zmq Context based on lightuserdata.
+--- Create a zmq Context based on Lua representation of zmq context pointer.
 -- For this context @{\context.destroy} does not call `zmq_ctx_term`.
 function init_ctx() end
+
+--- Create a zmq Socket based on Lua representation of zmq socket pointer.
+-- For this socket @{\socket.destroy} does not call `zmq_close`.
+function init_socket() end
 
 --- Create ZMQ device
 --
@@ -189,11 +193,11 @@ function context:get          () end
 -- @usage ctx:set(zmq.MAX_SOCKETS, 255)
 function context:set          () end
 
---- Get internal value of zmq Context as lightuser data.
--- You can use this value to pass a zmq Context to another lua_State.
+--- Get internal value of ZMQ Context as some Lua value.
+-- You can use this value to pass a ZMQ Context to another lua_State.
 --
 -- @see lzmq.init_ctx
--- @treturn lightuserdata
+-- @treturn lightuserdata|string|number ZMQ Context.
 function context:lightuserdata() end
 
 --- Return number of sockets associated with this context
@@ -301,6 +305,13 @@ function socket:disconnect    () end
 --
 -- @usage  skt:disconnect{"tcp://127.0.0.1:5555","ipc://test.pub.ipc"}
 function socket:disconnect    () end
+
+--- Get internal value of ZMQ Socket as some Lua value.
+-- You can use this value to pass a ZMQ Socket to another lua_State.
+--
+-- @see lzmq.init_socket
+-- @treturn lightuserdata|string|number ZMQ Socket.
+function socket:lightuserdata() end
 
 --- Bind Socket to a local address.
 --
