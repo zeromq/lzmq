@@ -285,7 +285,7 @@ function test_socket()
   assert_function(skt.on_close)
   assert_function(skt.close)
   assert_function(skt.closed)
-  assert_function(skt.handle)
+  assert_function(skt.lightuserdata)
 
   assert_function(skt.getopt_int)
   assert_function(skt.getopt_i64)
@@ -1649,19 +1649,19 @@ function teardown()
   if ctx then ctx:destroy() end
 end
 
-function test_handle()
-  local h = assert(s1:handle())
+function test_lightuserdata()
+  local h = assert(s1:lightuserdata())
 end
 
 function test_wrap_socket()
-  local h = assert(s1:handle())
+  local h = assert(s1:lightuserdata())
   s2 =  assert(is_zsocket(zmq.init_socket(h)))
   assert_nil(s2:context())
   assert_equal(socket_count(ctx, 2))
 end
 
 function test_send_recv()
-  local h = assert(s1:handle())
+  local h = assert(s1:lightuserdata())
   s2 =  assert(is_zsocket(zmq.init_socket(h)))
   assert_true(s1:send("hello"))
   assert_equal("hello", rep:recv())
