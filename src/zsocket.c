@@ -802,6 +802,7 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   {"more",           luazmq_skt_more         },
   {"monitor",        luazmq_skt_monitor      },
   {"handle",         luazmq_skt_handle       },
+  {"lightuserdata",  luazmq_skt_handle       },
   {"context",        luazmq_skt_context      },
 
   {"getopt_int",     luazmq_skt_getopt_int   },

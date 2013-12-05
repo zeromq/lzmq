@@ -157,9 +157,15 @@ ptrtostr = function (ptr)
 end
 
 strtoptr = function (str)
-  assert(#str == ptr_size)
-  ffi.copy(char_ptr, str, ptr_size)
-  return void_array[0]
+  if type(str) == 'string' then
+    assert(#str == ptr_size)
+    ffi.copy(char_ptr, str, ptr_size)
+    return void_array[0]
+  end
+
+  -- we can support also lightuserdata
+  assert(type(str) == 'userdata')
+  return ffi.cast(pvoid_t, str)
 end
 
 end

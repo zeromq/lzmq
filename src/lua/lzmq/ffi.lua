@@ -378,6 +378,10 @@ function Socket:handle()
   return self._private.skt
 end
 
+function Socket:lightuserdata()
+  return api.serialize_ptr(self:handle())
+end
+
 local function gen_skt_bind(bind)
   return function(self, addr)
     assert(not self:closed())
@@ -1009,7 +1013,7 @@ function zmq.init_socket(skt)
   local o = setmetatable({
     _private = {
       dont_destroy = true;
-      skt          = skt;
+      skt          = api.deserialize_ptr(skt);
     }
   },Socket)
 
