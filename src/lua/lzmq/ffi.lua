@@ -32,11 +32,20 @@ local make_weak_kv do
   end
 end
 
+local function bintohex(str)
+  return (string.gsub(str, ".", function(p)
+    return (string.format("%.2x", string.byte(p)))
+  end))
+end
+
+local function ptrtohex(ptr)
+  return bintohex(api.ptrtostr(ptr))
+end
+
 local FLAGS = api.FLAGS
 local ERRORS = api.ERRORS
 local ZMQ_LINGER = api.SOCKET_OPTIONS.ZMQ_LINGER
 
-local ptrtoint = api.ptrtoint
 
 local unpack = unpack or table.unpack
 
@@ -93,8 +102,8 @@ function Context:new(ptr)
     if(type(ptr) == 'table')then
       opt,ptr = ptr
     else
-      ctx = api.inttoptr(ptr)
-      assert(ptr == api.ptrtoint(ctx)) -- ensure correct convert
+      ctx = api.deserialize_ptr(ptr)
+      assert(ptr == api.serialize_ptr(ctx)) -- ensure correct convert
     end
   end
   if not ctx then
@@ -231,8 +240,8 @@ end
 
 function Context:lightuserdata()
   check_context(self)
-  local ptr = api.ptrtoint(self._private.ctx)
-  assert(self._private.ctx == api.inttoptr(ptr))
+  local ptr = api.serialize_ptr(self._private.ctx)
+  assert(self._private.ctx == api.deserialize_ptr(ptr))
   return ptr
 end
 
@@ -584,7 +593,7 @@ function Socket:monitor(addr, events)
   end
 
   if not addr then
-    addr = "inproc://lzmq.monitor." .. api.ptrtoint(self._private.skt)
+    addr = "inproc://lzmq.monitor." .. ptrtohex(self._private.skt)
   end
 
   events = events or api.EVENTS.ZMQ_EVENT_ALL
@@ -771,7 +780,6 @@ end
 function Message:pointer(...)
   assert(not self:closed())
   local ptr = api.zmq_msg_data(self._private.msg, ...)
-  -- ptr = ptrtoint(ptr)
   return ptr
 end
 
@@ -821,11 +829,18 @@ function Poller:ensure(n)
   return true
 end
 
-local function skt2number(skt)
+local function skt2id(skt)
   if type(skt) == "number" then
     return skt
   end
-  return ptrtoint(skt:handle())
+  return api.serialize_ptr(skt:handle())
+end
+
+local function item2id(item)
+  if item.socket == api.NULL then
+    return item.fd
+  end
+  return api.serialize_ptr(item.socket)
 end
 
 function Poller:add(skt, events, cb)
@@ -833,15 +848,13 @@ function Poller:add(skt, events, cb)
   assert(cb)
   self:ensure(1)
   local n = self._private.nitems
-  local h
+  local h = skt2id(skt)
   if type(skt) == "number" then
     self._private.items[n].socket = api.NULL
     self._private.items[n].fd     = skt
-    h = skt
   else
     self._private.items[n].socket = skt:handle()
     self._private.items[n].fd     = 0
-    h = ptrtoint(skt:handle())
   end
   self._private.items[n].events  = events
   self._private.items[n].revents = 0
@@ -852,7 +865,7 @@ end
 
 function Poller:remove(skt)
   local items, nitems, sockets = self._private.items, self._private.nitems, self._private.sockets
-  local h = skt2number(skt)
+  local h = skt2id(skt)
   local params = sockets[h]
   if not params  then return true end
 
@@ -868,8 +881,9 @@ function Poller:remove(skt)
   -- if we remove last socket
   if skt_no == nitems then return true end
 
+  -- find last struct in array and copy it to removed item
   local last_item  = items[ nitems ]
-  local last_param = sockets[ ptrtoint(last_item.socket) ]
+  local last_param = sockets[ item2id(last_item) ]
 
   last_param[3] = skt_no
   items[ skt_no ].socket = last_item.socket
@@ -881,9 +895,7 @@ end
 
 function Poller:modify(skt, events, cb)
   if events ~= 0 and cb then
-    local h
-    if type(skt) == "number" then h = skt
-    else h = api.ptrtoint(skt:handle()) end
+    local h = skt2id(skt)
     local params = self._private.sockets[h]
     if not params then return self:add(skt, events, cb) end
     self._private.items[ params[3] ].events  = events
@@ -907,8 +919,7 @@ function Poller:poll(timeout)
   for i = nitems-1, 0, -1 do
     local item = items[i]
     if item.revents ~= 0 then
-      local skt = (item.socket == api.NULL) and item.fd or api.ptrtoint(item.socket)
-      local params = self._private.sockets[skt]
+      local params = self._private.sockets[item2id(item)]
       if params then
         params[2](params[1], item.revents)
       end
@@ -971,7 +982,7 @@ end
 
 do -- zmq
 
-zmq._VERSION = "0.3.0"
+zmq._VERSION = "0.3.2-dev"
 
 function zmq.version(unpack)
   local mj,mn,pt = api.zmq_version()

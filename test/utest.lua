@@ -56,7 +56,7 @@ local is_zsocket     = is_object
 local is_zcontext    = is_object
 local is_zcontext_ud = function(o, ...)
   if o == nil then return o, ... end
-  local flag = (type(o) == 'number') or (type(o) == 'userdata')
+  local flag = (type(o) == 'number') or (type(o) == 'userdata') or (type(o) == 'string')
   if not flag then return nil, '`' .. tostring(o) .. '` is not zma.context.userdata' end
   return o, ...
 end

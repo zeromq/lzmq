@@ -137,6 +137,7 @@ local pollitem_size   = ffi.sizeof(zmq_pollitem_t)
 local NULL            = ffi.cast(pvoid_t, 0)
 local int16_size      = ffi.sizeof("int16_t")
 local int32_size      = ffi.sizeof("int32_t")
+local ptr_size        = ffi.sizeof(pvoid_t)
 
 local function ptrtoint(ptr)
   return tonumber(ffi.cast(uintptr_t, ptr))
@@ -145,6 +146,25 @@ end
 local function inttoptr(val)
   return ffi.cast(pvoid_t, ffi.cast(uintptr_t, val))
 end
+
+local ptrtostr, strtoptr do
+local void_array = ffi.new("void*[1]")
+local char_ptr   = ffi.cast(pchar_t, void_array)
+
+ptrtostr = function (ptr)
+  void_array[0] = ptr
+  return ffi.string(char_ptr, ptr_size)
+end
+
+strtoptr = function (str)
+  assert(#str == ptr_size)
+  ffi.copy(char_ptr, str, ptr_size)
+  return void_array[0]
+end
+
+end
+
+local serialize_ptr, deserialize_ptr = ptrtostr, strtoptr
 
 local function pget(lib, elem)
   local ok, err = pcall(function()
@@ -740,9 +760,14 @@ end
 
 end
 
-_M.ptrtoint = ptrtoint
+_M.inttoptr        = inttoptr
+_M.ptrtoint        = ptrtoint
 
-_M.inttoptr = inttoptr
+_M.strtoptr        = strtoptr
+_M.ptrtostr        = ptrtostr
+
+_M.serialize_ptr   = serialize_ptr
+_M.deserialize_ptr = deserialize_ptr
 
 _M.vla_pollitem_t = vla_pollitem_t
 _M.zmq_pollitem_t = zmq_pollitem_t
