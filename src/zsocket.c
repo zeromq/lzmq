@@ -440,6 +440,32 @@ static int luazmq_skt_handle (lua_State *L) {
   return 1;
 }
 
+static int luazmq_skt_reset_handle(lua_State *L) {
+  zsocket *skt = luazmq_getsocket(L);
+  void *src = lua_touserdata(L, 2);
+  int own   =  lua_isnoneornil(L, 3) ? 
+    ((skt->flags & LUAZMQ_FLAG_DONT_DESTROY)?0:1) :
+    lua_toboolean(L, 3);
+  int close = lua_toboolean(L, 4);
+  void *h   = skt->skt;
+
+  luaL_argcheck(L, lua_islightuserdata(L, 2), 2, "lightuserdata expected");
+
+  skt->skt = src;
+  if(own) skt->flags &= ~LUAZMQ_FLAG_DONT_DESTROY;
+  else    skt->flags |=  LUAZMQ_FLAG_DONT_DESTROY;
+
+  if(close){
+    zmq_close(h);
+    lua_pushboolean(L, 1);
+  }
+  else{
+    lua_pushlightuserdata(L, h);
+  }
+
+  return 1;
+}
+
 int luazmq_skt_before_close (lua_State *L, zsocket *skt) {
   luaL_unref(L, LUAZMQ_LUA_REGISTRY, skt->ctx_ref);
   skt->ctx_ref = LUA_NOREF;
@@ -802,6 +828,7 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   {"more",           luazmq_skt_more         },
   {"monitor",        luazmq_skt_monitor      },
   {"handle",         luazmq_skt_handle       },
+  {"reset_handle",   luazmq_skt_reset_handle },
   {"lightuserdata",  luazmq_skt_handle       },
   {"context",        luazmq_skt_context      },
 

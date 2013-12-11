@@ -1669,6 +1669,23 @@ function test_send_recv()
   assert_equal("world", s2:recv())
 end
 
+function test_swap()
+  local h1 = assert(s1:lightuserdata())
+  local h2 = assert(rep:reset_handle(h1))
+  assert_equal(h1, s1:reset_handle(h2))
+
+  assert_true(rep:send("hello"))
+  assert_equal("hello", s1:recv())
+  assert_true(s1:send("world"))
+  assert_equal("world", rep:recv())
+end
+
+function test_reset_handle()
+  local h1 = assert(s1:lightuserdata())
+  assert_error(function() rep:reset_handle() end)
+  assert_true(rep:reset_handle(h1, false, true)) -- close handle
+end
+
 end
 
 if not HAS_RUNNER then lunit.run() end

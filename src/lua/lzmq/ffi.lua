@@ -346,7 +346,7 @@ Socket.__index = Socket
 local tmp_msg = ffi.new(api.zmq_msg_t)
 
 function Socket:closed()
-  return not self._private.skt
+  return not self._private
 end
 
 function Socket:close(linger)
@@ -369,6 +369,7 @@ function Socket:close(linger)
   end
 
   self._private.skt = nil
+  self._private = nil
   return true
 end
 
@@ -376,6 +377,29 @@ Socket.__gc = Socket.close
 
 function Socket:handle()
   return self._private.skt
+end
+
+function Socket:reset_handle(h, own, close)
+  if own == nil then own = self._private.dont_destroy end
+  local skt = self._private.skt
+
+  if self._private.ctx then
+    self._private.ctx:_remove_socket(self)
+  end
+
+  self._private.skt = assert(api.deserialize_ptr(h))
+  if own ~= nil then self._private.dont_destroy = not not own end
+
+  if self._private.ctx then
+    self._private.ctx:autoclose(self)
+  end
+
+  if close then
+    api.zmq_close(skt)
+    return true
+  end
+  
+  return api.serialize_ptr(skt)
 end
 
 function Socket:lightuserdata()
