@@ -492,7 +492,7 @@ function Socket:recv_all(flags)
   local res = {}
   while true do
     local data, more = self:recv(flags)
-    if not data then return nil, err end
+    if not data then return nil, more end
     table.insert(res, data)
     if not more then break end
   end
