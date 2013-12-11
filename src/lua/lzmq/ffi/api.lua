@@ -30,16 +30,22 @@ end
 
 local bit     = orequire("bit32", "bit")
 
-local zlibs ={
-  "zmq",
-  "libzmq",
-  "zmq4",
-  "libzmq4",
-  "libzmq.so.4",
-  "zmq3",
-  "libzmq3",
-  "libzmq.so.3",
-}
+local zlibs if IS_WINDOWS then
+  zlibs = {
+    "zmq",  "libzmq",
+    "zmq4", "libzmq4",
+    "zmq3", "libzmq3",
+  }
+else
+  zlibs = {
+    "zmq",      "libzmq",
+    "zmq.so.4", "libzmq.so.4",
+    "zmq.so.3", "libzmq.so.3",
+    "/usr/local/lib/libzmq.so",
+    "/usr/local/lib/libzmq.so.4",
+    "/usr/local/lib/libzmq.so.3",
+  }
+end
 
 local ok, libzmq3 = pcall( oload, zlibs )
 if not ok then
