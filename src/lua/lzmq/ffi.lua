@@ -388,7 +388,12 @@ function Socket:reset_handle(h, own, close)
   end
 
   self._private.skt = assert(api.deserialize_ptr(h))
-  if own ~= nil then self._private.dont_destroy = not not own end
+  if own ~= nil then 
+    self._private.dont_destroy = not not own
+    if own then
+      ffi.gc(self._private.skt, api.zmq_close)
+    end
+  end
 
   if self._private.ctx then
     self._private.ctx:autoclose(self)
@@ -398,8 +403,8 @@ function Socket:reset_handle(h, own, close)
     api.zmq_close(skt)
     return true
   end
-  
-  return api.serialize_ptr(skt)
+
+  return api.serialize_ptr(ffi.gc(skt, nil))
 end
 
 function Socket:lightuserdata()
