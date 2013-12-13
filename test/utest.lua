@@ -1090,6 +1090,36 @@ end
 
 end
 
+local _ENV = TEST_CASE'socket poll'          if true then
+
+local ctx, req, rep, timer
+
+function setup()
+  ctx   = assert(zmq.context())
+  rep   = assert(ctx:socket{zmq.REP, bind = ECHO_ADDR, rcvtimeo = 100})
+  req   = assert(ctx:socket{zmq.REQ, connect = ECHO_ADDR})
+  timer = ztimer.monotonic()
+end
+
+function teardown()
+  if ctx then ctx:destroy() end
+  timer:close()
+end
+
+function test_timeout()
+  timer:start()
+  assert_false(rep:poll(2000))
+  assert_true(ge(1900, timer:stop()))
+end
+
+function test_recv()
+  req:send("HELLO")
+  assert_true(rep:poll(2000))
+  assert_equal("HELLO", rep:recv())
+end
+
+end
+
 local _ENV = TEST_CASE'loop'                 if true then
 
 local loop, timer
@@ -1101,6 +1131,7 @@ end
 
 function teardown()
   loop:destroy()
+  timer:close()
   wait(500) -- for TCP time to release IP address
 end
 

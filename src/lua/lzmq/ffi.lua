@@ -45,6 +45,7 @@ end
 local FLAGS = api.FLAGS
 local ERRORS = api.ERRORS
 local ZMQ_LINGER = api.SOCKET_OPTIONS.ZMQ_LINGER
+local ZMQ_POLLIN = FLAGS.ZMQ_POLLIN
 
 
 local unpack = unpack or table.unpack
@@ -635,6 +636,27 @@ function Socket:monitor(addr, events)
   if -1 == ret then return nil, zerror() end
 
   return addr  
+end
+
+local poll_item = ffi.new(api.vla_pollitem_t, 1)
+
+function Socket:poll(timeout, events)
+  timeout = timeout or -1
+  events  = mask or ZMQ_POLLIN
+
+  poll_item[0].socket  = self._private.skt
+  poll_item[0].fd      = 0
+  poll_item[0].events  = events
+  poll_item[0].revents = 0
+
+  local ret = api.zmq_poll(poll_item, 1, timeout)
+
+  poll_item[0].socket  = api.NULL
+  local revents = poll_item[0].revents
+
+  if ret == -1 then return nil, zerror() end
+
+  return (bit.band(events, revents) ~= 0), revents
 end
 
 end

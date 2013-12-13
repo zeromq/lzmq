@@ -56,6 +56,11 @@ local table  = require "table"
 
 local _M = {}
 
+local function rfill(str, wdt, ch)
+  if wdt > #str then str = str .. (ch or ' '):rep(wdt - #str) end
+  return str
+end
+
 local function printformat(format, ...)
   io.write( string.format(format, ...) )
 end
@@ -94,7 +99,7 @@ function _M.begin()
 end
 
 function _M.run(testcasename, testname)
-  io.write(testcasename, '.', testname) io.flush()
+  io.write(rfill(testcasename .. '.' .. testname, 70)) io.flush()
 end
 
 function _M.err(fullname, message, traceback)

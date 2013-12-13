@@ -355,6 +355,19 @@ function socket:unbind        () end
 -- @usage  skt:bind{"tcp://*:5555","ipc://test.pub.ipc"}
 function socket:unbind        () end
 
+--- Poll specific ZMQ Socket.
+--
+-- @tparam[opt=-1] number timeout timeout in milliseconds (-1 - infinity)
+-- @tparam[opt=zmq.POLLIN] number events poll events.
+-- @treturn[1] bool poll result (false if timeout)
+-- @treturn[1] number envents
+-- @treturn[2] nil
+-- @treturn[2] error
+--
+-- @usage
+-- if skt:poll(100) then return skt:recv() end
+function socket:poll          () end
+
 --- Send message over Socket.
 --
 -- @tparam string message content of message.

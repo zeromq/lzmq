@@ -395,6 +395,21 @@ static int luazmq_skt_recvx (lua_State *L) {
   return i;
 }
 
+static int luazmq_skt_poll (lua_State *L) {
+  zsocket *skt = luazmq_getsocket(L);
+  int timeout  = luaL_optint(L, 2, -1);
+  int mask     = luaL_optint(L, 3, ZMQ_POLLIN);
+  zmq_pollitem_t items [] = { { skt->skt, 0, mask, 0 } };
+
+  if(-1 == zmq_poll (items, 1, timeout)){
+    return luazmq_fail(L, skt);
+  }
+
+  lua_pushboolean(L, (items[0].revents & mask)?1:0);
+  lua_pushinteger(L, items[0].revents);
+  return 2;
+}
+
 static int luazmq_skt_monitor (lua_State *L) {
   zsocket *skt = luazmq_getsocket(L);
   char endpoint[128];
@@ -810,6 +825,7 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   {"unbind",         luazmq_skt_unbind       },
   {"connect",        luazmq_skt_connect      },
   {"disconnect",     luazmq_skt_disconnect   },
+  {"poll",           luazmq_skt_poll         },
   {"send",           luazmq_skt_send         },
   {"send_msg",       luazmq_skt_send_msg     },
   {"sendx",          luazmq_skt_sendx        },
