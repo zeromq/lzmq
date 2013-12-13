@@ -1037,7 +1037,7 @@ end
 
 do -- zmq
 
-zmq._VERSION = "0.3.2-dev"
+zmq._VERSION = "0.3.3-dev"
 
 function zmq.version(unpack)
   local mj,mn,pt = api.zmq_version()
@@ -1124,7 +1124,8 @@ function zmq.device(dtype, frontend, backend)
 end
 
 function zmq.proxy(frontend, backend, capture)
-  local ret = api.zmq_proxy(frontend:handle(), backend:handle(), capture:handle())
+  capture = capture and capture:handle() or api.NULL
+  local ret = api.zmq_proxy(frontend:handle(), backend:handle(), capture)
   if ret == -1 then return nil, zerror() end
   return true
 end
