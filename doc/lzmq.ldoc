@@ -334,6 +334,18 @@ function socket:bind          () end
 -- @usage  skt:bind{"tcp://*:5555","ipc://test.pub.ipc"}
 function socket:bind          () end
 
+--- Bind Socket to a local address and random port.
+--
+-- @tparam string address zmq address
+-- @tparam[opt=0xC000] number begin port
+-- @tparam[opt=128] number number of tested ports
+-- @treturn[1] number port number
+-- @treturn[2] nil
+-- @treturn[2] error
+--
+-- @usage  port = skt:bind_to_random_port("tcp://127.0.0.1")
+function socket:bind_to_random_port () end
+
 --- Unbind Socket from a local address.
 --
 -- @tparam string address zmq address

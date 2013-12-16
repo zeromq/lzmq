@@ -767,6 +767,10 @@ function setup()
   ctx:autoclose(sub2)
   sub3 = assert(is_zsocket(ctx:socket(zmq.SUB)))
   ctx:autoclose(sub3)
+  
+  sub1:set_rcvtimeo(1000)
+  sub2:set_rcvtimeo(1000)
+  sub3:set_rcvtimeo(1000)
 end
 
 function teardown()
@@ -838,6 +842,33 @@ function test_connect()
     assert_equal( "hello", assert_string(sub1:recv()))
     assert_nil(sub1:recv())
   end
+end
+
+function test_bind_random_port()
+  local port1 = assert_number(pub:bind_to_random_port("tcp://127.0.0.1"))
+  local port2 = assert_number(pub:bind_to_random_port("tcp://127.0.0.1"))
+  assert_not_equal(port1, port2)
+  wait()
+  sub1:subscribe("")
+  sub2:subscribe("")
+  assert(sub1:connect("tcp://127.0.0.1:" .. port1))
+  assert(sub2:connect("tcp://127.0.0.1:" .. port2))
+  wait()
+  
+  assert(pub:send("HELLO"))
+  assert_equal("HELLO", sub1:recv())
+  assert_equal("HELLO", sub2:recv())
+end
+
+function test_bind_random_port_fail()
+  assert_nil(pub:bind_to_random_port("tcp//127.0.0.1"))
+  local port1 = assert_number(pub:bind_to_random_port("tcp://127.0.0.1"))
+  assert_nil(pub:bind_to_random_port("tcp://127.0.0.1", port1, 1))
+end
+
+function test_bind_random_port_error()
+  assert_error(function() pub:bind_to_random_port("tcp://127.0.0.1", 0) end)
+  assert_error(function() pub:bind_to_random_port("tcp://127.0.0.1", 1, 0) end)
 end
 
 end

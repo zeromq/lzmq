@@ -43,6 +43,51 @@ DEFINE_SKT_METHOD_1(unbind)
 DEFINE_SKT_METHOD_1(connect)
 DEFINE_SKT_METHOD_1(disconnect)
 
+#define RANDOM_PORT_BASE 0xC000
+#define RANDOM_PORT_MAX  0xFFFF
+
+static int luazmq_skt_bind_to_random_port (lua_State *L) {
+  zsocket *skt = luazmq_getsocket(L);
+  LUAZMQ_DEFINE_TEMP_BUFFER(buffer_storage);
+  size_t dest_len; const char *base_address = luaL_checklstring(L, 2, &dest_len);
+  int base_port = luaL_optint(L, 3, RANDOM_PORT_BASE);
+  int max_tries = luaL_optint(L, 4, 128);
+  char *dest;
+
+  luaL_argcheck(L, 3, ((base_port > 0) && (base_port <= RANDOM_PORT_MAX)), "invalid port number");
+  luaL_argcheck(L, 4, (max_tries > 0), "invalid max tries value");
+
+  dest = LUAZMQ_ALLOC_TEMP(buffer_storage, dest_len + 10);
+  memcpy(dest, base_address, dest_len);
+  dest[dest_len] = ':';
+  
+  for(;(base_port <= RANDOM_PORT_MAX)&&(max_tries > 0); --max_tries, ++base_port){
+    int ret;
+    sprintf(&dest[dest_len+1], "%d", base_port);
+    ret = zmq_bind(skt->skt, dest);
+    if(ret != -1){
+      LUAZMQ_FREE_TEMP(buffer_storage, dest);
+      lua_pushinteger(L, base_port);
+      return 1;
+    }
+    else{
+      int err = zmq_errno();
+      if(err == EADDRINUSE) continue;
+
+#ifdef _WIN32
+  #if !defined(_MSC_VER) || (_MSC_VER < 1600)
+      if(strcmp(zmq_strerror(err), "Address in use") == 0) continue;
+  #endif
+#endif
+
+      break;
+    }
+  }
+  LUAZMQ_FREE_TEMP(buffer_storage, dest);
+
+  return luazmq_fail(L, skt);
+}
+
 static int luazmq_skt_send (lua_State *L) {
   zsocket *skt = luazmq_getsocket(L);
   size_t len;
@@ -847,6 +892,7 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   {"reset_handle",   luazmq_skt_reset_handle },
   {"lightuserdata",  luazmq_skt_handle       },
   {"context",        luazmq_skt_context      },
+  {"bind_to_random_port", luazmq_skt_bind_to_random_port},
 
   {"getopt_int",     luazmq_skt_getopt_int   },
   {"getopt_i64",     luazmq_skt_getopt_i64   },

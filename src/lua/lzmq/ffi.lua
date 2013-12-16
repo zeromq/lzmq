@@ -434,6 +434,35 @@ Socket.unbind     = gen_skt_bind(api.zmq_unbind     )
 Socket.connect    = gen_skt_bind(api.zmq_connect    )
 Socket.disconnect = gen_skt_bind(api.zmq_disconnect )
 
+local RANDOM_PORT_BASE = 0xC000
+local RANDOM_PORT_MAX  = 0xFFFF
+
+function Socket:bind_to_random_port(address, port, tries)
+  port  = port or RANDOM_PORT_BASE
+  tries = tries or 128
+  
+  assert(type(address) == 'string')
+  assert((port > 0) and (port <= RANDOM_PORT_MAX), "invalid port number")
+  assert(tries > 0, "invalid max tries value")
+
+  local ok, err
+  while((port <= RANDOM_PORT_MAX)and(tries > 0))do
+    local a = address .. ':' .. tostring(port)
+    ok, err = self:bind(a)
+    if ok then return port end
+
+    if err:no() ~= errors.EADDRINUSE then
+      if err:msg() ~= "Address in use" then
+        break
+      end
+    end
+
+    port, tries = port + 1, tries - 1
+  end
+
+  return nil, err or zerror(errors.EINVAL)
+end
+
 function Socket:send(msg, flags)
   assert(not self:closed())
   local ret = api.zmq_send(self._private.skt, msg, flags)
