@@ -451,7 +451,7 @@ function Socket:bind_to_random_port(address, port, tries)
     ok, err = self:bind(a)
     if ok then return port end
 
-    if err:no() ~= errors.EADDRINUSE then
+    if err:no() ~= ERRORS.EADDRINUSE then
       if err:msg() ~= "Address in use" then
         break
       end
@@ -460,7 +460,7 @@ function Socket:bind_to_random_port(address, port, tries)
     port, tries = port + 1, tries - 1
   end
 
-  return nil, err or zerror(errors.EINVAL)
+  return nil, err or zerror(ERRORS.EINVAL)
 end
 
 function Socket:send(msg, flags)
