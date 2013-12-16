@@ -326,7 +326,7 @@ static int luazmq_z85_encode(lua_State *L){
   }
 
   dest = LUAZMQ_ALLOC_TEMP(buffer_storage, dest_len);
-  if(!zmq_z85_encode(dest, (char*)data, len))lua_pushnil(L);
+  if(!zmq_z85_encode(dest, (unsigned char*)data, len))lua_pushnil(L);
   else lua_pushlstring(L, dest, dest_len - 1);
   LUAZMQ_FREE_TEMP(buffer_storage, dest);
 
@@ -346,7 +346,7 @@ static int luazmq_z85_decode(lua_State *L){
   }
 
   dest = LUAZMQ_ALLOC_TEMP(buffer_storage, dest_len);
-  if(!zmq_z85_decode(dest, (char*)data)) lua_pushnil(L);
+  if(!zmq_z85_decode((unsigned char*)dest, (char*)data)) lua_pushnil(L);
   else lua_pushlstring(L, dest, dest_len);
   LUAZMQ_FREE_TEMP(buffer_storage, dest);
 
@@ -370,8 +370,8 @@ static int luazmq_curve_keypair(lua_State *L){
     uint8_t secret_key_bin[32];
     zmq_z85_decode (public_key_bin, public_key);
     zmq_z85_decode (secret_key_bin, secret_key);
-    lua_pushlstring(L, public_key_bin, 32);
-    lua_pushlstring(L, secret_key_bin, 32);
+    lua_pushlstring(L, (char*)public_key_bin, 32);
+    lua_pushlstring(L, (char*)secret_key_bin, 32);
     return 2;
   }
 

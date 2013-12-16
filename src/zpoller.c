@@ -6,13 +6,6 @@
 
 #define LUAZMQ_DEFAULT_POLLER_LEN 10
 
-#if defined(_WIN32) || defined(_WINDOWS) 
-typedef SOCKET socket_t;
-#else
-typedef int socket_t;
-#endif
-
-
 int luazmq_poller_create(lua_State *L){
   unsigned int n = luaL_optinteger(L,1,LUAZMQ_DEFAULT_POLLER_LEN);
   zpoller *poller = luazmq_newudata(L, zpoller, LUAZMQ_POLLER);
