@@ -78,6 +78,7 @@ install:
 script: 
   - cd test 
   - lunit.sh -i lua$LUA_SFX utest.lua
+  - lunit.sh -i lua$LUA_SFX test_proxy.lua
   - lua$LUA_SFX test_threads.lua
   - lua$LUA_SFX test_threads_arg.lua
   - lua$LUA_SFX test_threads_fork_arg.lua

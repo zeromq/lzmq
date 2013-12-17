@@ -111,6 +111,7 @@ int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 ffi.cdef[[
   int zmq_proxy  (void *frontend, void *backend, void *capture);
   int zmq_device (int type, void *frontend, void *backend);
+  int zmq_proxy_steerable (void *frontend, void *backend, void *capture, void *control);
 ]]
 
 ffi.cdef[[
@@ -217,7 +218,15 @@ function _M.zmq_device(dtype, frontend, backend)
 end
 
 function _M.zmq_proxy(frontend, backend, capture)
-  return libzmq3.zmq_proxy(dtype, frontend, backend)
+  return libzmq3.zmq_proxy(frontend, backend, capture)
+end
+
+if pget(libzmq3, "zmq_proxy_steerable") then
+
+function _M.zmq_proxy_steerable(frontend, backend, capture, control)
+  return libzmq3.zmq_proxy_steerable(frontend, backend, capture, control)
+end
+
 end
 
 end

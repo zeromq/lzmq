@@ -1162,6 +1162,18 @@ function zmq.proxy(frontend, backend, capture)
   return true
 end
 
+if api.zmq_proxy_steerable then
+
+function zmq.proxy_steerable(frontend, backend, capture, control)
+  capture = capture and capture:handle() or api.NULL
+  control = control and control:handle() or api.NULL
+  local ret = api.zmq_proxy_steerable(frontend:handle(), backend:handle(), capture, control)
+  if ret == -1 then return nil, zerror() end
+  return true
+end
+
+end
+
 zmq.z85_encode = api.zmq_z85_encode
 
 zmq.z85_decode = api.zmq_z85_decode
