@@ -182,7 +182,7 @@ function test_basic()
     local fe = assert('ROUTER:', ctx:socket{zmq.ROUTER, connect = cli_endpoint})
     local be = assert('DEALER:', ctx:socket{zmq.DEALER, connect = srv_endpoint})
 
-    local ok, err = zmq.proxy(fe, be)
+    local ok, err = zmq.proxy_steerable(fe, be)
 
     ctx:destroy(0)
   --]], cli_endpoint, srv_endpoint)
