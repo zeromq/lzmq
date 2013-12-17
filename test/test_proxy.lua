@@ -61,9 +61,8 @@ function setup()
 end
 
 function teardown()
-  ctx:shutdown() -- interrupt thread
+  ctx:destroy(0)  -- close context
   if thread then thread:join() end -- close thread
-  ctx:destroy()  -- close context
 end
 
 function test_capture()
@@ -74,6 +73,8 @@ function test_capture()
     local be = assert('DEALER:', ctx:socket{zmq.DEALER, connect = srv_endpoint})
 
     local ok, err = zmq.proxy(fe, be, pipe)
+
+    ctx:destroy(0)
   --]], cli_endpoint, srv_endpoint)
 
   local cli = assert(ctx:socket{zmq.REQ, bind = cli_endpoint, rcvtimeo=1000})
@@ -110,6 +111,8 @@ function test_basic()
     local be = assert('DEALER:', ctx:socket{zmq.DEALER, connect = srv_endpoint})
 
     local ok, err = zmq.proxy(fe, be)
+
+    ctx:destroy(0)
   --]], cli_endpoint, srv_endpoint)
 
   local cli = assert(ctx:socket{zmq.REQ, bind = cli_endpoint, rcvtimeo=1000})
@@ -141,9 +144,8 @@ function setup()
 end
 
 function teardown()
-  ctx:shutdown() -- interrupt thread
+  ctx:destroy(0)  -- close context
   if thread then thread:join() end -- close thread
-  ctx:destroy()  -- close context
 end
 
 function test_control()
@@ -154,6 +156,8 @@ function test_control()
     local be = assert('DEALER:', ctx:socket{zmq.DEALER, connect = srv_endpoint})
 
     local ok, err = zmq.proxy_steerable(fe, be, nil, pipe)
+
+    ctx:destroy(0)
   --]], cli_endpoint, srv_endpoint)
 
   local cli = assert(ctx:socket{zmq.REQ, bind = cli_endpoint, rcvtimeo=1000})
@@ -179,6 +183,8 @@ function test_basic()
     local be = assert('DEALER:', ctx:socket{zmq.DEALER, connect = srv_endpoint})
 
     local ok, err = zmq.proxy(fe, be)
+
+    ctx:destroy(0)
   --]], cli_endpoint, srv_endpoint)
 
   local cli = assert(ctx:socket{zmq.REQ, bind = cli_endpoint, rcvtimeo=1000})
