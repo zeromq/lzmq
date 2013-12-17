@@ -107,6 +107,16 @@ function msg_init_data() end
 -- @treturn error
 function proxy()         end
 
+--- Start built-in ZMQ proxy with control.
+--
+-- @tparam socket frontend
+-- @tparam socket backend
+-- @tparam[opt] socket capture
+-- @tparam[opt] socket control
+-- @treturn nil
+-- @treturn error
+function proxy_steerable()end
+
 --- Encode a binary data as Z85 printable text.
 --
 -- @tparam string src
