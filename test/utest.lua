@@ -13,6 +13,7 @@ local HAS_RUNNER = not not lunit
 local lunit      = require "lunit"
 local TEST_CASE  = assert(lunit.TEST_CASE)
 local skip       = lunit.skip or function() end
+local SKIP       = function(msg) return function() return skip(msg) end end
 
 local IS_LUA52 = _VERSION >= 'Lua 5.2'
 local TEST_FFI = ("ffi" == os.getenv("LZMQ"))
@@ -1513,7 +1514,8 @@ end
 
 end
 
-local _ENV = TEST_CASE'z85 encode'           if true and zmq.z85_encode then
+local _ENV = TEST_CASE'z85 encode'           if true then
+if not zmq.z85_encode then test = SKIP"zmq_z85_encode does not support" else
 
 local key_bin = "\084\252\186\036\233\050\073\150\147\022\251\097\124\135\043\176" ..
                 "\193\209\255\020\128\004\039\197\148\203\250\207\027\194\214\082"
@@ -1545,8 +1547,10 @@ function test_decode_wrong_size()
 end
 
 end
+end
 
-local _ENV = TEST_CASE'curve keypair'        if true and zmq.curve_keypair then
+local _ENV = TEST_CASE'curve keypair'        if true then
+if not zmq.curve_keypair then test = SKIP"zmq_curve_keypair does not support" else
 
 function test_generate_z85()
   local pub, sec = zmq.curve_keypair()
@@ -1572,6 +1576,7 @@ function test_generate_bin()
   assert_equal(32, #sec)
 end
 
+end
 end
 
 local _ENV = TEST_CASE'monitor'              if true then
