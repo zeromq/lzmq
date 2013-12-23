@@ -439,8 +439,8 @@ local RANDOM_PORT_MAX  = 0xFFFF
 
 function Socket:bind_to_random_port(address, port, tries)
   port  = port or RANDOM_PORT_BASE
-  tries = RANDOM_PORT_MAX - port + 1
-  
+  tries = tries or (RANDOM_PORT_MAX - port + 1)
+
   assert(type(address) == 'string')
   assert((port > 0) and (port <= RANDOM_PORT_MAX), "invalid port number")
   assert(tries > 0, "invalid max tries value")
@@ -1069,7 +1069,7 @@ end
 
 do -- zmq
 
-zmq._VERSION = "0.3.3-dev"
+zmq._VERSION = "0.3.3"
 
 function zmq.version(unpack)
   local mj,mn,pt = api.zmq_version()
