@@ -21,6 +21,7 @@
 -- For example:<br/>
 -- ZMQ_SUBSCRIBE => skt:subscribe("") / skt:set_subscribe("")
 --</ul>
+--
 -- @module lzmq
 
 do
@@ -44,14 +45,24 @@ function version() end
 function context() end
 
 --- Create a zmq Context based on Lua representation of zmq context pointer.
--- For this context @{\context.destroy} does not call `zmq_ctx_term`.
+--
+-- For this context @{context:destroy} does not call `zmq_ctx_term`.
+--
+-- @treturn context new zmq Context
+--
+-- @see context:lightuserdata
 function init_ctx() end
 
 --- Create a zmq Socket based on Lua representation of zmq socket pointer.
--- For this socket @{\socket.destroy} does not call `zmq_close`.
+--
+-- For this socket @{socket:close} does not call `zmq_close`.
+--
+-- @treturn socket new zmq Socket
+--
+-- @see socket:lightuserdata
 function init_socket() end
 
---- Create ZMQ device
+--- Create ZMQ Device
 --
 -- @tparam number device type
 -- @tparam socket frontend
@@ -174,7 +185,7 @@ do
 -- @treturn[2] error
 function context:destroy      () end
 
---- This is alias for @{\context.destroy}
+--- This is alias for @{context:destroy}
 --
 function context:term         () end
 
@@ -430,11 +441,11 @@ function socket:send_msg      () end
 --- Send a multipart message over Socket.
 -- This function always set flag zmq.SNDMORE to message
 --
--- @tparam table message {string,...} parts of message.
+-- @tparam table t {string,...} parts of message.
 -- @tparam[opt=0] number flags zmq send flags.
 --    Support only zmq.SNDMORE flag. Any other flag cause error ENOTSUP.
 -- @tparam[opt=1] number begin_pos position of first part in message
--- @tparam[opt=#message] number end_pos position of last part in message
+-- @tparam[opt=#t] number end_pos position of last part in message
 -- @return[1] true
 -- @treturn[2] nil
 -- @treturn[2] error
@@ -443,9 +454,11 @@ function socket:send_msg      () end
 --
 -- @usage
 -- skt:send_all{"Hello","World"}
+-- @usage
+-- skt:send_all({[-1]="Hello",[0]="World"}, -1, 0)
 function socket:send_all() end
 
---- This is alias for `socket:send_all`
+--- This is alias for @{socket:send_all}
 --
 function socket:send_multipart() end
 
