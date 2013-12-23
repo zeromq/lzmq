@@ -359,7 +359,7 @@ function socket:bind          () end
 --
 -- @tparam string address zmq address
 -- @tparam[opt=0xC000] number begin port
--- @tparam[opt=128] number number of tested ports
+-- @tparam[opt] number number of tested ports. By default tests all ports up to 0xFFFF.
 -- @treturn[1] number port number
 -- @treturn[2] nil
 -- @treturn[2] error

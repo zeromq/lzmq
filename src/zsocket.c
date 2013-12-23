@@ -51,7 +51,7 @@ static int luazmq_skt_bind_to_random_port (lua_State *L) {
   LUAZMQ_DEFINE_TEMP_BUFFER(buffer_storage);
   size_t dest_len; const char *base_address = luaL_checklstring(L, 2, &dest_len);
   int base_port = luaL_optint(L, 3, RANDOM_PORT_BASE);
-  int max_tries = luaL_optint(L, 4, 128);
+  int max_tries = luaL_optint(L, 4, RANDOM_PORT_MAX - base_port + 1);
   char *dest;
 
   luaL_argcheck(L, ((base_port > 0) && (base_port <= RANDOM_PORT_MAX)), 3, "invalid port number");

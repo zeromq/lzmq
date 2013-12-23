@@ -439,7 +439,7 @@ local RANDOM_PORT_MAX  = 0xFFFF
 
 function Socket:bind_to_random_port(address, port, tries)
   port  = port or RANDOM_PORT_BASE
-  tries = tries or 128
+  tries = RANDOM_PORT_MAX - port + 1
   
   assert(type(address) == 'string')
   assert((port > 0) and (port <= RANDOM_PORT_MAX), "invalid port number")
