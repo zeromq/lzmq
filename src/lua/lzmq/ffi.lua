@@ -381,7 +381,6 @@ function Socket:handle()
 end
 
 function Socket:reset_handle(h, own, close)
-  if own == nil then own = self._private.dont_destroy end
   local skt = self._private.skt
 
   if self._private.ctx then
@@ -390,10 +389,11 @@ function Socket:reset_handle(h, own, close)
 
   self._private.skt = assert(api.deserialize_ptr(h))
   if own ~= nil then 
-    self._private.dont_destroy = not not own
-    if own then
-      ffi.gc(self._private.skt, api.zmq_close)
-    end
+    self._private.dont_destroy = not own
+  end
+
+  if not self._private.dont_destroy then
+    ffi.gc(self._private.skt, api.zmq_close)
   end
 
   if self._private.ctx then

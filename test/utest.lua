@@ -1713,6 +1713,7 @@ function setup()
 end
 
 function teardown()
+  if rep then rep:close() end
   if ctx then ctx:destroy() end
 end
 
@@ -1751,6 +1752,47 @@ function test_reset_handle()
   local h1 = assert(s1:lightuserdata())
   assert_error(function() rep:reset_handle() end)
   assert_true(rep:reset_handle(h1, false, true)) -- close handle
+end
+
+function test_reset_handle_own()
+  local h1 = assert(s1:lightuserdata())
+  local h2 = assert(rep:reset_handle(h1, false)) -- do not close h1 after rep:close()
+  assert_true(rep:close())
+
+  -- anchor h2 to socket
+  rep = zmq.init_socket(h2)
+  rep:reset_handle(h2, true)
+
+  assert_true(s1:bind("inproc://test"))
+end
+
+function test_reset_handle_nochange_own()
+  local h1 = assert(s1:lightuserdata())
+  local h2 = assert(rep:reset_handle(h1)) -- by default rep close handle on `close` method
+  assert_true(rep:close())
+
+  assert_nil(s1:bind("inproc://test"))
+
+  -- anchor h2 to socket
+  rep = zmq.init_socket(h2)
+  rep:reset_handle(h2, true)
+
+  -- close h2
+  s1:reset_handle(h2, true)
+end
+
+function test_reset_handle_nochange2_own()
+  local h1 = assert(s1:lightuserdata())
+  local h2 = assert(rep:reset_handle(h1, false)) -- do not close h1 after rep:close()
+  assert(rep:reset_handle(h1))                   -- do not change on_close bihavior
+
+  assert_true(rep:close())
+
+  -- anchor h2 to socket
+  rep = zmq.init_socket(h2)
+  rep:reset_handle(h2, true)
+
+  assert_true(s1:bind("inproc://test"))
 end
 
 end
