@@ -1773,10 +1773,6 @@ function test_reset_handle_nochange_own()
 
   assert_nil(s1:bind("inproc://test"))
 
-  -- anchor h2 to socket
-  rep = zmq.init_socket(h2)
-  rep:reset_handle(h2, true)
-
   -- close h2
   s1:reset_handle(h2, true)
 end
