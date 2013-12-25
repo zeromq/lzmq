@@ -1533,9 +1533,29 @@ function test_encode()
   assert_equal(key_txt, encoded)
 end
 
+local function encoden(str, n) return zmq.z85_encode(str:rep(n)) end
+
+local function decoden(str, n) return zmq.z85_decode(str:rep(n)) end
+
+function test_encodeN()
+  local encoded = assert_string(encoden(key_bin, 100))
+  assert_equal(key_txt:rep(100), encoded)
+
+  local encoded = assert_string(encoden(key_bin, 1000))
+  assert_equal(key_txt:rep(1000), encoded)
+end
+
 function test_decode()
   local decoded = assert_string(zmq.z85_decode(key_txt))
   assert_equal(dump(key_bin), dump(decoded))
+end
+
+function test_decodeN()
+  local decoded = assert_string(decoden(key_txt, 100))
+  assert_equal(dump(key_bin:rep(100)), dump(decoded))
+
+  local decoded = assert_string(decoden(key_txt, 1000))
+  assert_equal(dump(key_bin:rep(1000)), dump(decoded))
 end
 
 function test_encode_wrong_size()

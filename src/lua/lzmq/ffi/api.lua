@@ -1,7 +1,6 @@
 local ffi     = require "ffi"
-local IS_WINDOWS = 
-  (require "ffi".os:lower() == 'windows')
-  or package.config:sub(1,1) == '\\'
+local IS_WINDOWS = (ffi.os:lower() == 'windows') or
+                   (package.config:sub(1,1) == '\\')
 
 local function orequire(...)
   local err = ""
@@ -473,9 +472,22 @@ end
 -- zmq_z85_encode, zmq_z85_decode
 if pget(libzmq3, "zmq_z85_encode") then
 
+-- we alloc buffers for CURVE encoded key size
+local TMP_BUF_SIZE = 41
+
+local function alloc_z85_buff(len)
+  if len <= TMP_BUF_SIZE then
+    if not tmp_buf then
+      tmp_buf = ffi.new(vla_char_t, TMP_BUF_SIZE)
+    end
+    return tmp_buf
+  end
+  return ffi.new(vla_char_t, len)
+end
+
 function _M.zmq_z85_encode(data)
   local len = math.floor(#data * 1.25 + 1.0001)
-  local buf = ffi.new(vla_char_t, len)
+  local buf = alloc_z85_buff(len)
   local ret = libzmq3.zmq_z85_encode(buf, data, #data)
   if ret == NULL then error("size of the block must be divisible by 4") end
   return ffi.string(buf, len - 1)
@@ -483,11 +495,10 @@ end
 
 function _M.zmq_z85_decode(data)
   local len = math.floor(#data * 0.8 + 0.0001)
-  local buf = ffi.new(vla_char_t, len)
+  local buf = alloc_z85_buff(len)
   local ret = libzmq3.zmq_z85_decode(buf, data)
   if ret == NULL then error("size of the block must be divisible by 5") end
   return ffi.string(buf, len)
-
 end
 
 end
