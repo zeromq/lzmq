@@ -576,7 +576,7 @@ end
 if api.zmq_recv_event then
 function Socket:recv_event(flags)
   assert(not self:closed())
-  return api.zmq_recv_event(self._private.skt)
+  return api.zmq_recv_event(self._private.skt, flags)
 end
 end
 

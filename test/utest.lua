@@ -1793,4 +1793,37 @@ end
 
 end
 
+local _ENV = TEST_CASE'Recv event'           if true then
+
+local ctx, skt, mon
+local timeout, epselon = 1500, 490
+
+function setup()
+  ctx = assert(is_zcontext(zmq.context()))
+  skt = assert(is_zsocket(ctx:socket(zmq.PUB)))
+  local monitor_endpoint = assert_string(skt:monitor())
+  mon = assert(is_zsocket(ctx:socket{zmq.PAIR,
+    rcvtimeo = timeout, connect = monitor_endpoint
+  }))
+end
+
+function teardown()
+  if ctx then ctx:destroy()             end
+end
+
+function test()
+  local timer = ztimer.monotonic():start()
+  assert_nil( mon:recv_event() )
+  local elapsed = timer:stop()
+  assert(elapsed > (timeout-epselon), "Expeted " .. timeout .. "(+/-" .. epselon .. ") got: " .. elapsed)
+  assert(elapsed < (timeout+epselon), "Expeted " .. timeout .. "(+/-" .. epselon .. ") got: " .. elapsed)
+
+  timer:start()
+  assert_nil( mon:recv_event(zmq.DONTWAIT) )
+  elapsed = timer:stop()
+  assert(elapsed < (epselon), "Expeted less then " .. epselon .. " got: " .. elapsed)
+end
+
+end
+
 if not HAS_RUNNER then lunit.run() end
