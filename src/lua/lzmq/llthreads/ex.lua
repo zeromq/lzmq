@@ -23,6 +23,9 @@
 --
 
 local llthreads = require"llthreads"
+local os        = require"os"
+local string    = require"string"
+local table     = require"table"
 
 local setmetatable = setmetatable
 local tonumber = tonumber
@@ -56,8 +59,8 @@ LUA_INIT = LUA_INIT_VER and os.getenv( LUA_INIT_VER ) or os.getenv( LUA_INIT ) o
 local thread_mt = {}
 thread_mt.__index = thread_mt
 
-function thread_mt:start(detached)
-	return self.thread:start(detached)
+function thread_mt:start(...)
+	return self.thread:start(...)
 end
 
 function thread_mt:join(...)

@@ -28,6 +28,7 @@ local function rand_bytes(n)
 	return table.concat(t)
 end
 
+local string  = require"string"
 local Threads = require"lzmq.llthreads.ex"
 return function(ZMQ_NAME)
 
