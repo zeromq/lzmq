@@ -599,6 +599,7 @@ local function gen_setopt(setopt)
 end
 
 Socket.getopt_int = gen_getopt(api.zmq_skt_getopt_int)
+Socket.getopt_fdt = gen_getopt(api.zmq_skt_getopt_fdt)
 Socket.getopt_i64 = gen_getopt(api.zmq_skt_getopt_i64)
 Socket.getopt_u64 = gen_getopt(api.zmq_skt_getopt_u64)
 Socket.getopt_str = gen_getopt(api.zmq_skt_getopt_str)

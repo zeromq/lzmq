@@ -144,6 +144,12 @@ local NULL            = ffi.cast(pvoid_t, 0)
 local int16_size      = ffi.sizeof("int16_t")
 local int32_size      = ffi.sizeof("int32_t")
 local ptr_size        = ffi.sizeof(pvoid_t)
+local fd_t, afd_t
+if IS_WINDOWS and ffi.arch == 'x64' then
+  fd_t, afd_t = "uint64_t", auint64_t
+else
+  fd_t, afd_t = "int", aint_t
+end
 
 local function ptrtoint(ptr)
   return tonumber(ffi.cast(uintptr_t, ptr))
@@ -317,6 +323,7 @@ function _M.zmq_skt_setopt_str(skt, option, optval)
 end
 
 _M.zmq_skt_getopt_int = gen_getopt_int("int",      aint_t   )
+_M.zmq_skt_getopt_fdt = gen_getopt_int(fd_t,       afd_t    )
 _M.zmq_skt_getopt_i64 = gen_getopt_int("int64_t",  aint64_t )
 _M.zmq_skt_getopt_u64 = gen_getopt_int("uint64_t", auint64_t)
 
@@ -691,7 +698,7 @@ _M.SOCKET_OPTIONS = {
   ZMQ_SNDBUF                  = {11, "RW", "int"};
   ZMQ_RCVBUF                  = {12, "RW", "int"};
   ZMQ_RCVMORE                 = {13, "RO", "int"};
-  ZMQ_FD                      = {14, "RO", "int"};
+  ZMQ_FD                      = {14, "RO", "fdt"};
   ZMQ_EVENTS                  = {15, "RO", "int"};
   ZMQ_TYPE                    = {16, "RO", "int"};
   ZMQ_LINGER                  = {17, "RW", "int"};
