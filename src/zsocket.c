@@ -79,6 +79,7 @@ static int luazmq_skt_bind_to_random_port (lua_State *L) {
     else{
       int err = zmq_errno();
       if(err == EADDRINUSE) continue;
+      if(err == EACCES) continue;
 
 #ifdef _WIN32
   #if !defined(_MSC_VER) || (_MSC_VER < 1600)

@@ -451,7 +451,7 @@ function Socket:bind_to_random_port(address, port, tries)
     ok, err = self:bind(a)
     if ok then return port end
 
-    if err:no() ~= ERRORS.EADDRINUSE then
+    if (err:no() ~= ERRORS.EADDRINUSE) and (err:no() ~= ERRORS.EACCES) then
       local msg = err:msg()
       if msg ~= "Address in use" then 
         if not msg:lower():find("address .- in use") then
