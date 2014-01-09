@@ -1,9 +1,9 @@
 package = "lzmq-ffi"
-version = "scm-0"
+version = "0.3.4-1"
 
 source = {
-  url = "https://github.com/moteus/lzmq/archive/master.zip",
-  dir = "lzmq-master",
+  url = "https://github.com/moteus/lzmq/archive/v0.3.4.zip",
+  dir = "lzmq-0.3.4",
 }
 
 description = {

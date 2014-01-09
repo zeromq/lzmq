@@ -13,7 +13,7 @@ description = {
 }
 
 dependencies = {
-  "lua >= 5.1",
+  "lua >= 5.1, < 5.3",
   -- "lua-llthreads >= 1.2"
 }
 
