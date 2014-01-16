@@ -1070,7 +1070,7 @@ end
 
 do -- zmq
 
-zmq._VERSION = "0.3.4"
+zmq._VERSION = "0.3.5-dev"
 
 function zmq.version(unpack)
   local mj,mn,pt = api.zmq_version()

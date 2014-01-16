@@ -54,8 +54,8 @@ LUAZMQ_EXPORT int luazmq_socket (lua_State *L, void *skt, unsigned char own) {
 
 #define LUAZMQ_VERSION_MAJOR 0
 #define LUAZMQ_VERSION_MINOR 3
-#define LUAZMQ_VERSION_PATCH 4
-// #define LUAZMQ_VERSION_COMMENT "dev"
+#define LUAZMQ_VERSION_PATCH 5
+#define LUAZMQ_VERSION_COMMENT "dev"
 
 //-----------------------------------------------------------
 // common

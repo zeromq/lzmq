@@ -54,9 +54,49 @@ if not ok then
 end
 
 ffi.cdef[[
-  typedef struct zmq_msg_t {unsigned char _ [32];} zmq_msg_t;
-
   void zmq_version (int *major, int *minor, int *patch);
+]]
+
+local _M = {}
+
+-- zmq_version
+do
+
+function _M.zmq_version()
+  local major, minor, patch = ffi.new(aint_t, 0), ffi.new(aint_t, 0), ffi.new(aint_t, 0)
+  libzmq3.zmq_version(major, minor, patch)
+  return major[0], minor[0], patch[0]
+end
+
+end
+
+local ZMQ_VERSION_MAJOR, ZMQ_VERSION_MINOR, ZMQ_VERSION_PATCH = _M.zmq_version()
+assert(
+  ((ZMQ_VERSION_MAJOR == 3) and (ZMQ_VERSION_MINOR >= 2)) or (ZMQ_VERSION_MAJOR == 4),
+  "Unsupported ZMQ version: " .. ZMQ_VERSION_MAJOR .. "." .. ZMQ_VERSION_MINOR .. "." .. ZMQ_VERSION_PATCH
+)
+
+-- >=
+local is_zmq_ge function (major, minor, patch)
+  if ZMQ_VERSION_MAJOR < major then return false end
+  if ZMQ_VERSION_MAJOR > major then return true  end
+  if ZMQ_VERSION_MINOR < minor then return false end
+  if ZMQ_VERSION_MINOR > minor then return true  end
+  if ZMQ_VERSION_PATCH < patch then return false  end
+  return true
+end
+
+if is_zmq_ge(4, 1, 0) then
+  ffi.cdef[[
+    typedef struct zmq_msg_t {unsigned char _ [40];} zmq_msg_t;
+  ]]
+else
+  ffi.cdef[[
+    typedef struct zmq_msg_t {unsigned char _ [32];} zmq_msg_t;
+  ]]
+end
+
+ffi.cdef[[
   int zmq_errno (void);
   const char *zmq_strerror (int errnum);
 
@@ -194,16 +234,8 @@ local function pget(lib, elem)
   return nil, err
 end
 
-local _M = {}
-
--- zmq_version, zmq_errno, zmq_strerror, zmq_poll, zmq_device, zmq_proxy
+-- zmq_errno, zmq_strerror, zmq_poll, zmq_device, zmq_proxy
 do
-
-function _M.zmq_version()
-  local major, minor, patch = ffi.new(aint_t, 0), ffi.new(aint_t, 0), ffi.new(aint_t, 0)
-  libzmq3.zmq_version(major, minor, patch)
-  return major[0], minor[0], patch[0]
-end
 
 function _M.zmq_errno()
   return libzmq3.zmq_errno()
@@ -235,12 +267,6 @@ end
 end
 
 end
-
-local ZMQ_VERSION_MAJOR, ZMQ_VERSION_MINOR, ZMQ_VERSION_PATCH = _M.zmq_version()
-assert(
-  ((ZMQ_VERSION_MAJOR == 3) and (ZMQ_VERSION_MINOR >= 2)) or (ZMQ_VERSION_MAJOR == 4),
-  "Unsupported ZMQ version: " .. ZMQ_VERSION_MAJOR .. "." .. ZMQ_VERSION_MINOR .. "." .. ZMQ_VERSION_PATCH
-)
 
 -- zmq_ctx_new, zmq_ctx_term, zmq_ctx_get, zmq_ctx_set
 do
