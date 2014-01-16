@@ -53,6 +53,29 @@ if not ok then
   else error(libzmq3) end
 end
 
+local aint_t          = ffi.typeof("int[1]")
+local aint16_t        = ffi.typeof("int16_t[1]")
+local auint16_t       = ffi.typeof("uint16_t[1]")
+local aint32_t        = ffi.typeof("int32_t[1]")
+local auint32_t       = ffi.typeof("uint32_t[1]")
+local aint64_t        = ffi.typeof("int64_t[1]")
+local auint64_t       = ffi.typeof("uint64_t[1]")
+local asize_t         = ffi.typeof("size_t[1]")
+local vla_char_t      = ffi.typeof("char[?]")
+local pvoid_t         = ffi.typeof("void*")
+local pchar_t         = ffi.typeof("char*")
+local uintptr_t       = ffi.typeof("uintptr_t")
+local NULL            = ffi.cast(pvoid_t, 0)
+local int16_size      = ffi.sizeof("int16_t")
+local int32_size      = ffi.sizeof("int32_t")
+local ptr_size        = ffi.sizeof(pvoid_t)
+local fd_t, afd_t
+if IS_WINDOWS and ffi.arch == 'x64' then
+  fd_t, afd_t = "uint64_t", auint64_t
+else
+  fd_t, afd_t = "int", aint_t
+end
+
 ffi.cdef[[
   void zmq_version (int *major, int *minor, int *patch);
 ]]
@@ -77,7 +100,7 @@ assert(
 )
 
 -- >=
-local is_zmq_ge function (major, minor, patch)
+local is_zmq_ge = function (major, minor, patch)
   if ZMQ_VERSION_MAJOR < major then return false end
   if ZMQ_VERSION_MAJOR > major then return true  end
   if ZMQ_VERSION_MINOR < minor then return false end
@@ -164,32 +187,10 @@ ffi.cdef[[
   unsigned long zmq_stopwatch_stop (void *watch_);
 ]]
 
-local aint_t          = ffi.typeof("int[1]")
-local aint16_t        = ffi.typeof("int16_t[1]")
-local auint16_t       = ffi.typeof("uint16_t[1]")
-local aint32_t        = ffi.typeof("int32_t[1]")
-local auint32_t       = ffi.typeof("uint32_t[1]")
-local aint64_t        = ffi.typeof("int64_t[1]")
-local auint64_t       = ffi.typeof("uint64_t[1]")
-local asize_t         = ffi.typeof("size_t[1]")
-local vla_char_t      = ffi.typeof("char[?]")
-local pvoid_t         = ffi.typeof("void*")
-local pchar_t         = ffi.typeof("char*")
 local zmq_msg_t       = ffi.typeof("zmq_msg_t")
-local uintptr_t       = ffi.typeof("uintptr_t")
 local vla_pollitem_t  = ffi.typeof("zmq_pollitem_t[?]")
 local zmq_pollitem_t  = ffi.typeof("zmq_pollitem_t")
 local pollitem_size   = ffi.sizeof(zmq_pollitem_t)
-local NULL            = ffi.cast(pvoid_t, 0)
-local int16_size      = ffi.sizeof("int16_t")
-local int32_size      = ffi.sizeof("int32_t")
-local ptr_size        = ffi.sizeof(pvoid_t)
-local fd_t, afd_t
-if IS_WINDOWS and ffi.arch == 'x64' then
-  fd_t, afd_t = "uint64_t", auint64_t
-else
-  fd_t, afd_t = "int", aint_t
-end
 
 local function ptrtoint(ptr)
   return tonumber(ffi.cast(uintptr_t, ptr))
