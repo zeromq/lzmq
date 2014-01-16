@@ -56,7 +56,16 @@ build = {
       ["lzmq"] = {
         libraries = {"zmq"},
       }
-    }}
+    }},
+    macosx  = { modules = {
+      ["lzmq.timer"] = {
+        defines = {'USE_GETTIMEOFDAY'},
+        libraries = {"rt"},
+      },
+      ["lzmq"] = {
+        libraries = {"zmq"},
+      }
+    }},
   },
 
   modules = {
