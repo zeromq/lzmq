@@ -24,17 +24,11 @@ build = {
   type = "builtin",
 
   platforms = {
-    windows = { modules = {
+    linux   = { modules = {
       ["lzmq.timer"] = {
-        defines = {'USE_PERF_COUNT'}
-      }
-    }},
-    unix    = { modules = {
-      ["lzmq.timer"] = {
-        defines = {'USE_CLOCK_MONOTONIC', 'USE_GETTIMEOFDAY'},
         libraries = {"rt"},
-      }
-    }}
+      },
+    }},
   },
 
   modules = {

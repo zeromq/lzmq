@@ -2,73 +2,34 @@ language: erlang
 
 env:
   global:
-    - LUAROCKS_VER=2.0.13
-    - LUAROCKS_BASE=luarocks-$LUAROCKS_VER
-    - LUAROCKS_INSTALL=wget
-    - LUAROCKS_GITTAG=master
-    - LUAROCKS_GITURL=https://github.com/keplerproject/luarocks.git
-    # - LUAROCKS_GITTAG=v$LUAROCKS_VER
+    - PLATFORM=linux
+    - LUAROCKS_VER=2.1.0
   matrix:
     # todo: install libffi and test ffi binding on Lua 5.1/5.2
-    - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq3 LUA=lua5.1 LUA_DEV=liblua5.1-dev LUA_VER=5.1 LUA_SFX=5.1 LUA_INCDIR=/usr/include/lua5.1
-    - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq4 LUA=lua5.1 LUA_DEV=liblua5.1-dev LUA_VER=5.1 LUA_SFX=5.1 LUA_INCDIR=/usr/include/lua5.1
-    - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq3 LUA=lua5.2 LUA_DEV=liblua5.2-dev LUA_VER=5.2 LUA_SFX=5.2 LUA_INCDIR=/usr/include/lua5.2
-    - PERF="NO"  LZMQ=lzmq     ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
-    - PERF="NO"  LZMQ=ffi      ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
-    - PERF="NO"  LZMQ=ffi      ZMQ_VER=zeromq4 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
-    - PERF="NO"  LZMQ=ffi-lua  ZMQ_VER=zeromq3 LUA=luajit LUA_DEV=libluajit-5.1-dev LUA_VER=5.1 LUA_SFX=jit LUA_INCDIR=/usr/include/luajit-2.0
+    - LUA=lua5.1 ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO" LUA_SFX=
+    - LUA=lua5.1 ZMQ_VER=zeromq4 LZMQ=lzmq    PERF="NO" LUA_SFX=
+    - LUA=lua5.2 ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO" LUA_SFX=
+    - LUA=luajit ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO" LUA_SFX=jit
+    - LUA=luajit ZMQ_VER=zeromq3 LZMQ=ffi     PERF="NO" LUA_SFX=jit
+    - LUA=luajit ZMQ_VER=zeromq4 LZMQ=ffi     PERF="NO" LUA_SFX=jit
+    - LUA=luajit ZMQ_VER=zeromq3 LZMQ=ffi-lua PERF="NO" LUA_SFX=jit
 
 branches:
   only:
     - master
 
 before_install:
-  - if [ $LUA = "luajit" ]; then
-      sudo add-apt-repository ppa:mwild1/ppa -y && sudo apt-get update -y;
+  - bash .travis/setup_lua.sh
+  - if [ "$ZMQ_VER" == "libzmq" ]; then
+      bash .travis/setup_sodium.sh;
     fi
-  - sudo apt-get install $LUA
-  - sudo apt-get install $LUA_DEV
-  - lua$LUA_SFX -v
-  # Install a recent luarocks release
-  - if [ $LUAROCKS_INSTALL = "git" ]; then
-      git clone $LUAROCKS_GITURL;
-      cd luarocks;
-      git checkout $LUAROCKS_GITTAG;
-    else
-      wget http://luarocks.org/releases/$LUAROCKS_BASE.tar.gz;
-      tar zxvpf $LUAROCKS_BASE.tar.gz;
-      cd $LUAROCKS_BASE;
+  - if [ "$ZMQ_VER" == "zeromq4" ]; then
+      bash .travis/setup_sodium.sh;
     fi
-  - ./configure
-    --lua-version=$LUA_VER --lua-suffix=$LUA_SFX --with-lua-include="$LUA_INCDIR"
-  - sudo make
-  - sudo make install
-  - cd $TRAVIS_BUILD_DIR
+  - bash .travis/setup_zmq.sh
 
 install:
-  # - if [ $ZMQ_VER = "zeromq4" ]; then
-  #     git clone git://github.com/jedisct1/libsodium.git;
-  #     cd libsodium;
-  #     ./autogen.sh;
-  #     ./configure && make check;
-  #     sudo make install;
-  #     sudo ldconfig;
-  #   fi
-  - cd $TRAVIS_BUILD_DIR
-  - if [ $LZMQ = "ffi-lua" ]; then
-      sudo apt-get install libzmq3;
-    else
-      sudo apt-get remove libzmq3;
-      git clone https://github.com/zeromq/$ZMQ_VER-x.git ./$ZMQ_VER;
-      cd ./$ZMQ_VER;
-      ./autogen.sh;
-      ./configure;
-      sudo make;
-      sudo make install;
-    fi
-  - cd $TRAVIS_BUILD_DIR
   - sudo luarocks install https://raw.github.com/moteus/lunit/moteus-skip/rockspecs/lunitx-scm.mot.skip-0.rockspec
-  # - sudo luarocks install https://raw.github.com/Neopallium/lua-llthreads/master/rockspecs/lua-llthreads-scm-0.rockspec
   - sudo luarocks install https://raw.github.com/moteus/lua-llthreads2/master/rockspecs/lua-llthreads2-compat-scm-0.rockspec
   - if [ $LZMQ = "ffi-lua" ]; then
       sudo luarocks make rockspecs/lzmq-ffi-scm-0.rockspec;
