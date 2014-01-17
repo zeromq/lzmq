@@ -7,6 +7,8 @@
 #include <stdint.h>
 #include <float.h>
 
+/* Select default timer source if not defined
+ */
 #if defined(__WINDOWS__) 
 
 #include <Windows.h>
@@ -16,8 +18,23 @@
 #endif
 
 #else
-// USE_GETTIMEOFDAY
-// USE_CLOCK_MONOTONIC
+
+#include <sys/time.h>
+#define USE_GETTIMEOFDAY
+
+#if defined(__MACH__)
+
+#include <mach/clock.h>
+#include <mach/mach.h>
+
+#define USE_CLOCK_GET_TIME
+
+#elif defined(CLOCK_MONOTONIC)
+
+#define USE_CLOCK_MONOTONIC
+
+#endif
+
 #endif
 
 #define LUAZMQ_PREFIX  "LuaZMQ3: "
@@ -123,8 +140,6 @@ static absolute_diff_t GetUtcDelta(absolute_time_t StartTime, absolute_time_t En
 
 #else // not __WINDOWS__
 
-#include <sys/time.h>
-
 typedef uint64_t absolute_time_t;
 typedef int64_t  absolute_diff_t;
 typedef uint64_t monotonic_time_t;
@@ -147,6 +162,18 @@ static monotonic_time_t GetMonotonicTime(){
   if(0 == clock_gettime(CLOCK_MONOTONIC, &ts))
     return (monotonic_time_t)ts.tv_sec * 1000 + (monotonic_time_t)ts.tv_nsec / 1000000;
 #endif
+
+#ifdef USE_CLOCK_GET_TIME
+  clock_serv_t cclock;
+  kern_return_t ret = host_get_clock_service(mach_host_self(), SYSTEM_CLOCK, &cclock);
+  if(ret == KERN_SUCCESS){
+    mach_timespec_t ts;
+    clock_get_time(cclock, &ts);
+    mach_port_deallocate(mach_task_self(), cclock);
+    return (monotonic_time_t)ts.tv_sec * 1000 + (monotonic_time_t)ts.tv_nsec / 1000000;
+  }
+#endif
+
   return GetUtcTime();
 }
 
