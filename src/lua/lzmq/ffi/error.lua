@@ -19,12 +19,15 @@ else -- WARNING this is not best way
     or package.config:sub(1,1) == '\\'
 
   local ZMQ_HAUSNUMERO = 156384712
-
-  errors = {
+  
+  local zmq_errors = {
     EFSM            = ZMQ_HAUSNUMERO + 51;
     ENOCOMPATPROTO  = ZMQ_HAUSNUMERO + 52;
     ETERM           = ZMQ_HAUSNUMERO + 53;
     EMTHREAD        = ZMQ_HAUSNUMERO + 54;
+  }
+
+  errors = {
     ENOMEM          = 12;
     EACCES          = 13;
     EFAULT          = 14;
@@ -71,8 +74,20 @@ else -- WARNING this is not best way
       EMSGSIZE        = 115;
     }
     for e, v in pairs(winerr) do errors[e]=v end
+  else
+    local ok, syscall = pcall(require, "syscall")
+    if not ok then syscall = nil end
+    if syscall and syscall.c and syscall.c.E then
+      local sys_errors = {}
+      local E = syscall.c.E
+      for e, v in pairs(errors) do
+        sys_errors[e] = E[(e:sub(2))] or v
+      end
+      errors = sys_errors
+    end
   end
 
+  for e, v in pairs(zmq_errors) do errors[e]=v end
 end
 
 return errors

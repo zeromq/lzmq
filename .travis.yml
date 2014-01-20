@@ -34,6 +34,7 @@ install:
   - sudo luarocks install https://raw.github.com/moteus/lunit/moteus-skip/rockspecs/lunitx-scm.mot.skip-0.rockspec
   - sudo luarocks install https://raw.github.com/moteus/lua-llthreads2/master/rockspecs/lua-llthreads2-compat-scm-0.rockspec
   - if [ $LZMQ = "ffi-lua" ]; then
+      sudo luarocks install https://raw2.github.com/justincormack/ljsyscall/master/rockspec/ljsyscall-0.9-1.rockspec;
       sudo luarocks make rockspecs/lzmq-ffi-scm-0.rockspec;
     else
       sudo luarocks make rockspecs/lzmq-scm-0.rockspec;
