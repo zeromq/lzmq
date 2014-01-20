@@ -63,13 +63,14 @@ local is_zcontext_ud = function(o, ...)
 end
 
 local function error_is(err, no)
+  local msg = "expected `" .. tostring(zmq.error(no)) .. "` but was `" .. tostring(err) .. "`"
   if type(err) == 'number' then
-    return err == no
+    return err == no, msg
   end
   if type(err) == 'string' then
-    return not not string.find(err, tostring(no), nil, true)
+    return not not string.find(err, tostring(no), nil, true), msg
   end
-  return err:no() == no
+  return err:no() == no, msg
 end
 
 -- usage assert_equal(socket_count(ctx, 1))
