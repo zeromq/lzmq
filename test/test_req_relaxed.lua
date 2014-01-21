@@ -1,5 +1,6 @@
 ---
 -- Test ZMQ_REQ_RELAXED mode and reconnect socket
+-- This test requires [lua-llthreads2](https://github.com/moteus/lua-llthreads2) library
 
 
 local ENDPOINT = "tcp://127.0.0.1:5555"
@@ -120,10 +121,13 @@ FINISH()
 
 ECHO(2)
 
-proc = START()
+START()
 
 ECHO(2)
 
+-- With reconnect test pass
+-- RECONNECT()
+
 ECHO(2)
 
-FINISH(proc)
+FINISH()

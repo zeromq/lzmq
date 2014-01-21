@@ -22,7 +22,9 @@
 -- wraps the low-level threads object.
 --
 
-local llthreads = require"llthreads"
+local ok, llthreads = pcall(require, "llthreads2")
+if not ok then llthreads = require"llthreads" end
+
 local os        = require"os"
 local string    = require"string"
 local table     = require"table"
