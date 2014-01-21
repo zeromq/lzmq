@@ -99,10 +99,14 @@ static monotonic_time_t IncMonotonic(monotonic_time_t StartTime, monotonic_diff_
 
 static LARGE_INTEGER PerfFreq;
 
+static volatile int PerfFreqInit = 0;
+
 typedef uint64_t monotonic_time_t;
 typedef int64_t  monotonic_diff_t;
 
 static void InitMonotonicTimer(){
+  if(PerfFreqInit) return;
+  PerfFreqInit = 1;
   QueryPerformanceFrequency(&PerfFreq);
   PerfFreq.QuadPart /= 1000;
 }

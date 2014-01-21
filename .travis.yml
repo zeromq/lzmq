@@ -1,8 +1,8 @@
-language: erlang
+language: objective-c
 
 env:
   global:
-    - PLATFORM=linux
+    - PLATFORM=macosx
     - LUAROCKS_VER=2.1.0
   matrix:
     # todo: install libffi and test ffi binding on Lua 5.1/5.2
@@ -49,9 +49,9 @@ script:
   - lua$LUA_SFX test_threads_fork_arg.lua
   - lua$LUA_SFX test_threads_fork.lua
   - lua$LUA_SFX test_threads_file.lua
-  - if [ "$ZMQ_VER" == "libzmq" ]; then
-      lua$LUA_SFX test_req_relaxed.lua;
-    fi
+  #- if [ "$ZMQ_VER" == "libzmq" ]; then
+  #    lua$LUA_SFX test_req_relaxed.lua;
+  #  fi
   - if [ $PERF = "YES" ]; then
       cd $TRAVIS_BUILD_DIR;
       mkdir ./examples/perf2/libzmq;
