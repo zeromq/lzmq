@@ -3,12 +3,13 @@
 -- This test requires [lua-llthreads2](https://github.com/moteus/lua-llthreads2) library
 
 
-local ENDPOINT = "tcp://127.0.0.1:5555"
-
 local zmq      = require "lzmq"
 local ztimer   = require "lzmq.timer"
 local zthreads = require "lzmq.threads"
 local zassert  = zmq.assert
+
+local ENDPOINT = "tcp://127.0.0.1:5555"
+local CLIENT_SOCKET_TYPE = zmq.REQ
 
 -----------------------------------------------------------------------------
 -- START  - start server thread
@@ -20,11 +21,21 @@ local proc
 
 local ctx  = zmq.context()
 
-local pipe = zassert(ctx:socket{zmq.REQ,
-  sndtimeo = 1000, rcvtimeo = 1000, linger = 0,
-  req_relaxed = 1, req_correlate = 1, 
-  connect = ENDPOINT,
-})
+local pipe 
+
+if CLIENT_SOCKET_TYPE == zmq.REQ then
+  pipe = zassert(ctx:socket{zmq.REQ,
+    sndtimeo = 1000, rcvtimeo = 1000, linger = 0,
+    req_relaxed = 1, req_correlate = 1, 
+    connect = ENDPOINT,
+  })
+else
+  assert(zmq.DEALER == CLIENT_SOCKET_TYPE)
+  pipe = zassert(ctx:socket{zmq.DEALER,
+    sndtimeo = 1000, rcvtimeo = 1000, linger = 0,
+    connect = ENDPOINT,
+  })
+end
 
 local SERVER = string.dump(function(ENDPOINT)
   local zmq      = require "lzmq"
@@ -87,10 +98,18 @@ local function ECHO_()
   print("== CLIENT SEND:", ok or err)
   if not ok then return end
 
-  ok, err = pipe:recvx()
-  print("== CLIENT RECV:", ok or err)
-  if ok then
-    assert(ok == msg)
+  while true do
+    ok, err = pipe:recvx()
+    print("== CLIENT RECV:", ok or err)
+    if zmq.REQ == CLIENT_SOCKET_TYPE then
+      if ok then assert(ok == msg) end
+      break
+    end
+    if ok then 
+      if(ok == msg) then break end
+    else
+      break
+    end
   end
 end
 
