@@ -1,8 +1,8 @@
-language: objective-c
+language: erlang
 
 env:
   global:
-    - PLATFORM=macosx
+    - PLATFORM=linux
     - LUAROCKS_VER=2.1.0
   matrix:
     # todo: install libffi and test ffi binding on Lua 5.1/5.2
