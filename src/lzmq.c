@@ -11,6 +11,11 @@
 #include <assert.h>
 #include "zsupport.h"
 
+#define LUAZMQ_VERSION_MAJOR 0
+#define LUAZMQ_VERSION_MINOR 3
+#define LUAZMQ_VERSION_PATCH 5
+// #define LUAZMQ_VERSION_COMMENT "dev"
+
 const char *LUAZMQ_CONTEXT = LUAZMQ_PREFIX "Context";
 const char *LUAZMQ_SOCKET  = LUAZMQ_PREFIX "Socket";
 const char *LUAZMQ_ERROR   = LUAZMQ_PREFIX "Error";
@@ -51,11 +56,6 @@ LUAZMQ_EXPORT int luazmq_socket (lua_State *L, void *skt, unsigned char own) {
 
   return 1;
 }
-
-#define LUAZMQ_VERSION_MAJOR 0
-#define LUAZMQ_VERSION_MINOR 3
-#define LUAZMQ_VERSION_PATCH 5
-#define LUAZMQ_VERSION_COMMENT "dev"
 
 //-----------------------------------------------------------
 // common

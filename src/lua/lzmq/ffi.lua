@@ -1,3 +1,5 @@
+local LZMQ_VERSION = "0.3.5"
+
 local lua_version_t
 local function lua_version()
   if not lua_version_t then 
@@ -1070,7 +1072,7 @@ end
 
 do -- zmq
 
-zmq._VERSION = "0.3.5-dev"
+zmq._VERSION = LZMQ_VERSION
 
 function zmq.version(unpack)
   local mj,mn,pt = api.zmq_version()
