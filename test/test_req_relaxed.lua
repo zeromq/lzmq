@@ -58,13 +58,9 @@ local SERVER = string.dump(function(ENDPOINT)
       end
     else
       print('== SERVER RECV: ' .. msg[#msg])
-      if msg[#msg] == 'FINISH' then
-        msg[#msg] = "OK"
-        srv:send_all(msg)
-        break
-      end
       local ok, err = srv:send_all(msg)
-      print('== SERVER SEND: ' .. tostring(ok or err))
+      print('== SERVER SEND: ' .. (ok and msg[#msg] or tostring(err)))
+      if msg[#msg] == 'FINISH' then break end
     end
   end
 
@@ -95,7 +91,7 @@ local function ECHO_()
   echo_no = echo_no + 1
   local msg = "hello:" .. echo_no
   local ok, err = pipe:send(msg)
-  print("== CLIENT SEND:", ok or err)
+  print("== CLIENT SEND:", (ok and msg or tostring(err)))
   if not ok then return end
 
   while true do

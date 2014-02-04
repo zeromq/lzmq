@@ -69,8 +69,8 @@ function thread_mt:join(...)
 	return self.thread:join(...)
 end
 
-function thread_mt:kill()
-	return self.thread:kill()
+function thread_mt:alive()
+	return self.thread:alive()
 end
 
 local bootstrap_pre = [[
