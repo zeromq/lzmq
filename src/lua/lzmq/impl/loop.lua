@@ -131,7 +131,8 @@ end
 ---
 -- Возвращает время до следующего события
 function event_list:sleep_interval(min_interval)
-  for i, ev in ipairs(self.private_.events) do
+  for i = 1, #self.private_.events do
+    local ev = self.private_.events[i]
     if (not ev:locked()) and (ev:started()) then
       local int = ev:sleep_interval()
       if min_interval > int then min_interval = int end
@@ -422,7 +423,7 @@ end
 function zmq_loop:create_socket(...)
   local skt, err = self.private_.context:socket(...)
   if not skt then return nil, err end
-  if type(skt) == 'userdata' then 
+  if type(skt) == 'userdata' then
     return skt
   end
   if type(skt) == 'table' and skt.recv then
