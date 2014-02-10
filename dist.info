@@ -1,0 +1,13 @@
+name = "lzmq"
+version = "0.3.5"
+
+desc = "Lua bindings to ZeroMQ"
+author = "Alexey Melnichuk"
+license = "MIT/X11"
+url = "https://github.com/moteus/lzmq"
+maintainer = "Alexey Melnichuk"
+
+depends = {
+  "lua > 5.1",
+  "libzmq >= 3.2"
+}
