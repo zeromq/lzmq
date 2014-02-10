@@ -7,6 +7,7 @@ include ( lua )
 find_package ( ZMQ REQUIRED )
 
 include_directories ( ${CMAKE_CURRENT_SOURCE_DIR}/src )
+include_directories ( ${ZMQ_INCLUDE_DIR} )
 
 set ( LUA_LZMQ_SRC
   src/lzmq.c src/lzutils.c src/poller.c 
