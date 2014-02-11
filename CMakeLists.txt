@@ -49,4 +49,4 @@ install_data ( README.md LICENCE.txt )
 
 install_example ( examples/ )
 
-install_test ( test/ )
+install_test ( test/ lzmq/examples/utils.lua )
