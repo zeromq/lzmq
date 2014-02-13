@@ -19,7 +19,7 @@ Because of LuaRocks repositories has latency you can use [MoonRocks](http://rock
 
 ##API
 This is short [API](http://moteus.github.io/lzmq/index.html) description.<br/>
-See also [exampes](https://github.com/moteus/lzmq-zguide) form [OMQ - The Guide](http://zguide.zeromq.org).<br/>
+See also [exampes](https://github.com/moteus/lzmq-zguide) from [OMQ - The Guide](http://zguide.zeromq.org).<br/>
 
 ##Performance
 To run same test you should copy original performance tests to `exampes/perf2/libzmq`
