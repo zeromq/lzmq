@@ -10,7 +10,9 @@
 # define luazmq_rawsetp  lua_rawsetp
 # define luazmq_setfuncs luaL_setfuncs
 # define luazmq_absindex lua_absindex
+#ifndef lua_objlen
 # define lua_objlen      lua_rawlen
+#endif
 
 int   luazmq_typerror (lua_State *L, int narg, const char *tname);
 
