@@ -1,0 +1,142 @@
+--- ZMQ event loop.
+--
+-- @module lzmq.loop
+
+
+--- Create new loop object.
+-- 
+-- @tparam[opt] number pre_alloc pre-size the poller for the number of sockets it will handle.
+--  The size can grow dynamically as-needed.
+-- @tparam[opt] lzmq.context ctx ZMQ context.
+-- @treturn loop
+function new() end
+
+--- ZMQ event loop
+--
+-- @type loop
+
+--- Add a ZMQ Socket or fd to the poller.
+-- You can add one socket multiple times.
+--
+-- @tparam (lzmq.socket|number) socket ZMQ socket or fd
+-- @tparam[opt=zmq.POLLIN] number events zmq poll events bitmask
+-- @tparam callable callback called when event is raised
+-- @treturn lzmq.socket socket
+--
+-- @usage
+-- loop:add_socket(sock, function(sock) print(sock, " is readable.") end)
+-- loop:add_socket(sock, zmq.POLLOUT, function(sock) print(sock, " is writable.") end)
+-- loop:add_socket(sock, zmq.POLLIN+zmq.POLLOUT, function(sock, revents)
+--     print(sock, " has events:", revents)
+-- end)
+function loop:add_socket()end
+
+--- Add a time event.
+--
+-- @tparam number time UTC absolute time
+-- @tparam callable callback called when event is raised
+-- @treturn lzmq.time_event
+--
+function loop:add_time() end
+
+--- Add a time event.
+--
+-- @tparam number interval milliseconds to event scince now
+-- @tparam callable callback called when event is raised
+-- @treturn lzmq.time_event
+--
+function loop:add_interval()end
+
+--- Add a time event.
+--
+-- @tparam number interval milliseconds to event scince now
+-- @tparam callable callback called when event is raised
+-- @treturn lzmq.time_event
+--
+function loop:add_once()end
+
+--- Remove a socket/fd from the poller.
+-- Note. You can remove only `last` socket.
+--
+-- @tparam (lzmq.socket|number) socket ZMQ socket or fd
+--
+function loop:remove_socket()end
+
+--- Start an event loop waiting for and dispatching events.
+--
+function loop:start()end
+
+--- Whait some interval and dispatch events
+--
+-- @tparam number interval milliseconds to event scince now
+--
+function loop:sleep_ex()end
+
+--- Proceed IO events.
+--
+-- @tparam number interval maximum interval in milliseconds to proceed events
+--
+function loop:flush()end
+
+--- Return internal ZMQ context
+--
+-- @treturn lzmq.context
+--
+function loop:context() end
+
+--- Interrupt event loop
+--
+function loop:interrupt()end
+
+--- Interrupt event loop
+--
+function loop:stop()end
+
+--- Time event.
+-- 
+-- @type time_event
+--
+-- @usage
+-- loop:add_interval(0,function(ev)
+--   -- do some work ...
+--   if work_done then -- remove event
+--     return ev:reset()
+--   end
+--   -- set new interval
+--   ev:set_interval(1000)
+-- end)
+-- 
+
+
+--- Set absolute time.
+-- 
+-- @tparam number time UTC absolute time
+--
+function time_event:set_time()end
+
+--- Set interval.
+--
+-- @tparam number milliseconds
+-- 
+function time_event:set_interval() end
+
+--- Set interval.
+--
+-- @tparam number milliseconds
+-- 
+function time_event:set_interval_once()end
+
+--- Reset time event.
+--
+function time_event:reset()end
+
+--- Restart event.
+-- 
+-- @usage
+-- local watch_dog_ev = loop:add_interval(TIMEOUT, watch_dog_fn)
+-- -- now we can periodically restart watch dog timer
+-- watch_dog_ev:restart()
+--
+function time_event:restart()end
+
+

@@ -11,15 +11,20 @@ do local ver = zmq.version()
   end
 end
 
+local function class()
+  local o = {
+    new = function(self, ...)
+      return setmetatable({},self):init(...)
+    end
+  }
+  o.__index = o
+  return o
+end
+
 -------------------------------------------------------------------
-local time_event = {} do
+local time_event = class() do
 
 -- Пасивные события.
-
-function time_event:new(...)
-  local t = setmetatable({},{__index = self})
-  return t:init(...)
-end
 
 function time_event:init(fn)
   self.private_ = {
@@ -103,8 +108,7 @@ end
 -------------------------------------------------------------------
 
 -------------------------------------------------------------------
-local event_list = {} do
-event_list.__index = event_list 
+local event_list = class() do
 
 function event_list:new(...)
   return setmetatable({}, self):init(...)
@@ -213,17 +217,10 @@ end
 -------------------------------------------------------------------
 
 -------------------------------------------------------------------
-local zmq_loop = {} do
-zmq_loop.__index = zmq_loop
+local zmq_loop = class() do
 
 -- static
 function zmq_loop.sleep(ms) ztimer.sleep(ms) end
-
----
--- ctor
-function zmq_loop:new(...)
-  return setmetatable({}, self):init(...)
-end
 
 function zmq_loop:init(N, ctx)
   self.private_ = self.private_ or {}
@@ -432,99 +429,48 @@ function zmq_loop:create_socket(...)
   return nil, skt
 end
 
-function zmq_loop:create_sub(subs)
-  local skt, err = self:create_socket(zmq.SUB)
+function zmq_loop:add_new_socket(opt, ...)
+  local skt, err = self:create_socket(opt)
   if not skt then return nil, err end
-  local ok, err = skt:set_linger(0)
-  if not ok then skt:close() return nil, err end
-  if type(subs) == 'string' then 
-    ok,err = skt:set_subscribe(subs)
-    if not ok then skt:close() return nil, err end
-  else
-    for k, str in ipairs(subs) do
-      ok,err = skt:set_subscribe(str)
-      if not ok then skt:close() return nil, err end
-    end
-  end
-  return skt
+  local ok, err = self:add_socket(skt, ...)
+  if not ok then skt:close() end
+  return ok, err
+end
+
+function zmq_loop:create_sub(subs)
+  return self:create_socket{zmq.SUB, subscribe = subs}
 end
 
 function zmq_loop:create_sub_bind(addr, subs)
-  local skt, err = self:create_sub(subs)
-  if not skt then return nil, err end
-  local ok, err = skt:bind(addr)
-  if not ok then skt:close() return nil, err end
-  return skt
+  return self:create_socket{zmq.SUB, subscribe = subs, bind = addr}
 end
 
 function zmq_loop:create_sub_connect(addr, subs)
-  local skt, err = self:create_sub(subs)
-  if not skt then return nil, err end
-  local ok, err = skt:connect(addr)
-  if not ok then skt:close() return nil, err end
-  return skt
+  return self:create_socket{zmq.SUB, subscribe = subs, connect = addr}
 end
 
 function zmq_loop:create_bind(sock_type, addr)
-  local skt, err = self:create_socket(sock_type)
-  if not skt then return nil, err end
-  local ok, err = skt:set_linger(0)
-  if not ok then skt:close() return nil, err end
-  if type(addr) == 'table' then 
-    for _, v in ipairs(addr) do
-      ok, err = skt:bind(v)
-      if not ok then skt:close() return nil, err end
-    end
-  else
-    ok, err = skt:bind(addr)
-    if not ok then skt:close() return nil, err end
-  end
-  return skt
+  return self:create_socket{sock_type, bind = addr}
 end
 
 function zmq_loop:create_connect(sock_type, addr)
-  local skt, err = self:create_socket(sock_type)
-  if not skt then return nil, err end
-  local ok, err = skt:set_linger(0)
-  if not ok then skt:close() return nil, err end
-  if type(addr) == 'table' then 
-    for _, v in ipairs(addr) do
-      ok, err = skt:connect(v)
-      if not ok then skt:close() return nil, err end
-    end
-  else
-    ok, err = skt:connect(addr)
-    if not ok then skt:close() return nil, err end
-  end
-  return skt
+  return self:create_socket{sock_type, connect = addr}
 end
 
-function zmq_loop:add_new_bind(sock_type, addr, fn)
-  local skt,err = self:create_bind(sock_type, addr)
-  if not skt then return nil, err end
-  self:add_socket(skt, fn)
-  return skt
+function zmq_loop:add_new_bind(sock_type, addr, ...)
+  return self:add_new_socket({sock_type, bind = addr}, ...)
 end
 
-function zmq_loop:add_new_connect(sock_type, addr, fn)
-  local skt,err = self:create_connect(sock_type, addr)
-  if not skt then return nil, err end
-  self:add_socket(skt, fn)
-  return skt
+function zmq_loop:add_new_connect(sock_type, addr, ...)
+  return self:add_new_socket({sock_type, connect = addr}, ...)
 end
 
-function zmq_loop:add_sub_connect(addr, subs, fn)
-  local skt,err = self:create_sub_connect(addr, subs)
-  if not skt then return nil, err end
-  self:add_socket(skt, fn)
-  return skt
+function zmq_loop:add_sub_connect(addr, subs, ...)
+  return self:add_new_socket({zmq.SUB, connect = addr, subscribe = subs}, ...)
 end
 
-function zmq_loop:add_sub_bind(addr, subs, fn)
-  local skt,err = self:create_sub_bind(addr, subs, addr)
-  if not skt then return nil, err end
-  self:add_socket(skt, fn)
-  return skt
+function zmq_loop:add_sub_bind(addr, subs, ...)
+  return self:add_new_socket({zmq.SUB, bind = addr, subscribe = subs}, ...)
 end
 
 end
