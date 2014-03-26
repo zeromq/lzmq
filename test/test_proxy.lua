@@ -157,7 +157,9 @@ function test_control()
 
     local ok, err = zmq.proxy_steerable(fe, be, nil, pipe)
 
-    ctx:destroy(0)
+    pipe:send("DONE")
+
+    ctx:destroy(100)
   --]], cli_endpoint, srv_endpoint)
 
   local cli = assert(ctx:socket{zmq.REQ, bind = cli_endpoint, rcvtimeo=1000})
@@ -173,6 +175,11 @@ function test_control()
 
   pipe:send("RESUME")
   assert_equal("hello", srv:recv())
+
+  pipe:send("TERMINATE")
+  assert_equal("DONE", pipe:recv())
+
+  assert(thread:join())
 end
 
 function test_basic()
