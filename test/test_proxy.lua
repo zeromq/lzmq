@@ -164,6 +164,7 @@ function test_control()
 
   local cli = assert(ctx:socket{zmq.REQ, bind = cli_endpoint, rcvtimeo=1000})
   local srv = assert(ctx:socket{zmq.REP, bind = srv_endpoint, rcvtimeo=1000})
+  pipe:set_rcvtimeo(1000)
 
   thread:start()
 
