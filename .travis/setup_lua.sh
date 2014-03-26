@@ -4,8 +4,8 @@
 # PLATFORM must be "linux" or "macosx".
 
 if [ "$LUA" == "luajit" ]; then
-  curl http://luajit.org/download/LuaJIT-2.0.2.tar.gz | tar xz
-  cd LuaJIT-2.0.2
+  curl http://luajit.org/download/LuaJIT-2.0.3.tar.gz | tar xz
+  cd LuaJIT-2.0.3
   make && sudo make install
   cd $TRAVIS_BUILD_DIR;
 else
