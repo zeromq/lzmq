@@ -677,7 +677,7 @@ local poll_item = ffi.new(api.vla_pollitem_t, 1)
 
 function Socket:poll(timeout, events)
   timeout = timeout or -1
-  events  = mask or ZMQ_POLLIN
+  events  = events or ZMQ_POLLIN
 
   poll_item[0].socket  = self._private.skt
   poll_item[0].fd      = 0

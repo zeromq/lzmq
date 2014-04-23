@@ -508,6 +508,7 @@ if pget(libzmq3, "zmq_z85_encode") then
 
 -- we alloc buffers for CURVE encoded key size
 local TMP_BUF_SIZE = 41
+local tmp_buf
 
 local function alloc_z85_buff(len)
   if len <= TMP_BUF_SIZE then
@@ -543,7 +544,7 @@ if pget(libzmq3, "zmq_curve_keypair") then
 function _M.zmq_curve_keypair(as_binary)
   local public_key = ffi.new(vla_char_t, 41)
   local secret_key = ffi.new(vla_char_t, 41)
-  local rc = libzmq3.zmq_curve_keypair(public_key, secret_key)
+  local ret = libzmq3.zmq_curve_keypair(public_key, secret_key)
   if ret == -1 then return -1 end
   if not as_binary then
     return ffi.string(public_key, 40), ffi.string(secret_key, 40)

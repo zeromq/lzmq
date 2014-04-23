@@ -75,7 +75,7 @@ end
 function poller_mt:start()
 	self.is_running = true
 	while self.is_running do
-		status, err = self:poll(-1)
+		local status, err = self:poll(-1)
 		if not status then
 			return false, err
 		end
