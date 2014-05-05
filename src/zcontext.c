@@ -186,6 +186,9 @@ static int luazmq_ctx_close_sockets (lua_State *L, zcontext *ctx, int linger){
     call_socket_destroy(L, linger);
   }
 
+  luaL_unref(L, LUAZMQ_LUA_REGISTRY, ctx->autoclose_ref);
+  ctx->autoclose_ref = LUA_NOREF;
+
   return 0;
 }
 
