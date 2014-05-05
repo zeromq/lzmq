@@ -111,7 +111,7 @@ end
 
 if is_zmq_ge(4, 1, 0) then
   ffi.cdef[[
-    typedef struct zmq_msg_t {unsigned char _ [40];} zmq_msg_t;
+    typedef struct zmq_msg_t {unsigned char _ [48];} zmq_msg_t;
   ]]
 else
   ffi.cdef[[
@@ -641,14 +641,6 @@ if ZMQ_VERSION_MAJOR == 3 then
   end
 
 else
-  ffi.cdef([[
-    typedef struct {
-        uint16_t event;
-        int32_t  value;
-    } zmq_event_t;
-  ]])
-  local zmq_event_t  = ffi.typeof("zmq_event_t")
-  local event_size   = ffi.sizeof(zmq_event_t)
   local event        = ffi.new(auint16_t)
   local value        = ffi.new(aint32_t)
 

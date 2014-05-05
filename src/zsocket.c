@@ -216,10 +216,10 @@ static int luazmq_skt_recv_msg (lua_State *L) {
 
 static int luazmq_skt_recv_event (lua_State *L) {
   zsocket *skt  = luazmq_getsocket(L);
-  zmq_event_t event;
   int rc, flags = luaL_optint(L, 2, 0);
 
 #if ZMQ_VERSION_MAJOR == 3
+  zmq_event_t event;
 
   zmq_msg_t msg;
   zmq_msg_init (&msg);
@@ -244,6 +244,8 @@ static int luazmq_skt_recv_event (lua_State *L) {
 
 #else // 4.0+
 
+  uint16_t event_id;     // id of the event as bitfield
+  int32_t  event_value;  // value is either error code, fd or reconnect interval
   zmq_msg_t msg1, msg2;  // binary and address parts
 
   zmq_msg_init (&msg1); zmq_msg_init (&msg2);
@@ -256,6 +258,7 @@ static int luazmq_skt_recv_event (lua_State *L) {
   }
 
   assert (zmq_msg_more(&msg1) != 0);
+  assert (zmq_msg_size(&msg1) == (sizeof(event_id) + sizeof(event_value)));
 
   rc = zmq_msg_recv (&msg2, skt->skt, flags);
   if(rc == -1){
@@ -268,13 +271,13 @@ static int luazmq_skt_recv_event (lua_State *L) {
 
   { // copy binary data to event struct
     const char* data = (char*)zmq_msg_data(&msg1);
-    memcpy(&(event.event), data, sizeof(event.event));
-    memcpy(&(event.value), data + sizeof(event.event), sizeof(event.value));
+    memcpy(&(event_id), data, sizeof(event_id));
+    memcpy(&(event_value), data + sizeof(event_id), sizeof(event_value));
     zmq_msg_close(&msg1);
   }
 
-  lua_pushnumber(L, event.event);
-  lua_pushnumber(L, event.value);
+  lua_pushnumber(L, event_id);
+  lua_pushnumber(L, event_value);
   lua_pushlstring(L, zmq_msg_data(&msg2), zmq_msg_size(&msg2));
   zmq_msg_close(&msg2);
   return 3;
