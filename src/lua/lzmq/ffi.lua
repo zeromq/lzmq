@@ -887,6 +887,17 @@ function Message:get(option)
   return true
 end
 
+if api.zmq_msg_gets then
+
+function Message:gets(option)
+  assert(not self:closed())
+  local value = api.zmq_msg_gets(self._private.msg, option)
+  if not value then return nil, zerror() end
+  return value
+end
+
+end
+
 Message.__tostring = Message.data
 
 end

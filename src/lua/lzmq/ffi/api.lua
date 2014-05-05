@@ -159,6 +159,12 @@ ffi.cdef[[
   int    zmq_msg_set       (zmq_msg_t *msg, int option, int optval);
 ]]
 
+if is_zmq_ge(4, 1, 0) then
+  ffi.cdef[[
+    const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
+  ]]
+end
+
 ffi.cdef([[
 typedef struct {
   void *socket;
@@ -411,7 +417,7 @@ end
 
 -- zmq_msg_init, zmq_msg_init_size, zmq_msg_data, zmq_msg_size, zmq_msg_get, 
 -- zmq_msg_set, zmq_msg_move, zmq_msg_copy, zmq_msg_set_data, zmq_msg_get_data, 
--- zmq_msg_init_string, zmq_msg_recv, zmq_msg_send, zmq_msg_more
+-- zmq_msg_init_string, zmq_msg_recv, zmq_msg_send, zmq_msg_more, zmq_msg_gets
 do -- message
 
 function _M.zmq_msg_init(msg)
@@ -499,6 +505,16 @@ end
 
 function _M.zmq_msg_set(msg, option, optval)
   return libzmq3.zmq_msg_set(msg, option, optval)
+end
+
+if pget(libzmq3, "zmq_msg_gets") then
+
+function _M.zmq_msg_gets(msg, option)
+  local value = libzmq3.zmq_msg_gets(msg, option)
+  if value == NULL then return end
+  return ffi.string(value)
+end
+
 end
 
 end

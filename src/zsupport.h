@@ -23,4 +23,8 @@
 #  define LUAZMQ_SUPPORT_PROXY_STEERABLE
 #endif
 
+#if ZMQ_VERSION >= ZMQ_MAKE_VERSION(4,1,0)
+#  define LUAZMQ_SUPPORT_MSG_GETS
+#endif
+
 #endif

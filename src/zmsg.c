@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <memory.h>
 #include <stdlib.h>
+#include "zsupport.h"
 
 int luazmq_msg_init(lua_State *L){
   zmessage *zmsg = luazmq_newudata(L, zmessage, LUAZMQ_MESSAGE);
@@ -222,6 +223,21 @@ static int luazmq_msg_get(lua_State *L){
   return 1;
 }
 
+#ifdef LUAZMQ_SUPPORT_MSG_GETS
+
+static int luazmq_msg_gets(lua_State *L){
+  zmessage *zmsg = luazmq_getmessage(L);
+  const char* optname = luaL_checkstring(L,2);
+  const char* value = zmq_msg_gets(&zmsg->msg, optname);
+
+  if(!value) return luazmq_fail(L, NULL);
+
+  lua_pushstring(L, value);
+  return 1;
+}
+
+#endif
+
 static int luazmq_msg_set(lua_State *L){
   zmessage *zmsg = luazmq_getmessage(L);
   int optname = luaL_checkinteger(L,1);
@@ -270,6 +286,9 @@ static const struct luaL_Reg luazmq_msg_methods[] = {
   { "set_data",   luazmq_msg_set_data    },
   { "more",       luazmq_msg_more        },
   { "get",        luazmq_msg_get         },
+#ifdef LUAZMQ_SUPPORT_MSG_GETS
+  { "gets",       luazmq_msg_gets        },
+#endif
   { "set",        luazmq_msg_set         },
   { "send",       luazmq_msg_send        },
   { "send_more",  luazmq_msg_send_more   },
