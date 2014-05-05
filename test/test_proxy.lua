@@ -8,6 +8,33 @@ local function iszvereq(zmq, mi, ma, bu)
   return (mi == version[1]) and (ma == version[2]) and (bu == version[3])
 end
 
+-- >=
+local is_zmq_ge = function (zmq, major, minor, patch)
+  local ZMQ_VERSION_MAJOR, ZMQ_VERSION_MINOR, ZMQ_VERSION_PATCH = zmq.version(true)
+
+  if ZMQ_VERSION_MAJOR < major then return false end
+  if ZMQ_VERSION_MAJOR > major then return true  end
+  if ZMQ_VERSION_MINOR < minor then return false end
+  if ZMQ_VERSION_MINOR > minor then return true  end
+  if ZMQ_VERSION_PATCH < patch then return false  end
+  return true
+end
+
+-- ==
+local is_zmq_eq = function (zmq, major, minor, patch)
+  local ZMQ_VERSION_MAJOR, ZMQ_VERSION_MINOR, ZMQ_VERSION_PATCH = zmq.version(true)
+
+  return ZMQ_VERSION_MAJOR == major
+     and ZMQ_VERSION_MINOR == minor
+     and ZMQ_VERSION_PATCH == patch
+end
+
+-- <=
+local is_zmq_le = function (zmq, major, minor, patch)
+  return is_zmq_eq(zmq, major, minor, patch)
+    or not is_zmq_ge(zmq, major, minor, patch)
+end
+
 local HAS_RUNNER = not not lunit 
 
 local lunit      = require "lunit"
@@ -133,7 +160,8 @@ end
 end
 
 local _ENV = TEST_CASE'proxy_steerable' if true then
-if not zmq.proxy_steerable then test = SKIP"zmq_proxy_steerable does not support" else
+if not zmq.proxy_steerable then test = SKIP"zmq_proxy_steerable does not support"
+elseif is_zmq_le(zmq, 4,0,5) then test = SKIP"ZeroMQ 4.0.5 invalid implementation" else
 
 local cli_endpoint = "inproc://client"
 local srv_endpoint = "inproc://server"

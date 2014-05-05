@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="luazmq"
 	ProjectGUID="{C372E4D2-5680-4793-A0D9-6488413AC277}"
 	RootNamespace="luazmq"
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(ZMQ4_DIR)\include&quot;;&quot;$(LUA_DIR)\include&quot;;&quot;$(CPPLIB_DIR)\msvc&quot;"
+				AdditionalIncludeDirectories="e:\VCL\cpplib\zmq\4.1.dev\include;&quot;$(LUA_DIR)\include&quot;;&quot;$(CPPLIB_DIR)\msvc&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LUAZMQ_EXPORTS;LUAZMQ_USE_SEND_AS_BUF;LUAZMQ_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -64,7 +64,7 @@
 				AdditionalDependencies="libzmq.lib lua5.1.lib"
 				OutputFile="$(OutDir)\lzmq.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="$(ZMQ4_DIR)\lib;&quot;$(LUA_DIR)\lib&quot;"
+				AdditionalLibraryDirectories="e:\VCL\cpplib\zmq\4.1.dev\lib;&quot;$(LUA_DIR)\lib&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
