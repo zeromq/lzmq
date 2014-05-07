@@ -49,6 +49,7 @@ script:
   - lua$LUA_SFX test_threads_fork_arg.lua
   - lua$LUA_SFX test_threads_fork.lua
   - lua$LUA_SFX test_threads_file.lua
+  - lua$LUA_SFX test_metadata.lua
   #- if [ "$ZMQ_VER" == "libzmq" ]; then
   #    lua$LUA_SFX test_req_relaxed.lua;
   #  fi

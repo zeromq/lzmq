@@ -82,6 +82,7 @@ target('test', install, function()
   run_test('test_threads_fork.lua')
   run_test('test_threads_fork_arg.lua')
   run_test('test_threads_file.lua')
+  run_test('test_metadata.lua')
 end)
 
 target('perf_local_lat',      install, test_perf_r('lat', "tcp://127.0.0.1:5555 1   100000"))

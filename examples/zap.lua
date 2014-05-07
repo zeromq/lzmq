@@ -3,7 +3,7 @@ local zloop    = require "lzmq.loop"
 
 local function recv_zap(sok)
   local msg, err = sok:recv_all()
-  if not msg then return err end
+  if not msg then return nil, err end
   local req = {
     version    = msg[1]; -- Version number, must be "1.0"
     sequence   = msg[2]; -- Sequence number of request
@@ -21,8 +21,8 @@ local function recv_zap(sok)
   return req
 end
 
-local function send_zap(sok, req, status, text)
-  return sok:send_all{"1.0", req.sequence, status, text, "", ""}
+local function send_zap(sok, req, status, text, user, meta)
+  return sok:sendx(req.version, req.sequence, status, text, user or "", meta or "")
 end
 
 local loop = zloop.new()
