@@ -164,7 +164,6 @@ end
 
 function Context:_remove_socket(skt)
   self._private.sockets[skt:handle()] = nil
-  self:_inc_socket_count(-1)
 end
 
 function Context:closed()
@@ -362,6 +361,7 @@ function Socket:close(linger)
   if not self._private.dont_destroy then
     if self._private.ctx then
       self._private.ctx:_remove_socket(self)
+      self._private.ctx:_inc_socket_count(-1)
     end
 
     if linger then
