@@ -21,13 +21,21 @@ local function zap_handler(pipe)
     return req
   end
 
-  local function send_zap(sok, req, status, text, user, meta)
-    return sok:sendx(req.version, req.sequence, status, text, user or "", meta or "")
-  end
-
   local function mpair(k, v)
     -- mpair support values shorter than 255
     return string.char(#k) .. k .. "\000\000\000" .. string.char(#v) .. v
+  end
+
+  local function zmeta(t)
+    if not t then return "" end
+    if type(t) == "string" then return t end
+    local s = ""
+    for k, v in pairs(t) do s = s .. mpair(k,v) end
+    return s
+  end
+
+  local function send_zap(sok, req, status, text, user, meta)
+    return sok:sendx(req.version, req.sequence, status, text, user or "", zmeta(meta))
   end
 
   --===========================================================================
@@ -43,7 +51,10 @@ local function zap_handler(pipe)
 
   pipe:send("start")
 
-  local metadata = mpair("Hello", "World") ..  mpair("World", "Hello")
+  local metadata = {
+    Hello = "World";
+    World = "Hello";
+  }
 
   print("Start ZAP handler")
 
@@ -69,9 +80,10 @@ local function zap_handler(pipe)
     end
   end
 
-  ctx:destroy()
   print("Stop ZAP handler")
 end
+
+local ctx, zap_thread
 
 local function main()
 
@@ -85,9 +97,10 @@ local function main()
     return
   end
 
-  local ctx = zassert(zmq.context())
+  ctx = zassert(zmq.context())
 
-  local zap_thread, pipe = zthreads.fork(ctx, string.dump(zap_handler))
+  local pipe
+  zap_thread, pipe = zthreads.fork(ctx, string.dump(zap_handler))
   assert(zap_thread, pipe)
   pipe:set_rcvtimeo(500)
   assert(zap_thread:start())
@@ -112,13 +125,17 @@ local function main()
   assert(msg:gets("Socket-Type") == "DEALER")
   assert(msg:gets("User-Id")     == "anonymous")
   msg:close()
-
-  ctx:destroy()
-
-  -- Wait until ZAP handler terminates
-  zap_thread:join()
 end
 
-main()
+local ok, err = pcall(main)
+
+if ctx then ctx:shutdown() end
+if zap_thread then zap_thread:join() end
+if ctx then ctx:destroy() end
+
+if not ok then
+  print("Fail:", err)
+  os.exit(-1)
+end
 
 print("Done!")
