@@ -1,6 +1,7 @@
 #Lua binding to [ZeroMQ](http://zeromq.org) library.
 
 [![Build Status](https://travis-ci.org/moteus/lzmq.png?branch=master)](https://travis-ci.org/moteus/lzmq)
+[![Coverage Status](https://coveralls.io/repos/moteus/lzmq/badge.png?branch=master)](https://coveralls.io/r/moteus/lzmq?branch=master)
 
 Support ZeromMQ 3.2/4.0.<br/>
 This library is not dropin replacement for [lua-zmq](https://github.com/Neopallium/lua-zmq) library.<br/>

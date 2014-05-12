@@ -1,3 +1,5 @@
+pcall(require, "luacov")
+
 local function zversion(zmq)
   local version = zmq.version()
   return string.format("%d.%d.%d", version[1], version[2], version[3])
