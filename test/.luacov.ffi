@@ -1,0 +1,9 @@
+local conf = dofile ".luacov"
+
+conf.coveralls.pathcorrect = {
+  { "/usr/local/share/lua/5.[12]/lzmq.lua",         "/src/lua/lzmq/ffi/lzmq.lua"   };
+  { "/usr/local/share/lua/5.[12]/lzmq/poller.lua",  "/src/lua/lzmq/ffi/poller.lua" };
+  { "/usr/local/share/lua/5.[12]",                  "src/lua"                      };
+}
+
+return conf
