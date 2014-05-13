@@ -479,7 +479,7 @@ function Socket:recv(flags)
   assert(not self:closed())
   local msg = api.zmq_msg_init(tmp_msg)
   if not msg then return nil, zerror() end
-  local ret = api.zmq_msg_recv(msg, self._private.skt)
+  local ret = api.zmq_msg_recv(msg, self._private.skt, flags)
   if ret == -1 then
     api.zmq_msg_close(msg)
     return nil, zerror()
