@@ -1067,6 +1067,26 @@ function test_recv_all()
   assert_equal('hello, world', table.concat(t))
 end
 
+function test_recv_flags()
+  sub:set_rcvtimeo(10000)
+  local timer = assert(ztimer.monotonic():start())
+  local ok, err = sub:recv(zmq.DONTWAIT)
+  local elapsed = timer:stop()
+  assert_nil(ok)
+  assert(error_is(err, zmq.errors.EAGAIN))
+  assert(elapsed < 100)
+end
+
+function test_recv_all_flags()
+  sub:set_rcvtimeo(10000)
+  local timer = assert(ztimer.monotonic():start())
+  local ok, err = sub:recv_all(zmq.DONTWAIT)
+  local elapsed = timer:stop()
+  assert_nil(ok)
+  assert(error_is(err, zmq.errors.EAGAIN))
+  assert(elapsed < 100)
+end
+
 function test_sendx()
   assert_true(pub:sendx('hello', ', ', 'world'))
   local a,b,c = assert_string(sub:recvx())

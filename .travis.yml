@@ -6,15 +6,15 @@ env:
     - LUAROCKS_VER=2.1.0
   matrix:
     # todo: install libffi and test ffi binding on Lua 5.1/5.2
-    - LUA=lua5.1 ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO" LUA_SFX=
-    - LUA=lua5.1 ZMQ_VER=zeromq4 LZMQ=lzmq    PERF="NO" LUA_SFX=
-    - LUA=lua5.2 ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO" LUA_SFX=
-    - LUA=luajit ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO" LUA_SFX=jit
-    # - LUA=luajit ZMQ_VER=zeromq3 LZMQ=ffi     PERF="YES" LUA_SFX=jit
-    # - LUA=luajit ZMQ_VER=zeromq4 LZMQ=ffi     PERF="YES" LUA_SFX=jit
-    - LUA=luajit ZMQ_VER=zeromq3 LZMQ=ffi-lua PERF="NO" LUA_SFX=jit
-    - LUA=lua5.1 ZMQ_VER=libzmq  LZMQ=lzmq    PERF="NO" LUA_SFX=
-    - LUA=luajit ZMQ_VER=libzmq  LZMQ=ffi-lua PERF="NO" LUA_SFX=jit
+    - LUA=lua5.1 ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO"  LUA_SFX=
+    - LUA=lua5.1 ZMQ_VER=zeromq4 LZMQ=lzmq    PERF="NO"  LUA_SFX=
+    - LUA=lua5.2 ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO"  LUA_SFX=
+    - LUA=luajit ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO"  LUA_SFX=jit
+    - LUA=luajit ZMQ_VER=zeromq3 LZMQ=ffi     PERF="YES" LUA_SFX=jit
+    - LUA=luajit ZMQ_VER=zeromq4 LZMQ=ffi     PERF="YES" LUA_SFX=jit
+    - LUA=luajit ZMQ_VER=zeromq3 LZMQ=ffi-lua PERF="NO"  LUA_SFX=jit
+    - LUA=lua5.1 ZMQ_VER=libzmq  LZMQ=lzmq    PERF="NO"  LUA_SFX=
+    - LUA=luajit ZMQ_VER=libzmq  LZMQ=ffi-lua PERF="NO"  LUA_SFX=jit
 
 branches:
   only:
@@ -42,10 +42,9 @@ install:
     else
       sudo luarocks make rockspecs/lzmq-scm-0.rockspec  CFLAGS="-O2 -fPIC -ftest-coverage -fprofile-arcs" LIBFLAG="-shared --coverage";
     fi
-  - ls
 
-script: 
-  - cd test 
+script:
+  - cd test
   - lunit.sh -i lua$LUA_SFX utest.lua
   - lunit.sh -i lua$LUA_SFX test_proxy.lua
   - lua$LUA_SFX -lluacov test_threads.lua
@@ -75,7 +74,7 @@ after_success:
       coveralls -e lua-5.1.5 -e lua-5.2.3 -e LuaJIT-2.0.3 -e libzmq -e zeromq3 -e zeromq4 -e libsodium -b .. -r .. --dump c.report.json;
       luacov-coveralls -j c.report.json;
     fi
-  - curl -v --form "json_file=@luacov.report.json;type=application/json" https://coveralls.io/api/v1/jobs
+  - curl --form "json_file=@luacov.report.json;type=application/json" https://coveralls.io/api/v1/jobs
 
 notifications:
   email:
