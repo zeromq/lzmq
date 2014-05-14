@@ -1,4 +1,4 @@
-local LZMQ_VERSION = "0.3.6-dev"
+local LZMQ_VERSION = "0.3.6"
 
 local lua_version_t
 local function lua_version()
