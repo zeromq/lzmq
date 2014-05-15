@@ -71,7 +71,7 @@ after_success:
   - if [ $LZMQ = "ffi-lua" ]; then
       luacov-coveralls -c .luacov.ffi;
     else
-      coveralls -e lua-5.1.5 -e lua-5.2.3 -e LuaJIT-2.0.3 -e libzmq -e zeromq3 -e zeromq4 -e libsodium -b .. -r .. --dump c.report.json;
+      coveralls -e lua-5.1.5 -e lua-5.2.3 -e LuaJIT-2.0.3 -e libzmq -e zeromq3 -e zeromq4 -e libsodium -e src/lzutils.c -b .. -r .. --dump c.report.json;
       luacov-coveralls -j c.report.json;
     fi
   - curl --form "json_file=@luacov.report.json;type=application/json" https://coveralls.io/api/v1/jobs
