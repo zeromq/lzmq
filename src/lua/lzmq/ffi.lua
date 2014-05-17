@@ -670,7 +670,14 @@ function Socket:monitor(addr, events)
   local ret = api.zmq_socket_monitor(self._private.skt, addr, events)
   if -1 == ret then return nil, zerror() end
 
-  return addr  
+  return addr
+end
+
+function Socket:reset_monitor()
+  local ret = api.zmq_socket_monitor(self._private.skt, api.NULL, 0)
+  if -1 == ret then return nil, zerror() end
+
+  return true
 end
 
 local poll_item = ffi.new(api.vla_pollitem_t, 1)

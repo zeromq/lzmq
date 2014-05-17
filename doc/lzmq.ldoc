@@ -575,10 +575,21 @@ function socket:recv_event    () end
 -- @treturn[2] nil
 -- @treturn[2] error
 --
+-- @see socket:reset_monitor
+--
 -- @usage
 -- -- create monitor socket
 -- local mon = ctx:socket{zmq.PAIR, connect = skt:monitor()}
 function socket:monitor       () end
+
+--- Stop publishing socket events.
+--
+-- @treturn[1] boolean
+-- @treturn[2] nil
+-- @treturn[2] error
+--
+-- @see socket:monitor
+function socket:reset_monitor () end
 
 end
 

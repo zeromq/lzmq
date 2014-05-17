@@ -498,6 +498,16 @@ static int luazmq_skt_monitor (lua_State *L) {
   return 1;
 }
 
+static int luazmq_skt_reset_monitor (lua_State *L) {
+  zsocket *skt = luazmq_getsocket(L);
+  int ret = zmq_socket_monitor (skt->skt, NULL, 0);
+  if(-1 == ret){
+    return luazmq_fail(L, skt);
+  }
+
+  return luazmq_pass(L);
+}
+
 static int luazmq_skt_context (lua_State *L) {
   zsocket *skt = luazmq_getsocket(L);
   lua_rawgeti(L, LUAZMQ_LUA_REGISTRY, skt->ctx_ref);
@@ -910,6 +920,7 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   {"recv_multipart", luazmq_skt_recv_all     },
   {"more",           luazmq_skt_more         },
   {"monitor",        luazmq_skt_monitor      },
+  {"reset_monitor",  luazmq_skt_reset_monitor},
   {"handle",         luazmq_skt_handle       },
   {"reset_handle",   luazmq_skt_reset_handle },
   {"lightuserdata",  luazmq_skt_handle       },
