@@ -1741,6 +1741,29 @@ function test_monitor_without_addr_with_event()
   assert_match("^inproc://lzmq%.monitor%.[0-9a-fA-FxX]+$", srv:monitor(1))
 end
 
+function test_rest_monitor()
+  local srv = assert(is_zsocket(loop:create_socket{zmq.REP,
+    linger = 0, sndtimeo = 100, rcvtimeo = 100;
+    bind = {
+      "inproc://test.zmq";
+      "tcp://*:9000";
+    }
+  }))
+
+  if not srv.reset_monitor then
+    return skip("this version of LZMQ does not support socket monitor")
+  end
+
+  local mon = assert(is_zsocket(loop:create_socket{zmq.PAIR, 
+    linger = 0, sndtimeo = 100, rcvtimeo = 100;
+    connect = assert(srv:monitor());
+  }))
+
+  assert(srv:reset_monitor())
+  local ev = assert_number(mon:recv_event())
+  assert_equal(zmq.EVENT_MONITOR_STOPPED, ev)
+
+end
 
 end
 
