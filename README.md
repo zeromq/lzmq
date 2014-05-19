@@ -16,8 +16,11 @@ Using LuaRocks:<br/>
 `luarocks install lzmq` or install only ffi version `luarocks install lzmq-ffi`<br/>
 Because of LuaRocks repositories has latency you can use [MoonRocks](http://rocks.moonscript.org/) server.<br/>
 `luarocks install lzmq --server=http://rocks.moonscript.org`<br/>
-`lzmq.threads` module also requires [llthreads](https://github.com/Neopallium/lua-llthreads) library (version > 1.2).<br/>
+`lzmq.threads` module also requires or [llthreads2](https://github.com/moteus/lua-llthreads2) or [llthreads](https://github.com/Neopallium/lua-llthreads) library (version > 1.2)<br/>
+`luarocks install lua-llthreads2` or `luarocks install lua-llthreads2-compat` <br/>
+or<br/>
 `luarocks install https://raw.github.com/Neopallium/lua-llthreads/master/rockspecs/lua-llthreads-scm-0.rockspec`
+
 
 ##API
 This is short [API](http://moteus.github.io/lzmq/index.html) description.<br/>
