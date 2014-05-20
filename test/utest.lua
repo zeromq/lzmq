@@ -427,6 +427,18 @@ function test_socket_options2_ctor()
   assert_equal(123, skt:get_linger())
 end
 
+function test_socket_on_close()
+  skt = assert(is_zsocket(ctx:socket(zmq.SUB)))
+  local flag = false
+  skt:on_close(function(...)
+    flag = true
+    assert_equal(0, select('#', ...))
+  end)
+  assert_false(flag)
+  skt:close()
+  assert_true(flag)
+end
+
 function test_context_options()
   assert_true(ctx:set_io_threads(2))
   assert_equal(2, ctx:get_io_threads())
