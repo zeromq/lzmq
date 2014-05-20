@@ -1741,7 +1741,7 @@ function test_monitor_without_addr_with_event()
   assert_match("^inproc://lzmq%.monitor%.[0-9a-fA-FxX]+$", srv:monitor(1))
 end
 
-function test_rest_monitor()
+function test_reset_monitor()
   local srv = assert(is_zsocket(loop:create_socket{zmq.REP,
     linger = 0, sndtimeo = 100, rcvtimeo = 100;
     bind = {
@@ -1751,7 +1751,7 @@ function test_rest_monitor()
   }))
 
   if not srv.reset_monitor then
-    return skip("this version of LZMQ does not support socket monitor")
+    return skip("this version of LZMQ does not support socket reset_monitor")
   end
 
   local mon = assert(is_zsocket(loop:create_socket{zmq.PAIR, 
@@ -1759,10 +1759,26 @@ function test_rest_monitor()
     connect = assert(srv:monitor());
   }))
 
-  assert(srv:reset_monitor())
-  local ev = assert_number(mon:recv_event())
-  assert_equal(zmq.EVENT_MONITOR_STOPPED, ev)
+  srv:bind_to_random_port("tcp://127.0.0.1")
+  ztimer.sleep(500)
 
+  local ev = assert_number(mon:recv_event())
+  assert_equal(zmq.EVENT_LISTENING, ev)
+
+  assert(srv:reset_monitor())
+  if zmq.version(true) >= 4 then
+    local ev = assert_number(mon:recv_event())
+    assert_equal(zmq.EVENT_MONITOR_STOPPED, ev)
+  else
+    local ev, err = assert_nil(mon:recv_event())
+    assert(error_is(err, zmq.errors.EAGAIN))
+  end
+
+  srv:bind_to_random_port("tcp://127.0.0.1")
+  ztimer.sleep(500)
+
+  local ev, err = assert_nil(mon:recv_event())
+  assert(error_is(err, zmq.errors.EAGAIN))
 end
 
 end
