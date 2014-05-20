@@ -578,7 +578,9 @@ end
 if api.zmq_recv_event then
 function Socket:recv_event(flags)
   assert(not self:closed())
-  return api.zmq_recv_event(self._private.skt, flags)
+  local event, value, address = api.zmq_recv_event(self._private.skt, flags)
+  if not event then return nil, zerror() end
+  return event, value, address
 end
 end
 
