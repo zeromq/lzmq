@@ -168,7 +168,7 @@ end
 ffi.cdef([[
 typedef struct {
   void *socket;
-  ]] .. IF(IS_WINDOWS, "uint32_t", "int") .. [[ fd;
+  ]] .. fd_t .. [[ fd;
   short events;
   short revents;
 } zmq_pollitem_t;
