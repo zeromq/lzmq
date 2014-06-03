@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.org/moteus/lzmq.png?branch=master)](https://travis-ci.org/moteus/lzmq)
 [![Build Status](https://buildhive.cloudbees.com/job/moteus/job/lzmq/badge/icon)](https://buildhive.cloudbees.com/job/moteus/job/lzmq/)
 [![Coverage Status](https://coveralls.io/repos/moteus/lzmq/badge.png?branch=master)](https://coveralls.io/r/moteus/lzmq?branch=master)
+[![Licence](http://img.shields.io/badge/licence-MIT-green.png)](LICENCE.txt)
 
 Support ZeromMQ 3.2/4.0.<br/>
 This library is not dropin replacement for [lua-zmq](https://github.com/Neopallium/lua-zmq) library.<br/>
