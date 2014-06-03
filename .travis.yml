@@ -3,7 +3,7 @@ language: erlang
 env:
   global:
     - PLATFORM=linux
-    - LUAROCKS_VER=2.1.0
+    - LUAROCKS_VER=2.2.0beta1
   matrix:
     # todo: install libffi and test ffi binding on Lua 5.1/5.2
     - LUA=lua5.1 ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO"  LUA_SFX=
@@ -32,10 +32,10 @@ before_install:
 
 install:
   - sudo pip install cpp-coveralls
-  - sudo luarocks install https://raw.githubusercontent.com/moteus/luacov/moteus-rockspec/rockspecs/luacov-scm.mot-1.rockspec
-  - sudo luarocks install https://raw.githubusercontent.com/moteus/luacov-coveralls/master/rockspecs/luacov-coveralls-scm-0.rockspec
+  - sudo luarocks install luacov-coveralls --server=http://rocks.moonscript.org/dev
+  - sudo luarocks install lua-llthreads2
   - sudo luarocks install https://raw.github.com/moteus/lunit/moteus-skip/rockspecs/lunitx-scm.mot.skip-0.rockspec
-  - sudo luarocks install https://raw.github.com/moteus/lua-llthreads2/master/rockspecs/lua-llthreads2-scm-0.rockspec
+
   - if [ $LZMQ = "ffi-lua" ]; then
       sudo luarocks install https://raw2.github.com/justincormack/ljsyscall/master/rockspec/ljsyscall-0.9-1.rockspec;
       sudo luarocks make rockspecs/lzmq-ffi-scm-0.rockspec;
@@ -71,7 +71,7 @@ after_success:
   - if [ $LZMQ = "ffi-lua" ]; then
       luacov-coveralls -c .luacov.ffi;
     else
-      coveralls -e lua-5.1.5 -e lua-5.2.3 -e LuaJIT-2.0.3 -e libzmq -e zeromq3 -e zeromq4 -e libsodium -e src/lzutils.c -b .. -r .. --dump c.report.json;
+      coveralls -e libzmq -e zeromq3 -e zeromq4 -e libsodium -e src/lzutils.c -b .. -r .. --dump c.report.json;
       luacov-coveralls -j c.report.json;
     fi
   - curl --form "json_file=@luacov.report.json;type=application/json" https://coveralls.io/api/v1/jobs

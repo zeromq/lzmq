@@ -1318,7 +1318,7 @@ function test_echo()
 
   timer:start()
   loop:start()
-  assert_true(ge(2000, timer:stop()))
+  assert_true(ge(1990, timer:stop()))
   assert_true(counter > 3)
 
   loop:destroy()

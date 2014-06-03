@@ -4,8 +4,8 @@
 # PLATFORM must be "linux" or "macosx".
 
 if [ "$LUA" == "luajit" ]; then
-  curl http://luajit.org/download/LuaJIT-2.0.3.tar.gz | tar xz
-  cd LuaJIT-2.0.3
+  curl http://luajit.org/download/LuaJIT-2.0.2.tar.gz | tar xz
+  cd LuaJIT-2.0.2
   make && sudo make install
   cd $TRAVIS_BUILD_DIR;
 else
@@ -30,6 +30,16 @@ else
   ./configure;
 fi
 
-make && sudo make install
+make build && sudo make install
 
 cd $TRAVIS_BUILD_DIR
+
+rm -rf $LUAROCKS_BASE
+
+if [ "$LUA" == "luajit" ]; then
+  rm -rf LuaJIT-2.0.2;
+elif [ "$LUA" == "lua5.1" ]; then
+  rm -rf lua-5.1.5;
+elif [ "$LUA" == "lua5.2" ]; then
+  rm -rf lua-5.2.3;
+fi
