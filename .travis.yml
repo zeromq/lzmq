@@ -74,7 +74,6 @@ after_success:
       coveralls -e libzmq -e zeromq3 -e zeromq4 -e libsodium -e src/lzutils.c -b .. -r .. --dump c.report.json;
       luacov-coveralls -j c.report.json;
     fi
-  - curl --form "json_file=@luacov.report.json;type=application/json" https://coveralls.io/api/v1/jobs
 
 notifications:
   email:
