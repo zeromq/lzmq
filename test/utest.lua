@@ -89,7 +89,7 @@ end
 
 local ECHO_ADDR = "inproc://echo"
 
-local _ENV = TEST_CASE'interface'            if true then
+local _ENV = TEST_CASE'interface'            if false then
 
 function setup() end
 
@@ -236,7 +236,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'ctx/skt interface'    if true then
+local _ENV = TEST_CASE'ctx/skt interface'    if false then
 
 local ctx, skt
 
@@ -488,7 +488,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'context'              if true then
+local _ENV = TEST_CASE'context'              if false then
 
 local ctx, skt
 
@@ -543,7 +543,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'socket autoclose'     if true then
+local _ENV = TEST_CASE'socket autoclose'     if false then
 
 local ctx, skt
 
@@ -608,7 +608,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'message'              if true then
+local _ENV = TEST_CASE'message'              if false then
 
 local msg
 
@@ -769,7 +769,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'bind/connect'         if true then
+local _ENV = TEST_CASE'bind/connect'         if false then
 
 local ctx, pub, sub1, sub2, sub3, msg
 
@@ -889,7 +889,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'bind/connect on ctor' if true then
+local _ENV = TEST_CASE'bind/connect on ctor' if false then
 
 local ctx, pub, sub, msg
 
@@ -942,7 +942,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'Send Recv'            if true then
+local _ENV = TEST_CASE'Send Recv'            if false then
 
 local ctx, pub, sub, msg
 
@@ -1157,7 +1157,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'socket poll'          if true then
+local _ENV = TEST_CASE'socket poll'          if false then
 
 local ctx, req, rep, timer
 
@@ -1187,7 +1187,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'loop'                 if true then
+local _ENV = TEST_CASE'loop'                 if false then
 
 local loop, timer
 
@@ -1328,7 +1328,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'timer'                if true then
+local _ENV = TEST_CASE'timer'                if false then
 
 local timer
 
@@ -1441,7 +1441,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'poller'               if true then
+local _ENV = TEST_CASE'poller'               if false then
 local ctx, pub, sub1, sub2, sub3, msg
 local poller
 local names
@@ -1549,7 +1549,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'z85 encode'           if true then
+local _ENV = TEST_CASE'z85 encode'           if false then
 if not zmq.z85_encode then test = SKIP"zmq_z85_encode does not support" else
 
 local key_bin = "\084\252\186\036\233\050\073\150\147\022\251\097\124\135\043\176" ..
@@ -1604,7 +1604,7 @@ end
 end
 end
 
-local _ENV = TEST_CASE'curve keypair'        if true then
+local _ENV = TEST_CASE'curve keypair'        if false then
 if not zmq.curve_keypair then test = SKIP"zmq_curve_keypair does not support" else
 
 function test_generate_z85()
@@ -1795,7 +1795,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'Clone socket'         if true then
+local _ENV = TEST_CASE'Clone socket'         if false then
 
 local ctx, rep, s1, s2
 
@@ -1887,7 +1887,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'Recv event'           if true then
+local _ENV = TEST_CASE'Recv event'           if false then
 
 local ctx, skt, mon
 local timeout, epselon = 1500, 490
