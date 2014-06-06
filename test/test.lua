@@ -105,7 +105,7 @@ function Test_Context()
   assert(ctx:get_max_sockets() == 252)
 
   local ctx2 = assert(zmq.init_ctx( assert(ctx:lightuserdata()) ))
-  assert(ctx:lightuserdata()   ~= ctx2:lightuserdata()  )
+  assert(ctx:lightuserdata()   == ctx2:lightuserdata()  )
   assert(ctx:get_io_threads()  == ctx2:get_io_threads()  )
   assert(ctx:get_max_sockets() == ctx2:get_max_sockets() )
   assert(not ctx2:closed())

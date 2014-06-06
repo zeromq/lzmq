@@ -96,10 +96,11 @@ int luazmq_context_init (lua_State *L) {
 }
 
 int luazmq_init_ctx (lua_State *L) {
-  zcontext *src_ctx = (zcontext *)lua_touserdata(L,1);
+  void *src_ctx = lua_touserdata(L,1);
+  luaL_argcheck(L, lua_islightuserdata(L,1), 1, "You must provide zmq context as lightuserdata");
   if(src_ctx){
     zcontext *zctx = luazmq_newudata(L, zcontext, LUAZMQ_CONTEXT);
-    zctx->ctx = src_ctx->ctx;
+    zctx->ctx = src_ctx;
     zctx->flags = LUAZMQ_FLAG_DONT_DESTROY;
     zctx->autoclose_ref = LUA_NOREF;
 
@@ -115,7 +116,7 @@ int luazmq_init_ctx (lua_State *L) {
 
 static int luazmq_ctx_lightuserdata(lua_State *L) {
   zcontext *zctx = luazmq_getcontext(L);
-  lua_pushlightuserdata(L, zctx);
+  lua_pushlightuserdata(L, zctx->ctx);
   return 1;
 }
 
