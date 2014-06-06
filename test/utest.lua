@@ -1639,13 +1639,20 @@ local _ENV = TEST_CASE'monitor'              if true then
 local loop, timer
 
 function setup()
+  print("")
+  print(">> Setup ...")
   loop  = assert(zloop.new())
   timer = ztimer.monotonic()
+  print(">> Setup done")
 end
 
 function teardown()
+  print("")
+  print(">> Teardown ...")
   loop:destroy()
+  print(">> Teardown loop destroyed")
   wait(500) -- for TCP time to release IP address
+  print(">> Teardown done")
 end
 
 function test_monitor()
