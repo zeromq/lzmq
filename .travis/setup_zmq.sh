@@ -1,6 +1,11 @@
 # ZMQ_VER must be "libzmq", "zeromq3" or "zeromq4"
 # PLATFORM must be "linux" or "macosx"
 
+echo "==============================="
+echo " Platform : $PLATFORM          "
+echo "==============================="
+echo 
+
 if [ "$PLATFORM" == "linux" ]; then
   sudo apt-get remove libzmq3;
 fi
