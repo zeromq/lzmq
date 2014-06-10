@@ -1,6 +1,8 @@
 # ZMQ_VER must be "libzmq", "zeromq3" or "zeromq4"
 # PLATFORM must be "linux" or "macosx"
 
+source .travis/platform.sh
+
 echo "==============================="
 echo " Platform : $PLATFORM          "
 echo "==============================="
