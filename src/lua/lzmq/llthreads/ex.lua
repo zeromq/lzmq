@@ -22,6 +22,57 @@
 -- wraps the low-level threads object.
 --
 
+--
+-- Note! Define this function prior all `local` definitions
+--       to prevent use upvalue by accident
+--
+local bootstrap_code = require"string".dump(function(lua_init, prelude, code, ...)
+  local loadstring = loadstring or load
+  local unpack     = table.unpack or unpack
+
+  local function load_src(str)
+    local f, n
+    if str:sub(1,1) == '@' then
+      n = str:sub(2)
+      f = assert(loadfile(n))
+    else
+      n = '=(loadstring)'
+      f = assert(loadstring(str))
+    end
+    return f, n
+  end
+
+  local function pack_n(...)
+    return { n = select("#", ...), ... }
+  end
+
+  local function unpack_n(t)
+    return unpack(t, 1, t.n)
+  end
+  
+  if lua_init and #lua_init > 0 then
+    local init = load_src(lua_init)
+    init()
+  end
+
+  local args
+
+  if prelude and #prelude > 0 then
+    prelude = load_src(prelude)
+    args = pack_n(prelude(...))
+  else
+    args = pack_n(...)
+  end
+
+  local func
+  func, args[0] = load_src(code)
+
+  _G.arg = args
+     arg = args
+
+  return func(unpack_n(args))
+end)
+
 local ok, llthreads = pcall(require, "llthreads2")
 if not ok then llthreads = require"llthreads" end
 
@@ -29,14 +80,15 @@ local os        = require"os"
 local string    = require"string"
 local table     = require"table"
 
-local setmetatable = setmetatable
-local tonumber = tonumber
-local assert = assert
+local setmetatable, tonumber, assert = setmetatable, tonumber, assert
+
+-------------------------------------------------------------------------------
+local LUA_INIT = "LUA_INIT" do
 
 local lua_version_t
 local function lua_version()
   if not lua_version_t then 
-    local version = rawget(_G,"_VERSION")
+    local version = assert(_G._VERSION)
     local maj,min = version:match("^Lua (%d+)%.(%d+)$")
     if maj then                         lua_version_t = {tonumber(maj),tonumber(min)}
     elseif not math.mod then            lua_version_t = {5,2}
@@ -48,9 +100,7 @@ end
 
 local LUA_MAJOR, LUA_MINOR = lua_version()
 local IS_LUA_51 = (LUA_MAJOR == 5) and (LUA_MINOR == 1)
-local IS_LUA_52 = (LUA_MAJOR == 5) and (LUA_MINOR == 2)
 
-local LUA_INIT = "LUA_INIT"
 local LUA_INIT_VER
 if not IS_LUA_51 then
   LUA_INIT_VER = LUA_INIT .. "_" .. LUA_MAJOR .. "_" .. LUA_MINOR
@@ -58,89 +108,57 @@ end
 
 LUA_INIT = LUA_INIT_VER and os.getenv( LUA_INIT_VER ) or os.getenv( LUA_INIT ) or ""
 
-local thread_mt = {}
+end
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+local thread_mt = {} do
 thread_mt.__index = thread_mt
 
 function thread_mt:start(...)
-	return self.thread:start(...)
+  local ok, err = self.thread:start(...)
+  if not ok then return nil, err end
+  return self
 end
 
 function thread_mt:join(...)
-	return self.thread:join(...)
+  return self.thread:join(...)
 end
 
 function thread_mt:alive()
-	return self.thread:alive()
+  return self.thread:alive()
 end
 
-local bootstrap_pre = [[
-local action, action_arg = ...
-local lua_init = ]] .. ("%q"):format(LUA_INIT) .. [[
-if lua_init and #lua_init > 0 then
-	if lua_init:sub(1,1) == '@' then
-		dofile(lua_init:sub(2))
-	else
-		assert((loadstring or load)(lua_init))()
-	end
+end
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+local threads = {} do
+
+local function new_thread(prelude, code, ...)
+  if type(prelude) == "function" then
+    prelude = string.dump(prelude)
+  end
+
+  if type(code) == "function" then
+    code = string.dump(code)
+  end
+
+  local thread = llthreads.new(bootstrap_code, LUA_INIT, prelude, code, ...)
+  return setmetatable({
+    thread = thread,
+  }, thread_mt)
 end
 
--- create global 'arg'
-local argc = select("#", ...)
-arg = { n = argc - 2, select(3, ...) }
-]]
-
-local bootstrap_post = [[
-local loadstring = loadstring or load
-local unpack = table.unpack or unpack
-
-local func
--- load Lua code.
-if action == 'runfile' then
-	func = assert(loadfile(action_arg))
-	-- script name
-	arg[0] = action_arg
-elseif action == 'runstring' then
-	func = assert(loadstring(action_arg))
-	-- fake script name
-	arg[0] = '=(loadstring)'
+threads.run = function (code, ...)
+  return new_thread(nil, code, ...)
 end
 
-argc = arg.n or #arg
--- run loaded code.
-return func(unpack(arg, 1, argc))
-]]
-
-local bootstrap_code = bootstrap_pre..bootstrap_post
-
-local function new_thread(bootstrap_code, action, action_arg, ...)
-	local thread = llthreads.new(bootstrap_code, action, action_arg, ...)
-	return setmetatable({
-		thread = thread,
-	}, thread_mt)
+threads.run_ex = function (prelude, code, ...)
+  return new_thread(prelude, code, ...)
 end
 
-local M = {}
+end
+-------------------------------------------------------------------------------
 
-M.set_bootstrap_prelude = function (code)
-	bootstrap_code = bootstrap_pre .. code .. bootstrap_post
-end;
-
-M.runfile = function (file, ...)
-	return new_thread(bootstrap_code, 'runfile', file, ...)
-end;
-
-M.runstring = function (code, ...)
-	return new_thread(bootstrap_code, 'runstring', code, ...)
-end;
-
-M.runfile_ex = function (prelude, file, ...)
-	local bootstrap_code = bootstrap_pre .. prelude .. bootstrap_post
-	return new_thread(bootstrap_code, 'runfile', file, ...)
-end;
-
-M.runstring_ex = function (prelude, code, ...)
-	local bootstrap_code = bootstrap_pre .. prelude .. bootstrap_post
-	return new_thread(bootstrap_code, 'runstring', code, ...)
-end;
-
-return M
+return threads

@@ -22,10 +22,37 @@
 -- zmq.thread wraps the low-level threads object & a zmq context.
 --
 
+local zthreads_prelude = function(ZMQ_NAME, parent_ctx, ...)
+  local table    = require "table"
+  local zmq      = require(ZMQ_NAME)
+  local zthreads = require(ZMQ_NAME .. ".threads")
+  local unpack   = table.unpack or unpack
+
+  if parent_ctx then zthreads.set_parent_ctx(zmq.init_ctx(parent_ctx)) end
+
+  return ...
+end
+
+local fork_prelude = function(ZMQ_NAME, parent_ctx, endpoint, ...)
+  local table    = require "table"
+  local zmq      = require(ZMQ_NAME)
+  local zthreads = require(ZMQ_NAME .. ".threads")
+  local unpack   = table.unpack or unpack
+
+  assert(parent_ctx)
+  assert(endpoint)
+
+  parent_ctx = zmq.init_ctx(parent_ctx)
+  zthreads.set_parent_ctx(parent_ctx)
+
+  local pipe = zmq.assert(parent_ctx:socket{zmq.PAIR, connect = endpoint})
+  return pipe, ...
+end
+
 local function rand_bytes(n)
-	local t = {}
-	for i = 1, n do table.insert(t, string.char(math.random(256)-1)) end
-	return table.concat(t)
+  local t = {}
+  for i = 1, n do t[i] = string.char( math.random(string.byte('a'), string.byte('z')) ) end
+  return table.concat(t)
 end
 
 local string  = require"string"
@@ -34,97 +61,48 @@ return function(ZMQ_NAME)
 
 local zmq = require(ZMQ_NAME)
 
-local zthreads_prelude = [[
-local zmq = require(]] .. ("%q"):format(ZMQ_NAME) .. [[)
-local zthreads = require(]] .. ("%q"):format(ZMQ_NAME) .. [[ .. ".threads")
-local parent_ctx = arg[1]
-if parent_ctx then zthreads.set_parent_ctx(zmq.init_ctx(parent_ctx)) end
-local unpack = table.unpack or unpack
-arg = {n = arg.n - 1, unpack(arg, 2, arg.n) }
-]]
-
-local fork_prelude = [[
-arg[1] = zmq.assert(zthreads.get_parent_ctx():socket(zmq.PAIR,{
-	connect = assert(arg[1]);
-}))
-]]
-
 local prelude = zthreads_prelude
 
 local function make_pipe(ctx)
-	local pipe = ctx:socket(zmq.PAIR)
-	local pipe_endpoint = "inproc://lzmq.pipe." .. pipe:fd() .. "." .. rand_bytes(10);
-	local ok, err = pipe:bind(pipe_endpoint)
-	if not ok then 
-		pipe:close()
-		return nil, err
-	end
-	return pipe, pipe_endpoint
+  local pipe = ctx:socket(zmq.PAIR)
+  local pipe_endpoint = "inproc://lzmq.pipe." .. pipe:fd() .. "." .. rand_bytes(10);
+  local ok, err = pipe:bind(pipe_endpoint)
+  if not ok then 
+    pipe:close()
+    return nil, err
+  end
+  return pipe, pipe_endpoint
 end
 
-local M = {}
+local zthreads = {}
 
-function M.set_bootstrap_prelude (code)
-	prelude = code .. zthreads_prelude
-end;
-
-function M.runfile(ctx, file, ...)
-	if ctx then ctx = ctx:lightuserdata() end
-	return Threads.runfile_ex(prelude, file, ctx, ...)
+function zthreads.run(ctx, code, ...)
+  if ctx then ctx = ctx:lightuserdata() end
+  return Threads.run_ex(prelude, code, ZMQ_NAME, ctx, ...)
 end
 
-function M.runstring(ctx, code, ...)
-	if ctx then ctx = ctx:lightuserdata() end
-	return Threads.runstring_ex(prelude, code, ctx, ...)
-end
+function zthreads.fork(ctx, code, ...)
+  local pipe, endpoint = make_pipe(ctx)
+  if not pipe then return nil, endpoint end
 
-function M.run(ctx, code, ...)
-	if string.sub(code, 1, 1) == '@' then
-		return M.runfile(ctx, string.sub(code, 2), ...)
-	end
-	return M.runstring(ctx, code, ...)
-end
-
-function M.forkstring(ctx, code, ...)
-	local pipe, endpoint = make_pipe(ctx)
-	if not pipe then return nil, endpoint end
-	ctx = ctx:lightuserdata()
-	local ok, err = Threads.runstring_ex(prelude .. fork_prelude, code, ctx, endpoint, ...)
-	if not ok then
-		pipe:close()
-		return nil, err
-	end
-	return ok, pipe
-end
-
-function M.forkfile(ctx, file, ...)
-	local pipe, endpoint = make_pipe(ctx)
-	if not pipe then return nil, endpoint end
-	ctx = ctx:lightuserdata()
-	local ok, err = Threads.runfile_ex(prelude .. fork_prelude, file, ctx, endpoint, ...)
-	if not ok then
-		pipe:close()
-		return nil, err
-	end
-	return ok, pipe
-end
-
-function M.fork(ctx, code, ...)
-	if string.sub(code, 1, 1) == '@' then
-		return M.forkfile(ctx, string.sub(code, 2), ...)
-	end
-	return M.forkstring(ctx, code, ...)
+  ctx = ctx:lightuserdata()
+  local ok, err = Threads.run_ex(fork_prelude, code, ZMQ_NAME, ctx, endpoint, ...)
+  if not ok then
+    pipe:close()
+    return nil, err
+  end
+  return ok, pipe
 end
 
 local parent_ctx = nil
-function M.set_parent_ctx(ctx)
-	parent_ctx = ctx
+function zthreads.set_parent_ctx(ctx)
+  parent_ctx = ctx
 end
 
-function M.get_parent_ctx(ctx)
-	return parent_ctx
+function zthreads.get_parent_ctx(ctx)
+  return parent_ctx
 end
 
-return M
+return zthreads
 
 end

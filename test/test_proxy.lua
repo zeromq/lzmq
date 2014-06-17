@@ -106,10 +106,12 @@ function test_capture()
     ctx:destroy(0)
   --]], cli_endpoint, srv_endpoint)
 
+  assert(thread, pipe)
+
   local cli = assert(ctx:socket{zmq.REQ, bind = cli_endpoint, rcvtimeo=1000})
   local srv = assert(ctx:socket{zmq.REP, bind = srv_endpoint, rcvtimeo=1000})
 
-  thread:start()
+  assert_equal(thread, thread:start())
 
   assert(cli:send("hello"))
 
