@@ -59,7 +59,8 @@ function get_parent_ctx() end
 -- Warning: If you don't call thread:join() on a joinable child thread, it will be called
 -- by the garbage collector, which may cause random pauses/freeze of the parent thread.
 --
--- @tparam[opt=false] bool detached start non-joinable detached thread
+-- @tparam[opt=false] bool detached start detached thread
+-- @tparam[opt=true] bool joinable start joinable thread
 -- @return true
 function thread:start() end
 
@@ -67,4 +68,9 @@ function thread:start() end
 --
 -- @treturn ... return values from thread
 function thread:join() end
+
+--- Check if thread is working.
+--
+-- @treturn bool return true if thread is alive
+function thread:alive() end
 
