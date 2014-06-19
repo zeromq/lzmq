@@ -7,24 +7,26 @@
 -- This function create thread in suspended mode.
 --
 -- @tparam lzmq.context ctx ZMQ Context
--- @tparam string code if first char is '@' then this is filename else this is Lua chunk
+-- @tparam [string|function] code if first char is '@' then this is filename else this is Lua chunk.
+--            If code is function then it uses `string.dump` to serialize it.
 -- @param ... arguments for thread
 -- @treturn[1] thread new thread
 -- @treturn[2] nil
 -- @treturn[2] string error message
 --
 -- @usage
--- local thread = zthreads.run(ctx, [[
---   local ctx = require"lzmq.threads".get_parent_ctx()
+-- local thread = zthreads.run(ctx, function()
+--   local ctx = require"lzmq.threads".context()
 --   ...
--- ]]):start(true)
+-- end):start(true)
 function run() end
 
 --- Create new thread and pipe.
 -- This function create thread in suspended mode.
 -- 
 -- @tparam lzmq.context ctx ZMQ Context
--- @tparam string code if first char is '@' then this is filename else this is Lua chunk
+-- @tparam [string|function] code if first char is '@' then this is filename else this is Lua chunk.
+--            If code is function then it uses `string.dump` to serialize it.
 -- @param ... arguments for thread
 -- @treturn[1] thread new thread
 -- @treturn[1] lzmq.socket pipe
@@ -34,11 +36,10 @@ function run() end
 -- @treturn[3] string error message
 --
 -- @usage
--- local thread, pipe = zthreads.fork(ctx, [[
---   local pipe = ...
+-- local thread, pipe = zthreads.fork(ctx, function(pipe)
 --   pipe:send("READY")
 --   pipe:recv()
--- ]])
+-- end)
 -- thread:start()
 -- 
 -- pipe:recv()
@@ -47,6 +48,12 @@ function fork() end
 
 --- Get context from parent thread.
 -- 
+-- @treturn lzmq.context
+function context() end
+
+--- Get context from parent thread.
+-- This function is alias for `context` function
+--
 -- @treturn lzmq.context
 function get_parent_ctx() end
 

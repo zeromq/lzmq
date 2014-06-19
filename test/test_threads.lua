@@ -8,8 +8,7 @@ local ctx = zmq:context()
 local skt = ctx:socket(zmq.REP)
 zmq.assert(skt:bind("inproc://test.inproc"))
 
-local thread = zthreads.run(ctx, [[ 
-  local LZMQ     = ]] .. ("%q"):format(LZMQ) .. [[
+local thread = zthreads.run(ctx, function(LZMQ)
   local zmq      = require (LZMQ)
   local zthreads = require (LZMQ .. ".threads" )
 
@@ -20,7 +19,7 @@ local thread = zthreads.run(ctx, [[
   print("thread:", (skt:recv()))
   skt:close()
   ctx:term()
-]])
+end, LZMQ)
 
 thread:start()
 
