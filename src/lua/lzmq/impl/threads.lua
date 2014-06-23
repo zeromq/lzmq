@@ -65,6 +65,22 @@ function zthreads.run(ctx, code, ...)
   return Threads.new(run_starter, ZMQ_NAME, ctx, ...)
 end
 
+local fork_thread_mt = {} do
+
+fork_thread_mt.__index = function(self, k)
+  local v = Threads.thread_mt[k]
+  if v ~= nil then return v end
+
+  v = self.pipe[k]
+  if v ~= nil then
+    local f = function(self, ...) return self.pipe[k](self.pipe, ...) end
+    self[k] = f
+    return f
+  end
+end
+
+end
+
 function zthreads.fork(ctx, code, ...)
   local pipe, endpoint = make_pipe(ctx)
   if not pipe then return nil, endpoint end
@@ -76,6 +92,10 @@ function zthreads.fork(ctx, code, ...)
     pipe:close()
     return nil, err
   end
+
+  ok.pipe = pipe
+  setmetatable(ok, fork_thread_mt)
+
   return ok, pipe
 end
 
