@@ -6,7 +6,7 @@ local zthreads = require (LZMQ .. ".threads" )
 
 local ctx = zmq:context()
 
-local actor = zthreads.fork(ctx, function(pipe)
+local actor = zthreads.actor(ctx, function(pipe)
   pipe:send("hello")
   print("thread:", (pipe:recv()))
 end)

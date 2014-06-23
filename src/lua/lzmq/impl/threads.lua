@@ -65,22 +65,6 @@ function zthreads.run(ctx, code, ...)
   return Threads.new(run_starter, ZMQ_NAME, ctx, ...)
 end
 
-local fork_thread_mt = {} do
-
-fork_thread_mt.__index = function(self, k)
-  local v = Threads.thread_mt[k]
-  if v ~= nil then return v end
-
-  v = self.pipe[k]
-  if v ~= nil then
-    local f = function(self, ...) return self.pipe[k](self.pipe, ...) end
-    self[k] = f
-    return f
-  end
-end
-
-end
-
 function zthreads.fork(ctx, code, ...)
   local pipe, endpoint = make_pipe(ctx)
   if not pipe then return nil, endpoint end
@@ -92,11 +76,54 @@ function zthreads.fork(ctx, code, ...)
     pipe:close()
     return nil, err
   end
-
-  ok.pipe = pipe
-  setmetatable(ok, fork_thread_mt)
-
   return ok, pipe
+end
+
+local actor_mt = {} do
+
+actor_mt.__index = function(self, k)
+  local v = actor_mt[k]
+  if v ~= nil then
+    return v
+  end
+
+  v = self.thread[k]
+  if v ~= nil then
+    local f = function(self, ...) return self.thread[k](self.thread, ...) end
+    self[k] = f
+    return f
+  end
+
+  v = self.pipe[k]
+  if v ~= nil then
+    local f = function(self, ...) return self.pipe[k](self.pipe, ...) end
+    self[k] = f
+    return f
+  end
+end
+
+function actor_mt:start(...)
+  local ok, err = self.thread:start(...)
+  if not ok then return nil, err end
+  return self, err
+end
+
+end
+
+local function actor_new(thread, pipe)
+  local o = setmetatable({
+    thread = thread;
+    pipe   = pipe;
+  }, actor_mt)
+
+  return o
+end
+
+function zthreads.actor(...)
+  local thread, pipe = zthreads.fork(...)
+  if not thread then return nil, pipe end
+
+  return actor_new(thread, pipe)
 end
 
 local parent_ctx = nil
