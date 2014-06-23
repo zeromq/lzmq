@@ -1,3 +1,7 @@
+local io = require "io"
+io.stdout:setvbuf"no"
+io.stderr:setvbuf"no"
+
 function vc_version()
   local VER = lake.compiler_version()
   MSVC_VER = ({
@@ -6,6 +10,8 @@ function vc_version()
   })[VER.MAJOR] or ''
   return MSVC_VER
 end
+
+if not L then
 
 local function arkey(t)
   assert(type(t) == 'table')
@@ -48,13 +54,25 @@ function L(...)
   return expand({}, {...})
 end
 
+end
+
 J = J or path.join
 
 IF = IF or lake.choose or choose
 
+DIR_SEP = package.config:sub(1,1)
+
 function prequire(...)
   local ok, mod = pcall(require, ...)
   if ok then return mod end
+end
+
+function clone(t, o)
+  o = o or {}
+  for k, v in pairs(t) do
+    if o[k] == nil then o[k] = v end
+  end
+  return o
 end
 
 function each_join(dir, list)
@@ -77,28 +95,82 @@ function run(file, cwd)
   return true, 0
 end
 
+function exec(file, cwd)
+  print()
+  print("exec " .. file)
+  if not TESTING then
+    if cwd then lake.chdir(cwd) end
+    local status, code = utils.execute( file )
+    if cwd then lake.chdir("<") end
+    print()
+    return status, code
+  end
+  return true, 0
+end
+
+local TESTS = {}
+
 function run_test(name, params)
-  local test_dir = J(ROOT, 'test')
+  local test_dir = TESTDIR or J(ROOT, 'test')
   local cmd = J(test_dir, name)
   if params then cmd = cmd .. ' ' .. params end
   local ok = run(cmd, test_dir)
-  print("TEST " .. cmd .. (ok and ' - pass!' or ' - fail!'))
+
+  table.insert(TESTS, {cmd = cmd, result = ok})
+
+  print("TEST " .. name .. (ok and ' - pass!' or ' - fail!'))
 end
 
-function spawn(file, cwd)
-  local winapi = prequire "winapi"
-  if not winapi then
-    print(file, ' error: Test needs winapi!')
-    return false
+function exec_test(name, params)
+  local test_dir = TESTDIR or J(ROOT, 'test')
+  local cmd = J(test_dir, name)
+  if params then cmd = cmd .. ' ' .. params end
+  local ok = exec(cmd, test_dir)
+
+  table.insert(TESTS, {cmd = cmd, result = ok})
+
+  print("TEST " .. name .. (ok and ' - pass!' or ' - fail!'))
+end
+
+function test_summary()
+  local ok = true
+  print("")
+  print("------------------------------------")
+  print("Number of tests:", #TESTS)
+  for _, t in ipairs(TESTS) do
+    ok = ok and t.result
+    print((t.result and '  Pass' or '  Fail') .. " - TEST " .. t.cmd)
   end
-  print("spawn " .. file)
-  if not TESTING then
-    if cwd then lake.chdir(cwd) end
-    assert(winapi.shell_exec(nil, LUA_RUNNER, file, cwd))
-    if cwd then lake.chdir("<") end
-    print()
+  print("------------------------------------")
+  print("")
+  return ok
+end
+
+--[[spawn]] if WINDOWS then
+  function spawn(file, cwd)
+    local winapi = prequire "winapi"
+    if not winapi then
+      quit('needs winapi for spawn!')
+      return false
+    end
+
+    print("spawn " .. file)
+    if not TESTING then
+      if cwd then lake.chdir(cwd) end
+      assert(winapi.shell_exec(nil, LUA_RUNNER, file, cwd))
+      if cwd then lake.chdir("<") end
+      print()
+    end
+    return true
   end
-  return true
+else
+  function spawn(file, cwd)
+    print("spawn " .. file)
+    if not TESTING then
+      assert(run(file .. ' &', cwd))
+    end
+    return true
+  end
 end
 
 function as_bool(v,d)
@@ -109,49 +181,40 @@ function as_bool(v,d)
   return false
 end
 
-run_lua = run
-
-spawn_lua = spawn
-
-function test_perf_r(perf_type, opt)
-  return function()
-    if not winapi then quit('perf target needs winapi') end
-
-    local path = J(ROOT,'examples','perf')
-    print("run " .. J(path,'local_'  .. perf_type .. '.lua') .. ' ' .. opt)
-    print("run " .. J(path,'remote_' .. perf_type .. '.lua') .. ' ' .. opt)
-
-    if not TESTING then
-      spawn_lua(J(path,'local_'   .. perf_type .. '.lua') .. ' ' .. opt, path)
-      run_lua  (J(path,'remote_'  .. perf_type .. '.lua') .. ' ' .. opt, path)
-    end
+--- set global variables 
+-- LUA_NEED
+-- LUA_DIR
+-- LUA_RUNNER
+-- ROOT
+-- LUADIR
+-- LIBDIR
+-- TESTDIR
+-- DOCDIR
+-- DYNAMIC
+function INITLAKEFILE()
+  if LUA_VER == '5.3' then
+    LUA_NEED   = 'lua53'
+    LUA_DIR    = ENV.LUA_DIR_5_3 or ENV.LUA_DIR
+    LUA_RUNNER = LUA_RUNNER or 'lua53'
+  elseif LUA_VER == '5.2' then
+    LUA_NEED   = 'lua52'
+    LUA_DIR    = ENV.LUA_DIR_5_2 or ENV.LUA_DIR
+    LUA_RUNNER = LUA_RUNNER or 'lua52'
+  elseif LUA_VER == '5.1' then
+    LUA_NEED   = 'lua51'
+    LUA_DIR    = ENV.LUA_DIR
+    LUA_RUNNER = LUA_RUNNER or 'lua'
+  else
+    LUA_NEED   = 'lua'
+    LUA_DIR    = ENV.LUA_DIR
+    LUA_RUNNER = LUA_RUNNER or 'lua'
   end
-end
-
-function test_perf_l(perf_type, opt)
-  return function()
-    if not winapi then quit('perf target needs winapi') end
-
-    local path = J(ROOT,'examples','perf')
-    print("run " .. J(path,'local_'  .. perf_type .. '.lua') .. ' ' .. opt)
-    print("run " .. J(path,'remote_' .. perf_type .. '.lua') .. ' ' .. opt)
-
-    if not TESTING then
-      spawn_lua(J(path,'remote_' .. perf_type .. '.lua') .. ' ' .. opt, path)
-      run_lua  (J(path,'local_'  .. perf_type .. '.lua') .. ' ' .. opt, path)
-    end
-  end
-end
-
-function test_perf_t(perf_type, opt)
-  return function()
-    local path = J(ROOT,'examples','perf')
-    print("run " .. J(path,'thread_'  .. perf_type .. '.lua') .. ' ' .. opt)
-
-    if not TESTING then
-      run_lua  (J(path,'thread_'  .. perf_type .. '.lua') .. ' ' .. opt, path)
-    end
-  end
+  ROOT    = ROOT    or J( LUA_DIR, 'libs', PROJECT )
+  LUADIR  = LUADIR  or J( ROOT,    'share'         )
+  LIBDIR  = LIBDIR  or J( ROOT,    'share'         )
+  TESTDIR = TESTDIR or J( ROOT,    'test'          )
+  DOCDIR  = DOCDIR  or J( ROOT,    'doc'           )
+  DYNAMIC = as_bool(DYNAMIC, false)
 end
 
 -----------------------
@@ -162,7 +225,7 @@ lake.define_need('lua53', function()
   return {
     incdir = J(ENV.LUA_DIR_5_3, 'include');
     libdir = J(ENV.LUA_DIR_5_3, 'lib');
-    libs   = {'lua53'};
+    libs = {'lua53'};
   }
 end)
 
@@ -170,7 +233,7 @@ lake.define_need('lua52', function()
   return {
     incdir = J(ENV.LUA_DIR_5_2, 'include');
     libdir = J(ENV.LUA_DIR_5_2, 'lib');
-    libs   = {'lua52'};
+    libs = {'lua52'};
   }
 end)
 
@@ -178,7 +241,7 @@ lake.define_need('lua51', function()
   return {
     incdir = J(ENV.LUA_DIR, 'include');
     libdir = J(ENV.LUA_DIR, 'lib');
-    libs   = {'lua5.1'};
+    libs = {'lua5.1'};
   }
 end)
 

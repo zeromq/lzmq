@@ -29,7 +29,7 @@ local bootstrap_code = require"string".dump(function(lua_init, prelude, code, ..
   local function unpack_n(t)
     return unpack(t, 1, t.n)
   end
-  
+
   if lua_init and #lua_init > 0 then
     local init = load_src(lua_init)
     init()
@@ -115,7 +115,11 @@ end
 -------------------------------------------------------------------------------
 local threads = {} do
 
-local function new_thread(prelude, code, ...)
+local function new_thread(prelude, lua_init, code, ...)
+  if type(lua_init) == "function" then
+    lua_init = string.dump(lua_init)
+  end
+
   if type(prelude) == "function" then
     prelude = string.dump(prelude)
   end
@@ -124,18 +128,22 @@ local function new_thread(prelude, code, ...)
     code = string.dump(code)
   end
 
-  local thread = llthreads.new(bootstrap_code, LUA_INIT, prelude, code, ...)
+  local thread = llthreads.new(bootstrap_code, lua_init, prelude, code, ...)
   return setmetatable({
     thread = thread,
   }, thread_mt)
 end
 
-threads.run = function (code, ...)
-  return new_thread(nil, code, ...)
-end
+threads.new = function (code, ...)
+  assert(code)
 
-threads.run_ex = function (prelude, code, ...)
-  return new_thread(prelude, code, ...)
+  if type(code) == "table" then
+    local source = assert(code.source or code[1])
+    local init = (code.lua_init == nil) and LUA_INIT or code.lua_init
+    return new_thread(code.prelude, init, source, ...)
+  end
+
+  return new_thread(nil, LUA_INIT, code, ...)
 end
 
 end

@@ -74,8 +74,8 @@ install = target('install', {
 })
 
 target('test', install, function()
-  run_test('test.lua')
-  run_test('utest.lua')
+--   run_test('test.lua')
+--   run_test('utest.lua')
   run_test('test_proxy.lua')
   run_test('test_threads.lua')
   run_test('test_threads_arg.lua')
@@ -83,22 +83,10 @@ target('test', install, function()
   run_test('test_threads_fork_arg.lua')
   run_test('test_threads_file.lua')
   run_test('test_metadata.lua')
+
+  if not test_summary() then
+    quit("test fail")
+  end
 end)
-
-target('perf_local_lat',      install, test_perf_r('lat', "tcp://127.0.0.1:5555 1   100000"))
-target('perf_local_thr',      install, test_perf_l('thr', "tcp://127.0.0.1:5555 512 100000"))
-target('perf_thread_lat',     install, test_perf_t('lat', "1   100000"))
-target('perf_thread_thr',     install, test_perf_t('thr', "512 100000"))
-target('perf_thread_lat_tcp', install, test_perf_t('lat', "1   100000 tcp://127.0.0.1:5555 tcp://127.0.0.1:5555"))
-target('perf_thread_thr_tcp', install, test_perf_t('thr', "512 100000 tcp://127.0.0.1:5555 tcp://127.0.0.1:5555"))
-
-target('perf', {
-  'perf_local_lat',      
-  'perf_local_thr',      
-  'perf_thread_lat',     
-  'perf_thread_thr',     
-  'perf_thread_lat_tcp', 
-  'perf_thread_thr_tcp',
-})
 
 default('build')
