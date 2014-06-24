@@ -87,9 +87,11 @@ local function wait(ms)
   ztimer.sleep(ms or 100)
 end
 
+local ENABLE = true
+
 local ECHO_ADDR = "inproc://echo"
 
-local _ENV = TEST_CASE'interface'            if true then
+local _ENV = TEST_CASE'interface'            if ENABLE then
 
 function setup() end
 
@@ -236,7 +238,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'ctx/skt interface'    if true then
+local _ENV = TEST_CASE'ctx/skt interface'    if ENABLE then
 
 local ctx, skt
 
@@ -488,7 +490,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'context'              if true then
+local _ENV = TEST_CASE'context'              if ENABLE then
 
 local ctx, skt
 
@@ -543,7 +545,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'socket autoclose'     if true then
+local _ENV = TEST_CASE'socket autoclose'     if ENABLE then
 
 local ctx, skt
 
@@ -608,7 +610,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'message'              if true then
+local _ENV = TEST_CASE'message'              if ENABLE then
 
 local msg
 
@@ -769,7 +771,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'bind/connect'         if true then
+local _ENV = TEST_CASE'bind/connect'         if ENABLE then
 
 local ctx, pub, sub1, sub2, sub3, msg
 
@@ -889,7 +891,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'bind/connect on ctor' if true then
+local _ENV = TEST_CASE'bind/connect on ctor' if ENABLE then
 
 local ctx, pub, sub, msg
 
@@ -942,7 +944,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'Send Recv'            if true then
+local _ENV = TEST_CASE'Send Recv'            if ENABLE then
 
 local ctx, pub, sub, msg
 
@@ -1157,7 +1159,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'socket poll'          if true then
+local _ENV = TEST_CASE'socket poll'          if ENABLE then
 
 local ctx, req, rep, timer
 
@@ -1187,19 +1189,26 @@ end
 
 end
 
-local _ENV = TEST_CASE'loop'                 if true then
+local _ENV = TEST_CASE'loop'                 if ENABLE then
 
-local loop, timer
+local ctx, loop, timer
 
 function setup()
-  loop  = assert(zloop.new())
+  ctx   = assert(zmq.context())
+  loop  = assert(zloop.new(ctx))
   timer = ztimer.monotonic()
 end
 
 function teardown()
   loop:destroy()
+  assert_equal(socket_count(ctx, 0))
+  ctx:destroy()
   timer:close()
   wait(500) -- for TCP time to release IP address
+end
+
+function test_context()
+  assert_equal(ctx, loop:context())
 end
 
 function test_sleep()
@@ -1328,7 +1337,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'timer'                if true then
+local _ENV = TEST_CASE'timer'                if ENABLE then
 
 local timer
 
@@ -1441,7 +1450,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'poller'               if true then
+local _ENV = TEST_CASE'poller'               if ENABLE then
 local ctx, pub, sub1, sub2, sub3, msg
 local poller
 local names
@@ -1549,7 +1558,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'z85 encode'           if true then
+local _ENV = TEST_CASE'z85 encode'           if ENABLE then
 if not zmq.z85_encode then test = SKIP"zmq_z85_encode does not support" else
 
 local key_bin = "\084\252\186\036\233\050\073\150\147\022\251\097\124\135\043\176" ..
@@ -1604,7 +1613,7 @@ end
 end
 end
 
-local _ENV = TEST_CASE'curve keypair'        if true then
+local _ENV = TEST_CASE'curve keypair'        if ENABLE then
 if not zmq.curve_keypair then test = SKIP"zmq_curve_keypair does not support" else
 
 function test_generate_z85()
@@ -1634,25 +1643,23 @@ end
 end
 end
 
-local _ENV = TEST_CASE'monitor'              if true then
+local _ENV = TEST_CASE'monitor'              if ENABLE then
 
-local loop, timer
+local ctx, loop, timer, srv, mon
 
 function setup()
-  print("")
-  print(">> Setup ...")
-  loop  = assert(zloop.new())
+  ctx   = assert(zmq.context())
+  loop  = assert(zloop.new(ctx))
   timer = ztimer.monotonic()
-  print(">> Setup done")
 end
 
 function teardown()
-  print("")
-  print(">> Teardown ...")
+  if srv then srv:close() end
+  if mon then mon:close() end
   loop:destroy()
-  print(">> Teardown loop destroyed")
+  assert_equal(socket_count(ctx, 0))
+  ctx:destroy()
   wait(500) -- for TCP time to release IP address
-  print(">> Teardown done")
 end
 
 function test_monitor()
@@ -1721,7 +1728,7 @@ function test_monitor()
 end
 
 function test_monitor_with_addr()
-  local srv = assert(is_zsocket(loop:create_socket(zmq.REP)))
+  srv = assert(is_zsocket(loop:create_socket(zmq.REP)))
   if not srv.monitor then
     return skip("this version of LZMQ does not support socket monitor")
   end
@@ -1731,7 +1738,7 @@ function test_monitor_with_addr()
 end
 
 function test_monitor_with_wrong_addr()
-  local srv = assert(is_zsocket(loop:create_socket(zmq.REP)))
+  srv = assert(is_zsocket(loop:create_socket(zmq.REP)))
   if not srv.monitor then
     return skip("this version of LZMQ does not support socket monitor")
   end
@@ -1743,7 +1750,7 @@ function test_monitor_with_wrong_addr()
 end
 
 function test_monitor_without_addr()
-  local srv = assert(is_zsocket(loop:create_socket(zmq.REP)))
+  srv = assert(is_zsocket(loop:create_socket(zmq.REP)))
   if not srv.monitor then
     return skip("this version of LZMQ does not support socket monitor")
   end
@@ -1752,7 +1759,7 @@ function test_monitor_without_addr()
 end
 
 function test_monitor_without_addr_with_event()
-  local srv = assert(is_zsocket(loop:create_socket(zmq.REP)))
+  srv = assert(is_zsocket(loop:create_socket(zmq.REP)))
   if not srv.monitor then
     return skip("this version of LZMQ does not support socket monitor")
   end
@@ -1761,7 +1768,7 @@ function test_monitor_without_addr_with_event()
 end
 
 function test_reset_monitor()
-  local srv = assert(is_zsocket(loop:create_socket{zmq.REP,
+  srv = assert(is_zsocket(loop:create_socket{zmq.REP,
     linger = 0, sndtimeo = 100, rcvtimeo = 100;
     bind = {
       "inproc://test.zmq";
@@ -1773,7 +1780,7 @@ function test_reset_monitor()
     return skip("this version of LZMQ does not support socket reset_monitor")
   end
 
-  local mon = assert(is_zsocket(loop:create_socket{zmq.PAIR, 
+  mon = assert(is_zsocket(loop:create_socket{zmq.PAIR, 
     linger = 0, sndtimeo = 100, rcvtimeo = 100;
     connect = assert(srv:monitor());
   }))
@@ -1802,7 +1809,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'Clone socket'         if true then
+local _ENV = TEST_CASE'Clone socket'         if ENABLE then
 
 local ctx, rep, s1, s2
 
@@ -1894,7 +1901,7 @@ end
 
 end
 
-local _ENV = TEST_CASE'Recv event'           if true then
+local _ENV = TEST_CASE'Recv event'           if ENABLE then
 
 local ctx, skt, mon
 local timeout, epselon = 1500, 490

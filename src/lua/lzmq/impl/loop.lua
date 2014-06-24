@@ -224,7 +224,12 @@ local zmq_loop = class() do
 -- static
 function zmq_loop.sleep(ms) ztimer.sleep(ms) end
 
-function zmq_loop:init(N, ctx)
+function zmq_loop:init(...)
+  local N, ctx = ...
+  if (select('#', ...) == 1) and type(N) ~= 'number' then
+    ctx, N = N, nil
+  end
+
   self.private_ = self.private_ or {}
   self.private_.sockets = {}
   self.private_.event_list = event_list:new()
