@@ -40,45 +40,6 @@ local function rand_bytes(n)
   return table.concat(t)
 end
 
-local string  = require"string"
-local Threads = require"lzmq.llthreads.ex"
-return function(ZMQ_NAME)
-
-local zmq = require(ZMQ_NAME)
-
-local function make_pipe(ctx)
-  local pipe = ctx:socket(zmq.PAIR)
-  local pipe_endpoint = "inproc://lzmq.pipe." .. pipe:fd() .. "." .. rand_bytes(10);
-  local ok, err = pipe:bind(pipe_endpoint)
-  if not ok then 
-    pipe:close()
-    return nil, err
-  end
-  return pipe, pipe_endpoint
-end
-
-local zthreads = {}
-
-function zthreads.run(ctx, code, ...)
-  if ctx then ctx = ctx:lightuserdata() end
-  run_starter.source = code
-  return Threads.new(run_starter, ZMQ_NAME, ctx, ...)
-end
-
-function zthreads.fork(ctx, code, ...)
-  local pipe, endpoint = make_pipe(ctx)
-  if not pipe then return nil, endpoint end
-
-  ctx = ctx:lightuserdata()
-  fork_starter.source = code
-  local ok, err = Threads.new(fork_starter, ZMQ_NAME, ctx, endpoint, ...)
-  if not ok then
-    pipe:close()
-    return nil, err
-  end
-  return ok, pipe
-end
-
 local actor_mt = {} do
 
 actor_mt.__index = function(self, k)
@@ -119,6 +80,45 @@ local function actor_new(thread, pipe)
   return o
 end
 
+local string  = require"string"
+local Threads = require"lzmq.llthreads.ex"
+return function(ZMQ_NAME)
+
+local zmq = require(ZMQ_NAME)
+
+local function make_pipe(ctx)
+  local pipe = ctx:socket(zmq.PAIR)
+  local pipe_endpoint = "inproc://lzmq.pipe." .. pipe:fd() .. "." .. rand_bytes(10);
+  local ok, err = pipe:bind(pipe_endpoint)
+  if not ok then 
+    pipe:close()
+    return nil, err
+  end
+  return pipe, pipe_endpoint
+end
+
+local zthreads = {}
+
+function zthreads.run(ctx, code, ...)
+  if ctx then ctx = ctx:lightuserdata() end
+  run_starter.source = code
+  return Threads.new(run_starter, ZMQ_NAME, ctx, ...)
+end
+
+function zthreads.fork(ctx, code, ...)
+  local pipe, endpoint = make_pipe(ctx)
+  if not pipe then return nil, endpoint end
+
+  ctx = ctx:lightuserdata()
+  fork_starter.source = code
+  local ok, err = Threads.new(fork_starter, ZMQ_NAME, ctx, endpoint, ...)
+  if not ok then
+    pipe:close()
+    return nil, err
+  end
+  return ok, pipe
+end
+
 function zthreads.actor(...)
   local thread, pipe = zthreads.fork(...)
   if not thread then return nil, pipe end
@@ -127,17 +127,19 @@ function zthreads.actor(...)
 end
 
 local parent_ctx = nil
-function zthreads.set_parent_ctx(ctx)
+function zthreads.set_context(ctx)
   parent_ctx = ctx
 end
 
-function zthreads.get_parent_ctx()
+function zthreads.context()
   return parent_ctx
 end
 
-zthreads.context = zthreads.get_parent_ctx
+-- compatibility functions
 
-zthreads.set_context = zthreads.set_parent_ctx
+zthreads.get_parent_ctx = zthreads.context
+
+zthreads.set_parent_ctx = zthreads.set_context
 
 return zthreads
 
