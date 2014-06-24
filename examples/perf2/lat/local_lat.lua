@@ -21,7 +21,7 @@ local ztimer   = require(ZMQ_NAME .. ".timer")
 local zthreads = require(ZMQ_NAME .. ".threads")
 local zassert  = zmq.assert
 
-local ctx = zthreads.get_parent_ctx() or zassert(zmq.context())
+local ctx = zthreads.context()
 
 local s = zassert(ctx:socket{zmq.REP,
   bind = bind_to;

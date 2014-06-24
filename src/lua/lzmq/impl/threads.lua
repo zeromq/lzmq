@@ -126,6 +126,18 @@ function zthreads.actor(...)
   return actor_new(thread, pipe)
 end
 
+function zthreads.xrun(...)
+  return zthreads.run(zthreads.context(), ...)
+end
+
+function zthreads.xfork(...)
+  return zthreads.fork(zthreads.context(), ...)
+end
+
+function zthreads.xactor(...)
+  return zthreads.actor(zthreads.context(), ...)
+end
+
 local global_context = nil
 function zthreads.set_context(ctx)
   assert(ctx)

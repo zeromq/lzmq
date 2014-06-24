@@ -46,6 +46,36 @@ function run() end
 -- pipe:send("START")
 function fork() end
 
+--- Create new thread.
+-- This function is fully analog of `fork` function but always use globla context.
+--
+-- @see fork
+-- @see context
+--
+-- @usage
+-- local thread = zthreads.xrun(function()
+--   local ctx = require"lzmq.threads".context()
+--   ...
+-- end):start(true)
+function xrun() end
+
+--- Create new thread and pipe.
+-- This function is fully analog of `fork` function but always use globla context.
+--
+-- @see fork
+-- @see context
+--
+-- @usage
+-- local thread, pipe = zthreads.xfork(function(pipe)
+--   pipe:send("READY")
+--   pipe:recv()
+-- end)
+-- thread:start()
+-- 
+-- pipe:recv()
+-- pipe:send("START")
+function xfork() end
+
 --- Get context from parent thread.
 -- For main thread this function can create new context and set it as parent context.
 -- So you can use this function to get unique global zmq context.

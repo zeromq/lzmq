@@ -11,7 +11,7 @@ env:
     # - LUA=lua5.2 ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO"
     # - LUA=luajit ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO"
     # - LUA=luajit ZMQ_VER=zeromq3 LZMQ=ffi     PERF="NO"
-    # - LUA=luajit ZMQ_VER=zeromq4 LZMQ=ffi     PERF="NO"
+    - LUA=luajit ZMQ_VER=zeromq4 LZMQ=ffi     PERF="YES"
     - LUA=luajit ZMQ_VER=zeromq3 LZMQ=ffi-lua PERF="NO"
     # - LUA=lua5.1 ZMQ_VER=libzmq  LZMQ=lzmq    PERF="NO"
     # - LUA=luajit ZMQ_VER=libzmq  LZMQ=ffi-lua PERF="NO"

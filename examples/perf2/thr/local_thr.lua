@@ -21,7 +21,7 @@ local ztimer   = require(ZMQ_NAME .. ".timer")
 local zthreads = require(ZMQ_NAME .. ".threads")
 local zassert  = zmq.assert
 
-local ctx = zthreads.get_parent_ctx() or zassert(zmq.context())
+local ctx = zthreads.context()
 local s = zassert(ctx:socket{zmq.PULL,
   -- Add your socket options here.
   -- For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
