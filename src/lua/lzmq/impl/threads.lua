@@ -126,13 +126,20 @@ function zthreads.actor(...)
   return actor_new(thread, pipe)
 end
 
-local parent_ctx = nil
+local global_context = nil
 function zthreads.set_context(ctx)
-  parent_ctx = ctx
+  assert(ctx)
+
+  if global_context == ctx then return end
+
+  assert(global_context == nil, 'global_context already setted')
+
+  global_context = ctx
 end
 
 function zthreads.context()
-  return parent_ctx
+  if not global_context then global_context = zmq.assert(zmq.context()) end
+  return global_context
 end
 
 -- compatibility functions

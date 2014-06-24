@@ -47,9 +47,16 @@ function run() end
 function fork() end
 
 --- Get context from parent thread.
--- 
+-- For main thread this function can create new context and set it as parent context.
+-- So you can use this function to get unique global zmq context.
+-- If you lready have context in main thread then you can use `set_context` function
 -- @treturn lzmq.context
 function context() end
+
+--- Set context as global for thread library.
+-- This function raise error in case if context already set.
+-- @tparam lzmq.context ctx
+function set_context() end
 
 --- Get context from parent thread.
 -- This function is alias for `context` function
