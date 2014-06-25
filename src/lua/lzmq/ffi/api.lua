@@ -773,6 +773,18 @@ _M.SOCKET_OPTIONS = {
   ZMQ_REQ_RELAXED             = {53, "WO", "int"},
   ZMQ_CONFLATE                = {54, "WO", "int"},
   ZMQ_ZAP_DOMAIN              = {55, "RW", "str"},
+  ZMQ_ROUTER_HANDOVER         = {56, "WO", "int"},
+  ZMQ_TOS                     = {57, "RW", "int"},
+  ZMQ_IPC_FILTER_PID          = {58, "WO", "int"}, --@fixme use pid_t
+  ZMQ_IPC_FILTER_UID          = {59, "WO", "int"}, --@fixme use uid_t
+  ZMQ_IPC_FILTER_GID          = {60, "WO", "int"}, --@fixme use gid_t
+  ZMQ_CONNECT_RID             = {61, "WO", "str"},
+  ZMQ_GSSAPI_SERVER           = {62, "RW", "int"},
+  ZMQ_GSSAPI_PRINCIPAL        = {63, "RW", "str"},
+  ZMQ_GSSAPI_SERVICE_PRINCIPAL= {64, "RW", "str"},
+  ZMQ_GSSAPI_PLAINTEXT        = {65, "RW", "str"},
+  ZMQ_HANDSHAKE_IVL           = {66, "RW", "int"},
+  ZMQ_IDENTITY_FD             = {67, "RW", "fdt"},
 }
 
 _M.SOCKET_TYPES = {
