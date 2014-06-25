@@ -48,33 +48,43 @@ actor_mt.__index = function(self, k)
     return v
   end
 
-  v = self.thread[k]
+  v = self._thread[k]
   if v ~= nil then
-    local f = function(self, ...) return self.thread[k](self.thread, ...) end
+    local f = function(self, ...) return self._thread[k](self._thread, ...) end
     self[k] = f
     return f
   end
 
-  v = self.pipe[k]
+  v = self._pipe[k]
   if v ~= nil then
-    local f = function(self, ...) return self.pipe[k](self.pipe, ...) end
+    local f = function(self, ...) return self._pipe[k](self._pipe, ...) end
     self[k] = f
     return f
   end
 end
 
 function actor_mt:start(...)
-  local ok, err = self.thread:start(...)
+  local ok, err
+  if select('#', ...) == 0 then
+    ok, err = self._thread:start(true, true)
+  else
+    ok, err = self._thread:start(...)
+  end
   if not ok then return nil, err end
   return self, err
+end
+
+function actor_mt:close()
+  self._pipe:close()
+  self._thread:join()
 end
 
 end
 
 local function actor_new(thread, pipe)
   local o = setmetatable({
-    thread = thread;
-    pipe   = pipe;
+    _thread = thread;
+    _pipe   = pipe;
   }, actor_mt)
 
   return o

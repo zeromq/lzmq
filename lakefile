@@ -74,8 +74,8 @@ install = target('install', {
 })
 
 target('test', install, function()
---   run_test('test.lua')
---   run_test('utest.lua')
+  run_test('test.lua')
+  run_test('utest.lua')
   run_test('test_proxy.lua')
   run_test('test_threads.lua')
   run_test('test_threads_arg.lua')

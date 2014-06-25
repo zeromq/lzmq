@@ -1,6 +1,6 @@
+--- Wraps the low-level threads object.
 --
--- wraps the low-level threads object.
---
+-- @module llthreads2.ex
 
 --
 -- Note! Define this function prior all `local` definitions
@@ -95,18 +95,50 @@ end
 local thread_mt = {} do
 thread_mt.__index = thread_mt
 
+--- Thread object.
+--
+-- @type thread
+
+--- Start thread.
+--
+-- @tparam ?boolean detached
+-- @tparam ?boolean joinable
+-- @return self
 function thread_mt:start(...)
   local ok, err = self.thread:start(...)
   if not ok then return nil, err end
   return self
 end
 
+--- Join thread.
+--
+-- @tparam ?number timeout Windows suppurts arbitrary value, but POSIX supports only 0
 function thread_mt:join(...)
   return self.thread:join(...)
 end
 
+--- Check if thread still working.
+-- You can call `join` to get returned values if thiread is not alive.
 function thread_mt:alive()
   return self.thread:alive()
+end
+
+--- Check if thread was started.
+-- 
+function thread_mt:started()
+  return self.thread:started()
+end
+
+--- Check if thread is detached.
+-- This function returns valid value only for started thread.
+function thread_mt:detached()
+  return self.thread:detached()
+end
+
+--- Check if thread is joinable.
+-- This function returns valid value only for started thread.
+function thread_mt:joinable()
+  return self.thread:joinable()
 end
 
 end
@@ -115,7 +147,7 @@ end
 -------------------------------------------------------------------------------
 local threads = {} do
 
-local function new_thread(prelude, lua_init, code, ...)
+local function new_thread(lua_init, prelude, code, ...)
   if type(lua_init) == "function" then
     lua_init = string.dump(lua_init)
   end
@@ -134,22 +166,35 @@ local function new_thread(prelude, lua_init, code, ...)
   }, thread_mt)
 end
 
+--- Create new thread object
+-- 
+-- @tparam string|function|THREAD_OPTIONS source thread source code.
+--
 threads.new = function (code, ...)
   assert(code)
 
   if type(code) == "table" then
     local source = assert(code.source or code[1])
     local init = (code.lua_init == nil) and LUA_INIT or code.lua_init
-    return new_thread(code.prelude, init, source, ...)
+    return new_thread(init, code.prelude, source, ...)
   end
 
-  return new_thread(nil, LUA_INIT, code, ...)
+  return new_thread(LUA_INIT, nil, code, ...)
 end
-
 
 threads.thread_mt = thread_mt
 
 end
 -------------------------------------------------------------------------------
+
+--- A table describe threads constructor options.
+--
+-- @tfield string|function source thread source code (or first value of table)
+-- @tfield ?string|function prelude thread prelude code. This code can change thread arguments.
+--  e.g. it can remove some values or change their type.
+-- @lua_init ?string|function|false by default child lua state try use LUA_INIT environment variable
+--  just like regular lua interpretator.
+--
+-- @table THREAD_OPTIONS
 
 return threads
