@@ -1934,4 +1934,34 @@ end
 
 end
 
+local _ENV = TEST_CASE'Socket optinos'       if ENABLE then
+
+local ctx, srv, cli
+
+function setup()
+  ctx = assert(is_zcontext(zmq.context()))
+  srv = assert(is_zsocket(ctx:socket{zmq.ROUTER, linger = 0}))
+  local port = assert_number(srv:bind_to_random_port("tcp://127.0.0.1"))
+  cli = assert(is_zsocket(ctx:socket{zmq.REQ, connect = "tcp://127.0.0.1:" .. port, linger = 0}))
+end
+
+function teardown()
+  ctx:destroy()
+end
+
+function test_identity_fd()
+  assert_number(cli:fd())
+  assert_error(function() srv:identity_fd() end)
+
+  cli:send("hello")
+  local id, empty, msg = assert_string(srv:recvx())
+
+  assert_equal("", empty)
+  assert_equal("hello", msg)
+
+  assert_number(srv:identity_fd(id))
+end
+
+end
+
 if not HAS_RUNNER then lunit.run() end

@@ -656,8 +656,26 @@ static int luazmq_skt_get_fdt (lua_State *L, int option_name) {
    * on Windows x64.
    */
   zsocket *skt = luazmq_getsocket(L);
-  fd_t option_value; size_t len = sizeof(option_value);
-  int ret = zmq_getsockopt(skt->skt, option_name, &option_value, &len);
+  int ret;
+  fd_t option_value; 
+
+#if defined(ZMQ_IDENTITY_FD)
+  if(option_name == ZMQ_IDENTITY_FD){
+    char buffer[255];
+    size_t len; const char *id = luaL_checklstring(L, 2, &len);
+    luaL_argcheck(L, len <= sizeof(buffer), 2, "identity too big");
+
+    memcpy(buffer, id, len);
+    ret = zmq_getsockopt(skt->skt, option_name, buffer, &len);
+    memcpy(&option_value, buffer, sizeof(option_value));
+  }
+  else
+#endif
+  {
+    size_t len = sizeof(option_value);
+    ret = zmq_getsockopt(skt->skt, option_name, &option_value, &len);
+  }
+
   if (ret == -1) return luazmq_fail(L, skt);
   lua_pushnumber(L, (lua_Number)option_value);
   return 1;
@@ -914,7 +932,7 @@ static int luazmq_skt_set_str_arr (lua_State *L, int option_name) {
   DEFINE_SKT_OPT_RW(handshake_ivl,            ZMQ_HANDSHAKE_IVL,                  int       )
 #endif
 #if defined(ZMQ_IDENTITY_FD)
-  DEFINE_SKT_OPT_RW(identity_fd,              ZMQ_IDENTITY_FD,                    fdt       )
+  DEFINE_SKT_OPT_RO(identity_fd,              ZMQ_IDENTITY_FD,                    fdt       )
 #endif
 
 //}
@@ -1162,7 +1180,7 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   REGISTER_SKT_OPT_RW(handshake_ivl             ),
 #endif
 #if defined(ZMQ_IDENTITY_FD)
-  REGISTER_SKT_OPT_RW(identity_fd               ),
+  REGISTER_SKT_OPT_RO(identity_fd               ),
 #endif
   //}
 
