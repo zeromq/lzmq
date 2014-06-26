@@ -3,6 +3,20 @@
 -- @module llthreads2.ex
 
 --
+-- Notes for lzmq.threads.ex
+-- When you create zmq socket in child thread and your main thread crash
+-- lua state could be deadlocked if you use attached thread because it calls
+-- in gc  thread join or context destroy and no one could be done.
+-- So by default for zmq more convinient use dettached joinable thread.
+--
+-- Example with deadlock
+-- local thread = zthreads.xfork(function(pipe)
+--   -- break when context destroy
+--   while pipe:recv() do end
+-- end):start(false, true)
+--
+
+--
 -- Note! Define this function prior all `local` definitions
 --       to prevent use upvalue by accident
 --
@@ -105,7 +119,9 @@ thread_mt.__index = thread_mt
 -- @tparam ?boolean joinable
 -- @return self
 function thread_mt:start(...)
-  local ok, err = self.thread:start(...)
+  local ok, err
+  if select("#", ...) == 0 then ok, err = self.thread:start(true, true)
+  else                          ok, err = self.thread:start(...) end
   if not ok then return nil, err end
   return self
 end
@@ -181,8 +197,6 @@ threads.new = function (code, ...)
 
   return new_thread(LUA_INIT, nil, code, ...)
 end
-
-threads.thread_mt = thread_mt
 
 end
 -------------------------------------------------------------------------------
