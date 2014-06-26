@@ -642,6 +642,24 @@ for optname, params in pairs(api.SOCKET_OPTIONS) do
   end
 end
 
+if api.SOCKET_OPTIONS.ZMQ_IDENTITY_FD then
+
+Socket.get_identity_fd = function(self, id)
+  assert(type(id) == 'string')
+
+  local val = api.zmq_skt_getopt_identity_fd(
+    self._private.skt,
+    api.SOCKET_OPTIONS.ZMQ_IDENTITY_FD[1],
+    id
+  )
+  if not val then return nil, zerror() end
+  return val
+end
+
+Socket.identity_fd = Socket.get_identity_fd
+
+end
+
 function Socket:more()
   local more, err = self:rcvmore()
   if not more then return nil, err end

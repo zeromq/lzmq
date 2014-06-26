@@ -75,6 +75,7 @@ if IS_WINDOWS and ffi.arch == 'x64' then
 else
   fd_t, afd_t = "int", aint_t
 end
+local fd_size         = ffi.sizeof(fd_t)
 
 ffi.cdef[[
   void zmq_version (int *major, int *minor, int *patch);
@@ -329,7 +330,7 @@ function _M.zmq_close(skt)
 end
 
 local function gen_setopt_int(t, ct)
-  return function (skt, option, optval) 
+  return function (skt, option, optval)
     local size = ffi.sizeof(t)
     local val  = ffi.new(ct, optval)
     return libzmq3.zmq_setsockopt(skt, option, val, size)
@@ -337,7 +338,7 @@ local function gen_setopt_int(t, ct)
 end
 
 local function gen_getopt_int(t, ct)
-  return function (skt, option) 
+  return function (skt, option)
     local size = ffi.new(asize_t, ffi.sizeof(t))
     local val  = ffi.new(ct, 0)
     if -1 ~= libzmq3.zmq_getsockopt(skt, option, val, size) then
@@ -371,6 +372,22 @@ function _M.zmq_skt_getopt_str(skt, option)
     return ""
   end
   return
+end
+
+function _M.zmq_skt_getopt_identity_fd(skt, option, id)
+  local buffer_len = 255
+  assert(#id <= buffer_len, "identity too big")
+
+  local size   = ffi.new(asize_t, #id)
+  local buffer = ffi.new(vla_char_t, buffer_len)
+  local val    = ffi.new(afd_t, 0)
+
+  ffi.copy(buffer, id)
+
+  if -1 ~= libzmq3.zmq_getsockopt(skt, option, buffer, size) then
+    ffi.copy(val, buffer, fd_size)
+    return val[0]
+  end
 end
 
 function _M.zmq_connect(skt, addr)
