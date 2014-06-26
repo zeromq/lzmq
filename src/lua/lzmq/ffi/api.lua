@@ -132,13 +132,15 @@ local is_zmq_ge = function (major, minor, patch)
 end
 
 if is_zmq_ge(4, 1, 0) then
-  ffi.cdef[[
+  header = [[
     typedef struct zmq_msg_t {unsigned char _ [48];} zmq_msg_t;
   ]]
+  ffi.cdef(header)
 else
-  ffi.cdef[[
+  header = [[
     typedef struct zmq_msg_t {unsigned char _ [32];} zmq_msg_t;
   ]]
+  ffi.cdef(header)
 end
 
 header = [[
@@ -629,7 +631,7 @@ do
 local msg = ffi.new(zmq_msg_t)
 
 if ZMQ_VERSION_MAJOR == 3 then
-  ffi.cdef([[
+  local header = [[
     typedef struct {
         int event;
         union {
@@ -675,7 +677,8 @@ if ZMQ_VERSION_MAJOR == 3 then
         } disconnected;
         } data;
     } zmq_event_t;
-  ]])
+  ]]
+  ffi.cdef(header)
   local zmq_event_t = ffi.typeof("zmq_event_t")
   local event_size  = ffi.sizeof(zmq_event_t)
   local event = ffi.new(zmq_event_t)
