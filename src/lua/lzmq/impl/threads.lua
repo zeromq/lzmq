@@ -64,12 +64,7 @@ actor_mt.__index = function(self, k)
 end
 
 function actor_mt:start(...)
-  local ok, err
-  if select('#', ...) == 0 then
-    ok, err = self._thread:start(true, true)
-  else
-    ok, err = self._thread:start(...)
-  end
+  local ok, err = self._thread:start(...)
   if not ok then return nil, err end
   return self, err
 end

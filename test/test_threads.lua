@@ -23,6 +23,9 @@ end, LZMQ)
 
 thread:start()
 
+assert(true == thread:detached())
+assert(true == thread:joinable())
+
 print("  main:", (skt:recv()))
 skt:send("world")
 thread:join()

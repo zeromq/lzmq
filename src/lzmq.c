@@ -12,8 +12,8 @@
 #include "zsupport.h"
 
 #define LUAZMQ_VERSION_MAJOR 0
-#define LUAZMQ_VERSION_MINOR 3
-#define LUAZMQ_VERSION_PATCH 7
+#define LUAZMQ_VERSION_MINOR 4
+#define LUAZMQ_VERSION_PATCH 0
 #define LUAZMQ_VERSION_COMMENT "dev"
 
 const char *LUAZMQ_CONTEXT = LUAZMQ_PREFIX "Context";
