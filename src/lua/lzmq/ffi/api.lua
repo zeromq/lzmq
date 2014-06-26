@@ -48,6 +48,30 @@ if not ok then
   else error(libzmq3) end
 end
 
+local aint_t          = ffi.typeof("int[1]")
+local aint16_t        = ffi.typeof("int16_t[1]")
+local auint16_t       = ffi.typeof("uint16_t[1]")
+local aint32_t        = ffi.typeof("int32_t[1]")
+local auint32_t       = ffi.typeof("uint32_t[1]")
+local aint64_t        = ffi.typeof("int64_t[1]")
+local auint64_t       = ffi.typeof("uint64_t[1]")
+local asize_t         = ffi.typeof("size_t[1]")
+local vla_char_t      = ffi.typeof("char[?]")
+local pvoid_t         = ffi.typeof("void*")
+local pchar_t         = ffi.typeof("char*")
+local uintptr_t       = ffi.typeof("uintptr_t")
+local NULL            = ffi.cast(pvoid_t, 0)
+local int16_size      = ffi.sizeof("int16_t")
+local int32_size      = ffi.sizeof("int32_t")
+local ptr_size        = ffi.sizeof(pvoid_t)
+local fd_t, afd_t
+if IS_WINDOWS and ffi.arch == 'x64' then
+  fd_t, afd_t = "uint64_t", auint64_t
+else
+  fd_t, afd_t = "int", aint_t
+end
+local fd_size         = ffi.sizeof(fd_t)
+
 -- !Note! this allocator could return same buffer more then once.
 -- So you can not use this function to allocate 2 different buffers.
 local function create_tmp_allocator(array_size, array_type)
@@ -72,30 +96,6 @@ local function create_tmp_allocator(array_size, array_type)
     return ffi.new(array_type, len)
   end
 end
-
-local aint_t          = ffi.typeof("int[1]")
-local aint16_t        = ffi.typeof("int16_t[1]")
-local auint16_t       = ffi.typeof("uint16_t[1]")
-local aint32_t        = ffi.typeof("int32_t[1]")
-local auint32_t       = ffi.typeof("uint32_t[1]")
-local aint64_t        = ffi.typeof("int64_t[1]")
-local auint64_t       = ffi.typeof("uint64_t[1]")
-local asize_t         = ffi.typeof("size_t[1]")
-local vla_char_t      = ffi.typeof("char[?]")
-local pvoid_t         = ffi.typeof("void*")
-local pchar_t         = ffi.typeof("char*")
-local uintptr_t       = ffi.typeof("uintptr_t")
-local NULL            = ffi.cast(pvoid_t, 0)
-local int16_size      = ffi.sizeof("int16_t")
-local int32_size      = ffi.sizeof("int32_t")
-local ptr_size        = ffi.sizeof(pvoid_t)
-local fd_t, afd_t
-if IS_WINDOWS and ffi.arch == 'x64' then
-  fd_t, afd_t = "uint64_t", auint64_t
-else
-  fd_t, afd_t = "int", aint_t
-end
-local fd_size         = ffi.sizeof(fd_t)
 
 local header = [[
   void zmq_version (int *major, int *minor, int *patch);
