@@ -7,12 +7,12 @@ env:
     # You can set PERF only for luajit/ffi
     # todo: install libffi and test ffi binding on Lua 5.1/5.2
     - LUA=lua5.1 ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO"
-    # - LUA=lua5.1 ZMQ_VER=zeromq4 LZMQ=lzmq    PERF="NO"
-    # - LUA=lua5.2 ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO"
-    # - LUA=luajit ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO"
-    # - LUA=luajit ZMQ_VER=zeromq3 LZMQ=ffi     PERF="NO"
-    # - LUA=luajit ZMQ_VER=zeromq4 LZMQ=ffi     PERF="YES"
-    # - LUA=luajit ZMQ_VER=zeromq3 LZMQ=ffi-lua PERF="NO"
+    - LUA=lua5.1 ZMQ_VER=zeromq4 LZMQ=lzmq    PERF="NO"
+    - LUA=lua5.2 ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO"
+    - LUA=luajit ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO"
+    - LUA=luajit ZMQ_VER=zeromq3 LZMQ=ffi     PERF="NO"
+    - LUA=luajit ZMQ_VER=zeromq4 LZMQ=ffi     PERF="YES"
+    - LUA=luajit ZMQ_VER=zeromq3 LZMQ=ffi-lua PERF="NO"
     - LUA=lua5.1 ZMQ_VER=libzmq  LZMQ=lzmq    PERF="NO"
     - LUA=luajit ZMQ_VER=libzmq  LZMQ=ffi-lua PERF="NO"
 
@@ -22,12 +22,12 @@ branches:
 
 before_install:
   - bash .travis/setup_lua.sh
-  # - if [ "$ZMQ_VER" == "libzmq" ]; then
-  #     bash .travis/setup_sodium.sh;
-  #   fi
-  # - if [ "$ZMQ_VER" == "zeromq4" ]; then
-  #     bash .travis/setup_sodium.sh;
-  #   fi
+  - if [ "$ZMQ_VER" == "libzmq" ]; then
+      bash .travis/setup_sodium.sh;
+    fi
+  - if [ "$ZMQ_VER" == "zeromq4" ]; then
+      bash .travis/setup_sodium.sh;
+    fi
   - bash .travis/setup_zmq.sh
 
 install:
