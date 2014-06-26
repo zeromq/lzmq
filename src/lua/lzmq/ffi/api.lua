@@ -22,11 +22,6 @@ local function oload(t)
   error(err)
 end
 
-local function IF(cond, true_v, false_v)
-  if cond then return true_v end
-  return false_v
-end
-
 local bit     = orequire("bit32", "bit")
 
 local zlibs if IS_WINDOWS then
@@ -51,6 +46,31 @@ if not ok then
   if pcall( require, "lzmq" ) then -- jus to load libzmq3
     libzmq3 = oload( zlibs )
   else error(libzmq3) end
+end
+
+-- !Note! this allocator could return same buffer more then once.
+-- So you can not use this function to allocate 2 different buffers.
+local function create_tmp_allocator(array_size, array_type)
+  assert(type(array_size) == "number")
+  assert(array_size > 0)
+
+  if type(array_type) == 'string' then
+    array_type = ffi.typeof(array_type)
+  else
+    array_type = array_type or vla_char_t
+  end
+
+  local buffer
+
+  return function(len)
+    if len <= array_size then
+      if not buffer then
+        buffer = ffi.new(array_type, array_size)
+      end
+      return buffer
+    end
+    return ffi.new(array_type, len)
+  end
 end
 
 local aint_t          = ffi.typeof("int[1]")
@@ -540,18 +560,7 @@ end
 if pget(libzmq3, "zmq_z85_encode") then
 
 -- we alloc buffers for CURVE encoded key size
-local TMP_BUF_SIZE = 41
-local tmp_buf
-
-local function alloc_z85_buff(len)
-  if len <= TMP_BUF_SIZE then
-    if not tmp_buf then
-      tmp_buf = ffi.new(vla_char_t, TMP_BUF_SIZE)
-    end
-    return tmp_buf
-  end
-  return ffi.new(vla_char_t, len)
-end
+local alloc_z85_buff = create_tmp_allocator(41)
 
 function _M.zmq_z85_encode(data)
   local len = math.floor(#data * 1.25 + 1.0001)
