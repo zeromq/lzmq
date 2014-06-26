@@ -97,9 +97,10 @@ else
 end
 local fd_size         = ffi.sizeof(fd_t)
 
-ffi.cdef[[
+local header = [[
   void zmq_version (int *major, int *minor, int *patch);
 ]]
+ffi.cdef(header)
 
 local _M = {}
 
@@ -140,7 +141,7 @@ else
   ]]
 end
 
-ffi.cdef[[
+header = [[
   int zmq_errno (void);
   const char *zmq_strerror (int errnum);
 
@@ -179,6 +180,7 @@ ffi.cdef[[
   int    zmq_msg_get       (zmq_msg_t *msg, int option);
   int    zmq_msg_set       (zmq_msg_t *msg, int option, int optval);
 ]]
+ffi.cdef(header)
 
 if is_zmq_ge(4, 1, 0) then
   ffi.cdef[[
@@ -186,7 +188,7 @@ if is_zmq_ge(4, 1, 0) then
   ]]
 end
 
-ffi.cdef([[
+header = [[
 typedef struct {
   void *socket;
   ]] .. fd_t .. [[ fd;
@@ -195,28 +197,33 @@ typedef struct {
 } zmq_pollitem_t;
 
 int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
-]])
+]]
+ffi.cdef(header)
 
-ffi.cdef[[
+header = [[
   int zmq_has (const char *capability);
 ]]
+ffi.cdef(header)
 
-ffi.cdef[[
+header = [[
   int zmq_proxy  (void *frontend, void *backend, void *capture);
   int zmq_device (int type, void *frontend, void *backend);
   int zmq_proxy_steerable (void *frontend, void *backend, void *capture, void *control);
 ]]
+ffi.cdef(header)
 
-ffi.cdef[[
+header = [[
   char *zmq_z85_encode (char *dest, const char *data, size_t size);
   char *zmq_z85_decode (char *dest, const char *string);
   int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key);
 ]]
+ffi.cdef(header)
 
-ffi.cdef[[
+header = [[
   void *zmq_stopwatch_start (void);
   unsigned long zmq_stopwatch_stop (void *watch_);
 ]]
+ffi.cdef(header)
 
 local zmq_msg_t       = ffi.typeof("zmq_msg_t")
 local vla_pollitem_t  = ffi.typeof("zmq_pollitem_t[?]")
