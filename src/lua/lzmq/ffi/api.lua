@@ -198,6 +198,10 @@ int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 ]])
 
 ffi.cdef[[
+  int zmq_has (const char *capability);
+]]
+
+ffi.cdef[[
   int zmq_proxy  (void *frontend, void *backend, void *capture);
   int zmq_device (int type, void *frontend, void *backend);
   int zmq_proxy_steerable (void *frontend, void *backend, void *capture, void *control);
@@ -262,7 +266,7 @@ local function pget(lib, elem)
   return nil, err
 end
 
--- zmq_errno, zmq_strerror, zmq_poll, zmq_device, zmq_proxy
+-- zmq_errno, zmq_strerror, zmq_poll, zmq_device, zmq_proxy, zmq_has
 do
 
 function _M.zmq_errno()
@@ -290,6 +294,16 @@ if pget(libzmq3, "zmq_proxy_steerable") then
 
 function _M.zmq_proxy_steerable(frontend, backend, capture, control)
   return libzmq3.zmq_proxy_steerable(frontend, backend, capture, control)
+end
+
+end
+
+if pget(libzmq3, "zmq_has") then
+
+function _M.zmq_has(capability)
+  local v = libzmq3.zmq_has(capability)
+  if v == 1 then return true end
+  return false
 end
 
 end

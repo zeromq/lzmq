@@ -310,6 +310,16 @@ static int luazmq_proxy_steerable(lua_State *L){
 
 #endif
 
+#ifdef ZMQ_HAS_CAPABILITIES
+
+static int luazmq_has(lua_State *L){
+  const char *capability = luaL_checkstring(L,1);
+  lua_pushboolean(L, zmq_has(capability));
+  return 1;
+}
+
+#endif
+
 static int luazmq_error_create_(lua_State *L){
   int err = luaL_checkint(L, 1);
   return luazmq_error_create(L, err);
@@ -421,6 +431,10 @@ static const struct luaL_Reg luazmqlib[]   = {
 
 #ifdef LUAZMQ_SUPPORT_CURVE_KEYPAIR
   { "curve_keypair",  luazmq_curve_keypair    },
+#endif
+
+#ifdef ZMQ_HAS_CAPABILITIES
+  { "has",            luazmq_has              },
 #endif
 
   { "device",         luazmq_device           },
