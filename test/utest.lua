@@ -1950,6 +1950,12 @@ function teardown()
 end
 
 function test_identity_fd()
+  local minor, major, patch = zmq.version(true)
+  local ver = minor * 10000 + major * 100 + patch
+  if ver < 40100 then 
+    return skip("ZMQ_IDENTITY_FD support since ZMQ 4.1.0")
+  end
+
   assert_number(cli:fd())
   assert_error(function() srv:identity_fd() end)
 
