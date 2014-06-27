@@ -11,7 +11,7 @@ env:
     - LUA=lua5.2 ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO"
     - LUA=luajit ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO"
     - LUA=luajit ZMQ_VER=zeromq3 LZMQ=ffi     PERF="NO"
-    - LUA=luajit ZMQ_VER=zeromq4 LZMQ=ffi     PERF="YES"
+    - LUA=luajit ZMQ_VER=zeromq4 LZMQ=ffi     PERF="NO"
     - LUA=luajit ZMQ_VER=zeromq3 LZMQ=ffi-lua PERF="NO"
     - LUA=lua5.1 ZMQ_VER=libzmq  LZMQ=lzmq    PERF="NO"
     - LUA=luajit ZMQ_VER=libzmq  LZMQ=ffi-lua PERF="NO"
@@ -74,6 +74,8 @@ after_success:
   - cd test
   - if [ $LZMQ = "ffi-lua" ]; then
       luacov-coveralls -c .luacov.ffi;
+    elif [ $LZMQ = "ffi" ]; then
+      luacov-coveralls;
     else
       coveralls -e libzmq -e zeromq3 -e zeromq4 -e libsodium -e src/lzutils.c -b .. -r .. --dump c.report.json;
       luacov-coveralls -j c.report.json;
