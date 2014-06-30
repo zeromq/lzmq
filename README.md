@@ -13,16 +13,15 @@ This library has C and FFI version of binding.
 https://github.com/moteus/lzmq
 
 ##Install
-Using *LuaRocks*:<br/>
-`luarocks install lzmq` or install only ffi version `luarocks install lzmq-ffi`<br/>
-`lzmq.threads` module also requires or [llthreads2](https://github.com/moteus/lua-llthreads2) or [llthreads](https://github.com/Neopallium/lua-llthreads) library (version > 1.2)<br/>
-`luarocks install lua-llthreads2` or `luarocks install lua-llthreads2-compat` <br/>
-or<br/>
-`luarocks install https://raw.github.com/Neopallium/lua-llthreads/master/rockspecs/lua-llthreads-scm-0.rockspec`
+If you plan use `lzmq.threads` module then you should also install [llthreads2](https://github.com/moteus/lua-llthreads2)<br/>
 
-<br/>Using *LuaDist*:<br/>
-`luadist install lzmq` or `luadist install lzmq-ffi`<br/>
+* Using *LuaRocks*:<br/>
+`luarocks install lua-llthreads2` or `luarocks install lua-llthreads2-compat`<br/>
+`luarocks install lzmq` or install only ffi version `luarocks install lzmq-ffi`<br/>
+
+* Using *LuaDist*:<br/>
 `luadist install lua-llthreads2` or `luadist install lua-llthreads2-compat`<br/>
+`luadist install lzmq` or `luadist install lzmq-ffi`<br/>
 
 ##API
 This is short [API](http://moteus.github.io/lzmq/index.html) description.<br/>
