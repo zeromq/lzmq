@@ -56,6 +56,7 @@ script:
   - lua -lluacov test_threads_fork.lua
   - lua -lluacov test_threads_file.lua
   - lua -lluacov test_threads_actor.lua
+  - lua -lluacov test_threads_actor_poll.lua
   - lua -lluacov test_metadata.lua
   #- if [ "$ZMQ_VER" == "libzmq" ]; then
   #    lua test_req_relaxed.lua;
