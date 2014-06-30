@@ -78,6 +78,9 @@ function actor() end
 --- Create new thread.
 -- This function is fully analog of `fork` function but always use globla context.
 --
+-- @tparam [string|function] code 
+-- @param ... arguments
+--
 -- @see fork
 -- @see context
 --
@@ -90,6 +93,9 @@ function xrun() end
 
 --- Create new thread and pipe.
 -- This function is fully analog of `fork` function but always use globla context.
+--
+-- @tparam [string|function] code 
+-- @param ... arguments
 --
 -- @see fork
 -- @see context
@@ -107,6 +113,9 @@ function xfork() end
 
 --- Create new arctor.
 -- This function is fully analog of `actor` function but always use globla context.
+--
+-- @tparam [string|function] code 
+-- @param ... arguments
 --
 -- @see actor
 -- @see context
@@ -149,7 +158,7 @@ function get_parent_ctx() end
 -- Warning: If you don't call thread:join() on a joinable child thread, it will be called
 -- by the garbage collector, which may cause random pauses/freeze of the parent thread.
 --
--- @tparam[opt=false] bool detached start detached thread
+-- @tparam[opt=true] bool detached start detached thread
 -- @tparam[opt=true] bool joinable start joinable thread
 -- @return true
 function thread:start() end
