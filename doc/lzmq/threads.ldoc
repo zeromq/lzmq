@@ -46,6 +46,35 @@ function run() end
 -- pipe:send("START")
 function fork() end
 
+--- Create new arctor.
+-- This function create thread in suspended mode.
+-- `arctor` is object inherited from thread and zmq socket.
+-- You can use it to communicate with thread (send/sendx/recv/recvx) and
+-- to sync with thread (join).<br/>
+-- You can also usage actor with zmq poller and zmq loop objects.<br/>
+-- Child thread gets pipe socket same as in fork.
+-- 
+-- @tparam lzmq.context ctx ZMQ Context
+-- @tparam [string|function] code if first char is '@' then this is filename else this is Lua chunk.
+--            If code is function then it uses `string.dump` to serialize it.
+-- @param ... arguments for thread
+-- @treturn[1] arctor new actor
+-- @treturn[2] nil
+-- @treturn[2] lzmq.error error object
+-- @treturn[3] nil
+-- @treturn[3] string error message
+--
+-- @usage
+-- local actor = zthreads.actor(ctx, function(pipe)
+--   pipe:send("READY")
+--   pipe:recv()
+-- end):start()
+-- 
+-- actor:recv()
+-- actor:send("START")
+-- actor:join()
+function actor() end
+
 --- Create new thread.
 -- This function is fully analog of `fork` function but always use globla context.
 --
@@ -75,6 +104,23 @@ function xrun() end
 -- pipe:recv()
 -- pipe:send("START")
 function xfork() end
+
+--- Create new arctor.
+-- This function is fully analog of `actor` function but always use globla context.
+--
+-- @see actor
+-- @see context
+--
+-- @usage
+-- local actor = zthreads.xactor(function(pipe)
+--   pipe:send("READY")
+--   pipe:recv()
+-- end):start()
+-- 
+-- actor:recv()
+-- actor:send("START")
+-- actor:join()
+function xactor() end
 
 --- Get context from parent thread.
 -- For main thread this function can create new context and set it as parent context.
