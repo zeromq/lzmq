@@ -4,6 +4,12 @@
 #include <assert.h>
 #include "zsupport.h"
 
+#if ZMQ_VERSION < ZMQ_MAKE_VERSION(4,0,0)
+#  define LUAZMQ_CTX_DESTROY zmq_ctx_destroy
+#else
+#  define LUAZMQ_CTX_DESTROY zmq_ctx_term
+#endif
+
 // apply options for object on top of stack
 // if set option fail call destroy method for object and return error
 // unknown options are ignoring
@@ -231,7 +237,7 @@ static int luazmq_ctx_destroy (lua_State *L) {
   if(!(ctx->flags & LUAZMQ_FLAG_CLOSED)){
     luazmq_ctx_close_sockets(L, ctx, luaL_optint(L, 2, -2));
     if(!(ctx->flags & LUAZMQ_FLAG_DONT_DESTROY)){
-      int ret = zmq_ctx_destroy(ctx->ctx);
+      int ret = LUAZMQ_CTX_DESTROY(ctx->ctx);
       if(ret == -1)return luazmq_fail(L,NULL);
     }
     ctx->flags |= LUAZMQ_FLAG_CLOSED;
