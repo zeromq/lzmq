@@ -36,7 +36,8 @@ poller_mt.__index = poller_mt
 
 function poller_mt:add(sock, events, cb)
 	assert(cb ~= nil)
-	local id = self.poller:add(sock, events)
+	local s = (type(sock) == 'table') and (sock.socket) and sock:socket() or sock
+	local id = self.poller:add(s, events)
 	self.callbacks[id] = function(revents) return cb(sock, revents) end
 end
 

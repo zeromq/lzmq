@@ -69,6 +69,10 @@ function actor_mt:start(...)
   return self, err
 end
 
+function actor_mt:socket()
+  return self._pipe
+end
+
 function actor_mt:close()
   self._pipe:close()
   self._thread:join()
