@@ -1,3 +1,13 @@
+--
+--  Author: Alexey Melnichuk <mimir@newmail.ru>
+--
+--  Copyright (C) 2013-2014 Alexey Melnichuk <mimir@newmail.ru>
+--
+--  Licensed according to the included 'LICENCE' document
+--
+--  This file is part of lua-lzqm library.
+--
+
 local LZMQ_VERSION = "0.4.1-dev"
 
 local lua_version_t
