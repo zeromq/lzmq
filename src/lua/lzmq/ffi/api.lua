@@ -779,76 +779,103 @@ end
 
 do -- const
 
-_M.CONTEXT_OPTIONS = {
+local unpack = unpack or table.unpack
+
+local function O(opt)
+  local t = {}
+  for k, v in pairs(opt) do
+    if type(k) == "string" then
+      t[k] = v
+    elseif is_zmq_ge(unpack(k)) then
+      for name, val in pairs(v) do
+        t[name] = val
+      end
+    end
+  end
+  return t
+end
+
+_M.CONTEXT_OPTIONS = O{
   ZMQ_IO_THREADS  = 1;
   ZMQ_MAX_SOCKETS = 2;
+  [{4,1,0}] = {
+    ZMQ_SOCKET_LIMIT        = 3;
+    ZMQ_THREAD_PRIORITY     = 3;
+    ZMQ_THREAD_SCHED_POLICY = 4;
+  };
 }
 
-_M.SOCKET_OPTIONS = {
-  ZMQ_AFFINITY                = {4 , "RW", "u64"};
-  ZMQ_IDENTITY                = {5 , "RW", "str"}; 
-  ZMQ_SUBSCRIBE               = {6 , "WO", "str_arr"};
-  ZMQ_UNSUBSCRIBE             = {7 , "WO", "str_arr"};
-  ZMQ_RATE                    = {8 , "RW", "int"};
-  ZMQ_RECOVERY_IVL            = {9 , "RW", "int"};
-  ZMQ_SNDBUF                  = {11, "RW", "int"};
-  ZMQ_RCVBUF                  = {12, "RW", "int"};
-  ZMQ_RCVMORE                 = {13, "RO", "int"};
-  ZMQ_FD                      = {14, "RO", "fdt"};
-  ZMQ_EVENTS                  = {15, "RO", "int"};
-  ZMQ_TYPE                    = {16, "RO", "int"};
-  ZMQ_LINGER                  = {17, "RW", "int"};
-  ZMQ_RECONNECT_IVL           = {18, "RW", "int"};
-  ZMQ_BACKLOG                 = {19, "RW", "int"};
-  ZMQ_RECONNECT_IVL_MAX       = {21, "RW", "int"};
-  ZMQ_MAXMSGSIZE              = {22, "RW", "i64"};
-  ZMQ_SNDHWM                  = {23, "RW", "int"};
-  ZMQ_RCVHWM                  = {24, "RW", "int"};
-  ZMQ_MULTICAST_HOPS          = {25, "RW", "int"};
-  ZMQ_RCVTIMEO                = {27, "RW", "int"};
-  ZMQ_SNDTIMEO                = {28, "RW", "int"};
-  ZMQ_IPV4ONLY                = {31, "RW", "int"};
-  ZMQ_LAST_ENDPOINT           = {32, "RO", "str"};
-  ZMQ_ROUTER_MANDATORY        = {33, "WO", "int"};
-  ZMQ_TCP_KEEPALIVE           = {34, "RW", "int"};
-  ZMQ_TCP_KEEPALIVE_CNT       = {35, "RW", "int"};
-  ZMQ_TCP_KEEPALIVE_IDLE      = {36, "RW", "int"};
-  ZMQ_TCP_KEEPALIVE_INTVL     = {37, "RW", "int"};
-  ZMQ_TCP_ACCEPT_FILTER       = {38, "WO", "str_arr"};
-  ZMQ_DELAY_ATTACH_ON_CONNECT = {39, "RW", "int"};
-  ZMQ_IMMEDIATE               = {39, "RW", "int"};
-  ZMQ_XPUB_VERBOSE            = {40, "RW", "int"};
-  ZMQ_ROUTER_RAW              = {41, "RW", "int"};
-  ZMQ_IPV6                    = {42, "RW", "int"},
-  ZMQ_MECHANISM               = {43, "RO", "int"},
-  ZMQ_PLAIN_SERVER            = {44, "RW", "int"},
-  ZMQ_PLAIN_USERNAME          = {45, "RW", "str"},
-  ZMQ_PLAIN_PASSWORD          = {46, "RW", "str"},
-  ZMQ_CURVE_SERVER            = {47, "RW", "int"},
-  ZMQ_CURVE_PUBLICKEY         = {48, "RW", "str"},
-  ZMQ_CURVE_SECRETKEY         = {49, "RW", "str"},
-  ZMQ_CURVE_SERVERKEY         = {50, "RW", "str"},
-  ZMQ_PROBE_ROUTER            = {51, "WO", "int"},
-  ZMQ_REQ_CORRELATE           = {52, "WO", "int"},
-  ZMQ_REQ_RELAXED             = {53, "WO", "int"},
-  ZMQ_CONFLATE                = {54, "WO", "int"},
-  ZMQ_ZAP_DOMAIN              = {55, "RW", "str"},
-  ZMQ_ROUTER_HANDOVER         = {56, "WO", "int"},
-  ZMQ_TOS                     = {57, "RW", "int"},
-  ZMQ_IPC_FILTER_PID          = {58, "WO", "int"}, --@fixme use pid_t
-  ZMQ_IPC_FILTER_UID          = {59, "WO", "int"}, --@fixme use uid_t
-  ZMQ_IPC_FILTER_GID          = {60, "WO", "int"}, --@fixme use gid_t
-  ZMQ_CONNECT_RID             = {61, "WO", "str"},
-  ZMQ_GSSAPI_SERVER           = {62, "RW", "int"},
-  ZMQ_GSSAPI_PRINCIPAL        = {63, "RW", "str"},
-  ZMQ_GSSAPI_SERVICE_PRINCIPAL= {64, "RW", "str"},
-  ZMQ_GSSAPI_PLAINTEXT        = {65, "RW", "str"},
-  ZMQ_HANDSHAKE_IVL           = {66, "RW", "int"},
-  ZMQ_IDENTITY_FD             = {67, "RO", "fdt"},
-  ZMQ_SOCKS_PROXY             = {68, "RW", "str"},
+_M.SOCKET_OPTIONS = O{
+  ZMQ_AFFINITY                  = {4 , "RW", "u64"};
+  ZMQ_IDENTITY                  = {5 , "RW", "str"}; 
+  ZMQ_SUBSCRIBE                 = {6 , "WO", "str_arr"};
+  ZMQ_UNSUBSCRIBE               = {7 , "WO", "str_arr"};
+  ZMQ_RATE                      = {8 , "RW", "int"};
+  ZMQ_RECOVERY_IVL              = {9 , "RW", "int"};
+  ZMQ_SNDBUF                    = {11, "RW", "int"};
+  ZMQ_RCVBUF                    = {12, "RW", "int"};
+  ZMQ_RCVMORE                   = {13, "RO", "int"};
+  ZMQ_FD                        = {14, "RO", "fdt"};
+  ZMQ_EVENTS                    = {15, "RO", "int"};
+  ZMQ_TYPE                      = {16, "RO", "int"};
+  ZMQ_LINGER                    = {17, "RW", "int"};
+  ZMQ_RECONNECT_IVL             = {18, "RW", "int"};
+  ZMQ_BACKLOG                   = {19, "RW", "int"};
+  ZMQ_RECONNECT_IVL_MAX         = {21, "RW", "int"};
+  ZMQ_MAXMSGSIZE                = {22, "RW", "i64"};
+  ZMQ_SNDHWM                    = {23, "RW", "int"};
+  ZMQ_RCVHWM                    = {24, "RW", "int"};
+  ZMQ_MULTICAST_HOPS            = {25, "RW", "int"};
+  ZMQ_RCVTIMEO                  = {27, "RW", "int"};
+  ZMQ_SNDTIMEO                  = {28, "RW", "int"};
+  ZMQ_IPV4ONLY                  = {31, "RW", "int"};
+  ZMQ_LAST_ENDPOINT             = {32, "RO", "str"};
+  ZMQ_ROUTER_MANDATORY          = {33, "WO", "int"};
+  ZMQ_TCP_KEEPALIVE             = {34, "RW", "int"};
+  ZMQ_TCP_KEEPALIVE_CNT         = {35, "RW", "int"};
+  ZMQ_TCP_KEEPALIVE_IDLE        = {36, "RW", "int"};
+  ZMQ_TCP_KEEPALIVE_INTVL       = {37, "RW", "int"};
+  ZMQ_TCP_ACCEPT_FILTER         = {38, "WO", "str_arr"};
+  ZMQ_DELAY_ATTACH_ON_CONNECT   = {39, "RW", "int"};
+  ZMQ_IMMEDIATE                 = {39, "RW", "int"};
+  ZMQ_XPUB_VERBOSE              = {40, "RW", "int"};
+
+  [{4,0,0}] = {
+    ZMQ_ROUTER_RAW              = {41, "RW", "int"};
+    ZMQ_IPV6                    = {42, "RW", "int"},
+    ZMQ_MECHANISM               = {43, "RO", "int"},
+    ZMQ_PLAIN_SERVER            = {44, "RW", "int"},
+    ZMQ_PLAIN_USERNAME          = {45, "RW", "str"},
+    ZMQ_PLAIN_PASSWORD          = {46, "RW", "str"},
+    ZMQ_CURVE_SERVER            = {47, "RW", "int"},
+    ZMQ_CURVE_PUBLICKEY         = {48, "RW", "str"},
+    ZMQ_CURVE_SECRETKEY         = {49, "RW", "str"},
+    ZMQ_CURVE_SERVERKEY         = {50, "RW", "str"},
+    ZMQ_PROBE_ROUTER            = {51, "WO", "int"},
+    ZMQ_REQ_CORRELATE           = {52, "WO", "int"},
+    ZMQ_REQ_RELAXED             = {53, "WO", "int"},
+    ZMQ_CONFLATE                = {54, "WO", "int"},
+    ZMQ_ZAP_DOMAIN              = {55, "RW", "str"},
+  };
+
+  [{4,1,0}] = {
+    ZMQ_ROUTER_HANDOVER           = {56, "WO", "int"},
+    ZMQ_TOS                       = {57, "RW", "int"},
+    ZMQ_IPC_FILTER_PID            = {58, "WO", "int"}, --@fixme use pid_t
+    ZMQ_IPC_FILTER_UID            = {59, "WO", "int"}, --@fixme use uid_t
+    ZMQ_IPC_FILTER_GID            = {60, "WO", "int"}, --@fixme use gid_t
+    ZMQ_CONNECT_RID               = {61, "WO", "str"},
+    ZMQ_GSSAPI_SERVER             = {62, "RW", "int"},
+    ZMQ_GSSAPI_PRINCIPAL          = {63, "RW", "str"},
+    ZMQ_GSSAPI_SERVICE_PRINCIPAL  = {64, "RW", "str"},
+    ZMQ_GSSAPI_PLAINTEXT          = {65, "RW", "str"},
+    ZMQ_HANDSHAKE_IVL             = {66, "RW", "int"},
+    ZMQ_IDENTITY_FD               = {67, "RO", "fdt"},
+    ZMQ_SOCKS_PROXY               = {68, "RW", "str"},
+  };
 }
 
-_M.SOCKET_TYPES = {
+_M.SOCKET_TYPES = O{
   ZMQ_PAIR   = 0;
   ZMQ_PUB    = 1;
   ZMQ_SUB    = 2;
@@ -860,6 +887,9 @@ _M.SOCKET_TYPES = {
   ZMQ_PUSH   = 8;
   ZMQ_XPUB   = 9;
   ZMQ_XSUB   = 10;
+  [{4,0,0}]  = {
+    ZMQ_STREAM = 11;
+  };
 }
 
 _M.FLAGS = {
@@ -882,7 +912,7 @@ _M.SECURITY_MECHANISM = {
  ZMQ_CURVE = 2;
 }
 
-_M.EVENTS = {
+_M.EVENTS = O{
   ZMQ_EVENT_CONNECTED        = 1;
   ZMQ_EVENT_CONNECT_DELAYED  = 2;
   ZMQ_EVENT_CONNECT_RETRIED  = 4;
@@ -893,11 +923,10 @@ _M.EVENTS = {
   ZMQ_EVENT_CLOSED           = 128;
   ZMQ_EVENT_CLOSE_FAILED     = 256;
   ZMQ_EVENT_DISCONNECTED     = 512;
+  [{4,0,0}] = {
+    ZMQ_EVENT_MONITOR_STOPPED  = 1024;
+  };
 }
-
-if ZMQ_VERSION_MAJOR >= 4 then
-  _M.EVENTS.ZMQ_EVENT_MONITOR_STOPPED = 1024
-end
 
 do local ZMQ_EVENT_ALL = 0
 for _, v in pairs(_M.EVENTS) do
