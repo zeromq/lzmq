@@ -83,5 +83,5 @@ function poller:stop()end
 
 --- Return zmq socket for polling
 --
--- @treturn lzmq.socket socket 
+-- @treturn lzmq.socket|number socket or socket fd
 function Pollable:socket() end
