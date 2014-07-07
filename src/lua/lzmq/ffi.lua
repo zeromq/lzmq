@@ -981,6 +981,11 @@ local function item2id(item)
   return api.serialize_ptr(item.socket)
 end
 
+-- Poller.add method assume that zmq socket does not contain
+-- `socket` method. So it can use this method to retreive real
+-- zmq socket from any object that provide this method.
+assert(Socket.socket == nil)
+
 function Poller:add(skt, events, cb)
   assert(type(events) == 'number')
   assert(cb)
@@ -991,7 +996,8 @@ function Poller:add(skt, events, cb)
     self._private.items[n].socket = api.NULL
     self._private.items[n].fd     = skt
   else
-    self._private.items[n].socket = skt:handle()
+    local s = skt.socket and skt:socket() or skt
+    self._private.items[n].socket = s
     self._private.items[n].fd     = 0
   end
   self._private.items[n].events  = events
