@@ -18,7 +18,7 @@ function new() end
 --- Add a ZMQ Socket or fd to the poller.
 -- You can add one socket multiple times.
 --
--- @tparam (lzmq.socket|number) socket ZMQ socket or fd
+-- @tparam (lzmq.socket|number|Pollable) socket ZMQ socket or fd
 -- @tparam number events zmq poll events bitmask
 -- @tparam callable callback called when event is raised
 --
@@ -33,7 +33,7 @@ function poller:add()end
 --- Change the events or callback for a socket/fd.
 -- Note. You can modify only `last` socket.
 -- 
--- @tparam (lzmq.socket|number) socket ZMQ socket or fd
+-- @tparam (lzmq.socket|number|Pollable) socket ZMQ socket or fd
 -- @tparam number events zmq poll events bitmask
 --  if this parameter is 0 then socket will be removed.
 -- @tparam callable callback called when event is raised
@@ -49,7 +49,7 @@ function poller:modify()end
 --- Remove a socket/fd from the poller.
 -- Note. You can remove only `last` socket.
 -- 
--- @tparam (lzmq.socket|number) socket ZMQ socket or fd
+-- @tparam (lzmq.socket|number|Pollable) socket ZMQ socket or fd
 --
 -- @usage
 -- poller:add(sock, zmq.POLLIN, function(sock) print(sock, " is readable.") end)
@@ -76,3 +76,12 @@ function poller:start()end
 --
 function poller:stop()end
 
+--- Pollable interface
+--
+-- @type Pollable
+-- 
+
+--- Return zmq socket for polling
+--
+-- @treturn lzmq.socket|number socket or socket fd
+function Pollable:socket() end

@@ -1556,6 +1556,33 @@ function test_remove_on_poll()
   ret = t[sub3] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
 end
 
+function test_pollable_interface()
+  local function wrap(s)
+    return {
+      socket = function (self) return s        end;
+      recv   = function (self) return s:recv() end;
+    }
+  end
+
+  local sub1 = wrap(sub1)
+  local sub2 = wrap(sub2)
+  local sub3 = wrap(sub3)
+
+  local t = {}
+  poller:add(sub1, zmq.POLLIN, function(skt) assert_equal(sub1, skt, " expect socket `sub1` got `" .. (names[skt] or tostring(skt))) t[skt] = {skt:recv()} end)
+  poller:add(sub2, zmq.POLLIN, function(skt) assert_equal(sub2, skt, " expect socket `sub2` got `" .. (names[skt] or tostring(skt))) t[skt] = {skt:recv()} end)
+  poller:add(sub3, zmq.POLLIN, function(skt) assert_equal(sub3, skt, " expect socket `sub3` got `" .. (names[skt] or tostring(skt))) t[skt] = {skt:recv()} end)
+
+  assert_true(pub:send("hello"))
+
+  assert_equal(3, poller:poll(100))
+  local ret
+  ret = t[sub1] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
+  ret = t[sub2] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
+  ret = t[sub3] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
+
+end
+
 end
 
 local _ENV = TEST_CASE'z85 encode'           if ENABLE then
