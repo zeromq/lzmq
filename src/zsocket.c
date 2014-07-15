@@ -383,12 +383,57 @@ static int luazmq_skt_sendx_impl(lua_State *L, int last_flag) {
   return luazmq_pass(L);
 }
 
+static int luazmq_skt_sendv_impl(lua_State *L, int flags) {
+  zsocket *skt = luazmq_getsocket(L);
+  size_t i, size = 0, top = lua_gettop(L);
+  zmq_msg_t msg;
+  int ret;
+
+  for(i = 2; i<=top; ++i){
+    size_t s;
+    luaL_checklstring(L,i,&s);
+    size += s;
+  }
+
+  if (0 == size){
+    ret = zmq_msg_init(&msg);
+  }
+  else {
+    ret = zmq_msg_init_size(&msg, size);
+  }
+  if(-1 == ret) return luazmq_fail(L, skt);
+
+  {
+    size_t pos;
+    for(pos = 0, i = 2; i<=top; ++i){
+      const char *data = luaL_checklstring(L,i,&size);
+      memcpy((char*)zmq_msg_data(&msg) + pos, data, size);
+      pos += size;
+    }
+  }
+
+  ret = zmq_msg_send(&msg, skt->skt, flags);
+  zmq_msg_close(&msg);
+
+  if(-1 == ret) return luazmq_fail(L, skt);
+  return luazmq_pass(L);
+
+}
+
 static int luazmq_skt_sendx(lua_State *L){
   return luazmq_skt_sendx_impl(L, 0);
 }
 
 static int luazmq_skt_sendx_more(lua_State *L){
   return luazmq_skt_sendx_impl(L, ZMQ_SNDMORE);
+}
+
+static int luazmq_skt_sendv(lua_State *L){
+  return luazmq_skt_sendv_impl(L, 0);
+}
+
+static int luazmq_skt_sendv_more(lua_State *L){
+  return luazmq_skt_sendv_impl(L, ZMQ_SNDMORE);
 }
 
 static int luazmq_skt_recv_all (lua_State *L) {
@@ -974,6 +1019,8 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   {"send_msg",       luazmq_skt_send_msg     },
   {"sendx",          luazmq_skt_sendx        },
   {"sendx_more",     luazmq_skt_sendx_more   },
+  {"sendv",          luazmq_skt_sendv        },
+  {"sendv_more",     luazmq_skt_sendv_more   },
   {"send_more",      luazmq_skt_send_more    },
   {"recv",           luazmq_skt_recv         },
   {"recvx",          luazmq_skt_recvx        },

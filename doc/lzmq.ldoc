@@ -484,6 +484,30 @@ function socket:sendx() end
 -- @treturn[2] number index of error part
 function socket:sendx_more() end
 
+--- Send a message over Socket.
+-- This function concatinate all parts and send result string.
+--
+-- @param ... string parts of message.
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+-- @treturn[2] number index of error part
+--
+-- @usage
+-- skt:sendv("Hello","World")
+function socket:sendv() end
+
+--- Send a message over Socket.
+-- This function concatinate all parts and send result string.
+-- This function always set flag zmq.SNDMORE to message.
+--
+-- @param ... string parts of message.
+-- @return[1] true
+-- @treturn[2] nil
+-- @treturn[2] error
+-- @treturn[2] number index of error part
+function socket:sendv_more() end
+
 --- Receive a message.
 -- 
 -- @tparam[opt=0] number flags zmq receive flags.
