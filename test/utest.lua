@@ -281,6 +281,10 @@ function test_socket()
   assert_function(skt.send)
   assert_function(skt.send_msg)
   assert_function(skt.send_more)
+  assert_function(skt.sendx)
+  assert_function(skt.sendx_more)
+  assert_function(skt.sendv)
+  assert_function(skt.sendv_more)
   assert_function(skt.recv)
   assert_function(skt.recv_msg)
   assert_function(skt.recv_new_msg)
@@ -1107,6 +1111,12 @@ function test_sendx()
   assert_string(b)
   assert_string(c)
   assert_equal('hello, world', a .. b .. c)
+end
+
+function test_sendv()
+  assert_true(pub:sendv('hello', ', ', 'world'))
+  local msg = assert_string(sub:recv())
+  assert_equal('hello, world', msg)
 end
 
 function test_sendx_more()

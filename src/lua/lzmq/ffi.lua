@@ -529,6 +529,16 @@ function Socket:sendx_more(...)
   return self:send_all({...}, FLAGS.ZMQ_SNDMORE, 1, select("#", ...))
 end
 
+function Socket:sendv(...)
+  local msg = table.concat{...}
+  return self:send(msg, 0)
+end
+
+function Socket:sendv_more(...)
+  local msg = table.concat{...}
+  return self:send(msg, FLAGS.ZMQ_SNDMORE)
+end
+
 function Socket:send_more(msg, flags)
   flags = bit.bor(flags or 0, FLAGS.ZMQ_SNDMORE)
   return self:send(msg, flags)
