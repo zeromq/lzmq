@@ -1355,6 +1355,7 @@ function test_autoclose_false()
   local cli = assert(loop:add_new_socket(zmq.REQ, function() end))
   loop:destroy(true)
   assert_false(cli:closed())
+  cli:close()
 end
 
 end
