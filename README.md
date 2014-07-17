@@ -5,7 +5,7 @@
 [![Coverage Status](https://coveralls.io/repos/zeromq/lzmq/badge.png?branch=master)](https://coveralls.io/r/zeromq/lzmq?branch=master)
 [![Licence](http://img.shields.io/badge/Licence-MIT-brightgreen.svg)](LICENCE.txt)
 
-Support ZeromMQ 3.2/4.0.<br/>
+Support ZeroMQ 3.2/4.0.<br/>
 This library is not dropin replacement for [lua-zmq](https://github.com/Neopallium/lua-zmq) library.<br/>
 This library has C and FFI version of binding.
 

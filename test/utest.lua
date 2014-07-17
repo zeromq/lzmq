@@ -1345,6 +1345,19 @@ function test_echo()
   assert_true(cli:closed())
 end
 
+function test_autoclose_true()
+  local cli = assert(loop:add_new_socket(zmq.REQ, function() end))
+  loop:destroy(false)
+  assert_true(cli:closed())
+end
+
+function test_autoclose_false()
+  local cli = assert(loop:add_new_socket(zmq.REQ, function() end))
+  loop:destroy(true)
+  assert_false(cli:closed())
+  cli:close()
+end
+
 end
 
 local _ENV = TEST_CASE'timer'                if ENABLE then

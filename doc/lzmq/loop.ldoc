@@ -92,6 +92,15 @@ function loop:interrupt()end
 --
 function loop:stop()end
 
+--- Destroy loop object.
+-- loop object can use only `close` method to close sockets object.
+-- 
+-- @tparam[opt=false] boolean no_close by default close all sockets when destroy loop.
+-- 
+-- @treturn loop
+function loop:destroy() end
+
+
 --- Time event.
 -- 
 -- @type time_event
