@@ -81,7 +81,15 @@ function poller:stop()end
 -- @type Pollable
 -- 
 
---- Return zmq socket for polling
+--- Return zmq socket for polling.
 --
 -- @treturn lzmq.socket|number socket or socket fd
 function Pollable:socket() end
+
+
+--- Close object.
+-- This method may be used by `lzmq.loop` to autoclose socket
+-- 
+-- @see lzmq.loop:destroy
+function Pollable:close() end
+
