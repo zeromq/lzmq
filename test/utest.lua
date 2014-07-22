@@ -1604,6 +1604,14 @@ function test_pollable_interface()
   ret = t[sub2] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
   ret = t[sub3] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
 
+  poller:remove(sub2)
+
+  assert_true(pub:send("hello"))
+
+  assert_equal(2, poller:poll(100))
+
+  ret = t[sub1] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
+  ret = t[sub3] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
 end
 
 end
