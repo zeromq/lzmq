@@ -165,7 +165,8 @@ end
 
 local _ENV = TEST_CASE'proxy_steerable' if true then
 if not zmq.proxy_steerable then test = SKIP"zmq_proxy_steerable does not support"
-elseif is_zmq_le(zmq, 4,0,5) then test = SKIP"ZeroMQ 4.0.5 invalid implementation" else
+elseif is_zmq_le(zmq, 4,0,5) then test = SKIP"ZeroMQ 4.0.5 invalid implementation"
+else
 
 local cli_endpoint = "inproc://client"
 local srv_endpoint = "inproc://server"
