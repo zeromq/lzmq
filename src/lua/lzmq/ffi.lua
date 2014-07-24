@@ -268,10 +268,18 @@ for optname, optid in pairs(api.CONTEXT_OPTIONS) do
   end
 end
 
+local SNAMES = {}
+for n, v in pairs(api.SOCKET_TYPES) do
+  SNAMES[n:sub(5)] = v
+end
+
 function Context:socket(stype, opt)
   check_context(self)
   if type(stype) == "table" then
     stype, opt = stype[1], stype
+  end
+  if type(stype) == "string" then
+    stype = assert(SNAMES[stype], "Unknown socket type")
   end
   local skt = api.zmq_socket(self._private.ctx, stype)
   if not skt then return nil, zerror() end

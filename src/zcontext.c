@@ -263,12 +263,41 @@ static int luazmq_ctx_closed (lua_State *L) {
 }
 
 static int socket_type(lua_State *L, int pos){
+  static const char* NAMES[] = {
+    "PAIR", "PUB", "SUB", "REQ", "REP",
+    "DEALER", "ROUTER", "PULL", "PUSH", 
+    "XPUB", "XSUB",
+#ifdef ZMQ_STREAM
+    "STREAM",
+#endif
+
+    NULL
+  };
+
+  static int TYPES[] = {
+   ZMQ_PAIR, ZMQ_PUB, ZMQ_SUB, ZMQ_REQ,
+   ZMQ_REP, ZMQ_DEALER, ZMQ_ROUTER, ZMQ_PULL,
+   ZMQ_PUSH, ZMQ_XPUB, ZMQ_XSUB,
+#ifdef ZMQ_STREAM
+    ZMQ_STREAM,
+#endif
+  };
+
   if(lua_isnumber(L, pos))
     return lua_tonumber(L, pos);
+
+  if(lua_isstring(L, pos))
+    return TYPES[luaL_checkoption(L, pos, NULL, NAMES)];
+
   if(lua_istable(L, pos)){
     lua_rawgeti(L, pos, 1);
     if(lua_isnumber(L, -1)){
       int n = lua_tonumber(L, -1);
+      lua_pop(L, 1);
+      return n;
+    }
+    if(lua_isstring(L, -1)){
+      int n = TYPES[luaL_checkoption(L, -1, NULL, NAMES)];
       lua_pop(L, 1);
       return n;
     }
