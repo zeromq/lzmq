@@ -2114,6 +2114,28 @@ function test_identity_fd()
   assert_number(srv:identity_fd(id))
 end
 
+function test_has_event()
+  assert_false(cli:has_event(zmq.POLLIN))
+  assert_true(cli:has_event(zmq.POLLOUT))
+  local _, event = assert_false(cli:has_event(zmq.POLLIN, zmq.POLLOUT))
+  assert_true(event)
+
+  assert_true(cli:send("hello"))
+
+  wait(100)
+
+  assert_false(cli:has_event(zmq.POLLIN))
+  assert_false(cli:has_event(zmq.POLLOUT))
+
+  local msg = assert_table(srv:recv_all())
+  assert_true(srv:send_all(msg))
+
+  wait(100)
+
+  assert_true(cli:has_event(zmq.POLLIN))
+  assert_false(cli:has_event(zmq.POLLOUT))
+end
+
 end
 
 if not HAS_RUNNER then lunit.run() end
