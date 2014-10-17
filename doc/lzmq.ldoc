@@ -565,7 +565,6 @@ function socket:recv_new_msg  () end
 -- @treturn[2] table received part of message
 function socket:recv_all() end
 
-
 --- This is alias for `socket:recv_all`
 --
 function socket:recv_multipart() end
@@ -614,6 +613,27 @@ function socket:monitor       () end
 --
 -- @see socket:monitor
 function socket:reset_monitor () end
+
+--- Check if socket has specific event state.
+--
+-- @tparam number mask event mask (zmq.POLLIN, zmq.POLLOUT)
+-- @treturn[1] boolean
+-- @treturn[2] nil
+-- @treturn[2] error
+--
+-- @usage
+-- -- Polling zmq socket using libuv (use lua-lluv binding)
+--
+-- -- start polling zmq socket (e.g. ZMQ_SUB)
+-- uv.poll_socket(sock:fd()):start(function(handle, err)
+--   -- We need read all messages from zmq socket
+--   while sock:has_event(zmq.POLLIN) do
+--     local msg, err = sock:recv() -- we have no need use zmq.DONTWAIT
+--     ...
+--   end
+-- end)
+--
+function socket:has_event     () end
 
 end
 
