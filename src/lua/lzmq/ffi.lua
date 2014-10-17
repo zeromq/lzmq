@@ -749,6 +749,18 @@ function Socket:poll(timeout, events)
   return (bit.band(events, revents) ~= 0), revents
 end
 
+function Socket:has_event(...)
+  assert(select("#", ...) > 0)
+
+  local events, err = self:events()
+  if not events then return nil, err end
+
+  local res = {...}
+  for i = 1, #res do res[i] = (0 ~= bit.band(res[i], events)) end
+
+  return unpack(res)
+end
+
 end
 
 do -- Message

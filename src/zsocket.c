@@ -664,6 +664,23 @@ static int luazmq_skt_closed (lua_State *L) {
   return 1;
 }
 
+static int luazmq_skt_has_event (lua_State *L) {
+  zsocket *skt = luazmq_getsocket(L);
+  int i, top = lua_gettop(L);
+  int option_value; size_t len = sizeof(option_value);
+  int ret = zmq_getsockopt(skt->skt, ZMQ_EVENTS, &option_value, &len);
+  if (ret == -1) return luazmq_fail(L, skt);
+
+  luaL_checkint(L, 2); /* we need at least one event */
+
+  for(i = 2; i <= top; ++i){
+    lua_pushboolean(L, option_value & luaL_checkint(L, i));
+    lua_replace(L, i);
+  }
+
+  return top - 1;
+}
+
 static int luazmq_skt_set_int (lua_State *L, int option_name) {
   zsocket *skt = luazmq_getsocket(L);
   int option_value = luaL_checkint(L, 2);
@@ -1040,6 +1057,8 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   {"lightuserdata",  luazmq_skt_handle       },
   {"context",        luazmq_skt_context      },
   {"bind_to_random_port", luazmq_skt_bind_to_random_port},
+
+  {"has_event",      luazmq_skt_has_event    },
 
   {"getopt_int",     luazmq_skt_getopt_int   },
   {"getopt_i64",     luazmq_skt_getopt_i64   },
