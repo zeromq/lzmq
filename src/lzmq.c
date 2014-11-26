@@ -78,15 +78,20 @@ int luazmq_pass(lua_State *L){
 
 static int luazmq_geterrno(lua_State *L, zsocket *skt){
   int err = zmq_errno();
+  /* After we get ETERM error we can still use this socket
+   * to syncronize between threads. So this make sense to not close it.
+   */
   if(skt && (err == ETERM)){
     if(!(skt->flags & LUAZMQ_FLAG_CLOSED)){
-      /*int ret = */zmq_close(skt->skt);
-      skt->flags |= LUAZMQ_FLAG_CLOSED;
-      luazmq_skt_before_close(L, skt);
+      if(skt->flags & LUAZMQ_FLAG_CLOSE_ON_ETERM){
+        /*int ret = */zmq_close(skt->skt);
+        skt->flags |= LUAZMQ_FLAG_CLOSED;
+        luazmq_skt_before_close(L, skt);
 #if LZMQ_SOCKET_COUNT
-      skt->ctx->socket_count--;
-      assert(skt->ctx->socket_count >= 0);
+        skt->ctx->socket_count--;
+        assert(skt->ctx->socket_count >= 0);
 #endif
+      }
     }
   }
   return err;
