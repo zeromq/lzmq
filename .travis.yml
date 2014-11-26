@@ -6,15 +6,23 @@ env:
   matrix:
     # You can set PERF only for luajit/ffi
     # todo: install libffi and test ffi binding on Lua 5.1/5.2
-    - LUA=lua5.1 ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO"
-    - LUA=lua5.1 ZMQ_VER=zeromq4 LZMQ=lzmq    PERF="NO"
-    - LUA=lua5.2 ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO"
-    - LUA=luajit ZMQ_VER=zeromq3 LZMQ=lzmq    PERF="NO"
-    - LUA=luajit ZMQ_VER=zeromq3 LZMQ=ffi     PERF="NO"
-    - LUA=luajit ZMQ_VER=zeromq4 LZMQ=ffi     PERF="NO"
-    - LUA=luajit ZMQ_VER=zeromq3 LZMQ=ffi-lua PERF="NO"
-    - LUA=lua5.1 ZMQ_VER=libzmq  LZMQ=lzmq    PERF="NO"
-    - LUA=luajit ZMQ_VER=libzmq  LZMQ=ffi-lua PERF="NO"
+
+    - LUA=lua5.1 ZMQ_VER=3.2 LZMQ=lzmq    PERF="NO"
+    - LUA=lua5.1 ZMQ_VER=4.0 LZMQ=lzmq    PERF="NO"
+    - LUA=lua5.1 ZMQ_VER=4.1 LZMQ=lzmq    PERF="NO"
+    - LUA=lua5.2 ZMQ_VER=4.1 LZMQ=lzmq    PERF="NO"
+    - LUA=lua5.3 ZMQ_VER=4.1 LZMQ=lzmq    PERF="NO"
+    - LUA=luajit ZMQ_VER=4.1 LZMQ=lzmq    PERF="NO"
+    - LUA=lua5.1 ZMQ_VER=4.2 LZMQ=lzmq    PERF="NO"
+
+    - LUA=luajit ZMQ_VER=3.2 LZMQ=ffi     PERF="NO"
+    - LUA=luajit ZMQ_VER=4.0 LZMQ=ffi     PERF="NO"
+    - LUA=luajit ZMQ_VER=4.1 LZMQ=ffi     PERF="NO"
+    - LUA=luajit ZMQ_VER=4.2 LZMQ=ffi     PERF="NO"
+
+    - LUA=luajit ZMQ_VER=3.2 LZMQ=ffi-lua PERF="NO"
+    - LUA=luajit ZMQ_VER=4.1 LZMQ=ffi-lua PERF="NO"
+    - LUA=luajit ZMQ_VER=4.2 LZMQ=ffi-lua PERF="NO"
 
 branches:
   only:
@@ -32,8 +40,10 @@ before_install:
 
 install:
   - sudo pip install cpp-coveralls
-  - sudo luarocks install luacov-coveralls --server=http://rocks.moonscript.org/dev
-  - sudo luarocks install lua-llthreads2
+  - sudo luarocks install luafilesystem --from=https://rocks.moonscript.org/dev
+  - sudo luarocks install lua-path --deps-mode=none
+  - sudo luarocks install luacov-coveralls
+  - sudo luarocks install lua-llthreads2 --server=http://rocks.moonscript.org/dev
   - sudo luarocks install https://raw.github.com/moteus/lunit/moteus-skip/rockspecs/lunitx-scm.mot.skip-0.rockspec
 
   - if [ $LZMQ = "ffi-lua" ]; then
@@ -65,8 +75,8 @@ script:
   - if [ $PERF = "YES" ]; then
       cd $TRAVIS_BUILD_DIR;
       mkdir ./examples/perf2/libzmq;
-      sudo cp ./$ZMQ_VER/perf/inproc_lat ./examples/perf2/libzmq/;
-      sudo cp ./$ZMQ_VER/perf/inproc_thr ./examples/perf2/libzmq/;
+      sudo cp ./libzmq/perf/inproc_lat ./examples/perf2/libzmq/;
+      sudo cp ./libzmq/perf/inproc_thr ./examples/perf2/libzmq/;
       cd ./examples/perf2;
       sudo luajit runner.lua;
     fi

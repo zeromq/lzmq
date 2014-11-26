@@ -56,6 +56,9 @@ else
   elif [ "$LUA" == "lua5.2" ]; then
     curl http://www.lua.org/ftp/lua-5.2.3.tar.gz | tar xz
     cd lua-5.2.3;
+  elif [ "$LUA" == "lua5.3" ]; then
+    curl http://www.lua.org/work/lua-5.3.0-beta.tar.gz | tar xz
+    cd lua-5.3.0-beta;
   fi
   sudo make $PLATFORM install;
 fi
@@ -63,8 +66,13 @@ fi
 cd $TRAVIS_BUILD_DIR;
 
 LUAROCKS_BASE=luarocks-$LUAROCKS
-curl http://luarocks.org/releases/$LUAROCKS_BASE.tar.gz | tar xz
-cd $LUAROCKS_BASE;
+
+# curl http://luarocks.org/releases/$LUAROCKS_BASE.tar.gz | tar xz
+
+git clone https://github.com/keplerproject/luarocks.git $LUAROCKS_BASE
+cd $LUAROCKS_BASE
+
+git checkout v$LUAROCKS
 
 if [ "$LUA" == "luajit" ]; then
   ./configure --lua-suffix=jit --with-lua-include=/usr/local/include/luajit-2.0;
@@ -88,4 +96,6 @@ elif [ "$LUA" == "lua5.1" ]; then
   rm -rf lua-5.1.5;
 elif [ "$LUA" == "lua5.2" ]; then
   rm -rf lua-5.2.3;
+elif [ "$LUA" == "lua5.3" ]; then
+  rm -rf lua-5.3.0-beta;
 fi
