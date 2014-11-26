@@ -85,6 +85,7 @@ target('test', install, function()
   run_test('test_metadata.lua')
   run_test('test_threads_actor.lua')
   run_test('test_threads_actor_poll.lua')
+  run_test('test_threads_sync.lua')
 
   if not test_summary() then
     quit("test fail")
