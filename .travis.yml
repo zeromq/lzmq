@@ -15,14 +15,15 @@ env:
     - LUA=luajit ZMQ_VER=4.1 LZMQ=lzmq    PERF="NO"
     - LUA=lua5.1 ZMQ_VER=4.2 LZMQ=lzmq    PERF="NO"
 
-    - LUA=luajit ZMQ_VER=3.2 LZMQ=ffi     PERF="NO"
-    - LUA=luajit ZMQ_VER=4.0 LZMQ=ffi     PERF="NO"
-    - LUA=luajit ZMQ_VER=4.1 LZMQ=ffi     PERF="NO"
-    - LUA=luajit ZMQ_VER=4.2 LZMQ=ffi     PERF="NO"
-
     - LUA=luajit ZMQ_VER=3.2 LZMQ=ffi-lua PERF="NO"
+    - LUA=luajit ZMQ_VER=4.0 LZMQ=ffi-lua PERF="NO"
     - LUA=luajit ZMQ_VER=4.1 LZMQ=ffi-lua PERF="NO"
     - LUA=luajit ZMQ_VER=4.2 LZMQ=ffi-lua PERF="NO"
+
+    # - LUA=luajit ZMQ_VER=3.2 LZMQ=ffi     PERF="NO"
+    # - LUA=luajit ZMQ_VER=4.0 LZMQ=ffi     PERF="NO"
+    # - LUA=luajit ZMQ_VER=4.1 LZMQ=ffi     PERF="NO"
+    # - LUA=luajit ZMQ_VER=4.2 LZMQ=ffi     PERF="NO"
 
 branches:
   only:
