@@ -8,7 +8,7 @@
 --  This file is part of lua-lzqm library.
 --
 
-local LZMQ_VERSION = "0.4.1"
+local LZMQ_VERSION = "0.4.2"
 
 local lua_version_t
 local function lua_version()

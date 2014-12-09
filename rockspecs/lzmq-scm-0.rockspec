@@ -2,19 +2,19 @@ package = "lzmq"
 version = "scm-0"
 
 source = {
-  url = "https://github.com/moteus/lzmq/archive/master.zip",
+  url = "https://github.com/zeromq/lzmq/archive/master.zip",
   dir = "lzmq-master",
 }
 
 description = {
   summary = "Lua bindings to ZeroMQ",
-  homepage = "https://github.com/moteus/lzmq",
+  homepage = "https://github.com/zeromq/lzmq",
   license = "MIT/X11",
 }
 
 dependencies = {
   "lua >= 5.1, < 5.4",
-  -- "lua-llthreads >= 1.2"
+  -- "lua-llthreads2 >= 0.1.2"
 }
 
 external_dependencies = {
