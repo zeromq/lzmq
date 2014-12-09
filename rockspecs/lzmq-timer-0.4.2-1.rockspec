@@ -1,9 +1,9 @@
 package = "lzmq-timer"
-version = "scm-0"
+version = "0.4.2-1"
 
 source = {
-  url = "https://github.com/zeromq/lzmq/archive/master.zip",
-  dir = "lzmq-master",
+  url = "https://github.com/zeromq/lzmq/archive/v0.4.2.zip",
+  dir = "lzmq-0.4.2",
 }
 
 description = {
