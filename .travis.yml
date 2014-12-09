@@ -31,10 +31,10 @@ branches:
 
 before_install:
   - bash .travis/setup_lua.sh
-  - if [ "$ZMQ_VER" == "libzmq" ]; then
+  - if [ "$ZMQ_VER" == "4.1" ]; then
       bash .travis/setup_sodium.sh;
     fi
-  - if [ "$ZMQ_VER" == "zeromq4" ]; then
+  - if [ "$ZMQ_VER" == "4.2" ]; then
       bash .travis/setup_sodium.sh;
     fi
   - bash .travis/setup_zmq.sh
