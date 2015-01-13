@@ -42,8 +42,9 @@ local zloop  = require (LZMQ .. ".loop"  )
 local zpoller= require (LZMQ .. ".poller")
 
 print("------------------------------------")
-print("Lua version: " .. (_G.jit and _G.jit.version or _G._VERSION))
-print("ZQM version: " .. zversion(zmq))
+print("Lua  version: " .. (_G.jit and _G.jit.version or _G._VERSION))
+print("ZQM  version: " .. zversion(zmq))
+print("lzmq version: " .. zmq._VERSION)
 print("------------------------------------")
 print("")
 
