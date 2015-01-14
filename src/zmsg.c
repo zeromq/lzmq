@@ -347,11 +347,11 @@ static const luazmq_int_const msg_options[] ={
   DEFINE_ZMQ_CONST(  MORE   ),
 
 #ifdef ZMQ_SRCFD
-  DEFINE_ZMQ_CONST(ZMQ_SRCFD),
+  DEFINE_ZMQ_CONST(  SRCFD  ),
 #endif
 
 #ifdef ZMQ_SHARED
-  DEFINE_ZMQ_CONST(ZMQ_SHARED),
+  DEFINE_ZMQ_CONST(  SHARED ),
 #endif
 
   {NULL, 0}

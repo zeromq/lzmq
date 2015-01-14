@@ -20,6 +20,7 @@
 #include "zpoller.h"
 #include <assert.h>
 #include "zsupport.h"
+#include <memory.h>
 
 #define LUAZMQ_VERSION_MAJOR 0
 #define LUAZMQ_VERSION_MINOR 4
