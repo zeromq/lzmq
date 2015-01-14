@@ -963,6 +963,12 @@ end
 _M.EVENTS.ZMQ_EVENT_ALL = ZMQ_EVENT_ALL
 end
 
+if is_zmq_ge(4, 2, 0) then
+
+_M.SOCKET_OPTIONS.ZMQ_IDENTITY_FD = nil
+
+end
+
 end
 
 _M.inttoptr        = inttoptr

@@ -44,7 +44,7 @@ local zpoller= require (LZMQ .. ".poller")
 print("------------------------------------")
 print("Lua  version: " .. (_G.jit and _G.jit.version or _G._VERSION))
 print("ZQM  version: " .. zversion(zmq))
-print("lzmq version: " .. zmq._VERSION)
+print("lzmq version: " .. zmq._VERSION .. (TEST_FFI and " (FFI)" or ""))
 print("------------------------------------")
 print("")
 
