@@ -929,11 +929,6 @@ function Message:recv(skt, flags)
   return self, more ~= 0
 end
 
-function Message:more()
-  assert(not self:closed())
-  return api.zmq_msg_more(self._private.msg) ~= 0
-end
-
 function Message:pointer(...)
   assert(not self:closed())
   local ptr = api.zmq_msg_data(self._private.msg, ...)
@@ -943,15 +938,39 @@ end
 function Message:set(option, value)
   assert(not self:closed())
   local ret = api.zmq_msg_set(self._private.msg, option, value)
-  if ret ~= -1 then return nil, zerror() end
+  if ret == -1 then return nil, zerror() end
   return true
 end
 
 function Message:get(option)
   assert(not self:closed())
   local ret = api.zmq_msg_get(self._private.msg, option)
-  if ret ~= -1 then return nil, zerror() end
-  return true
+  if ret == -1 then return nil, zerror() end
+  return ret
+end
+
+for optname, params in pairs(api.MESSAGE_OPTIONS) do
+  local name    = optname:sub(5):lower()
+  local optid   = params[1]
+  local get     = function(self) return self:get(optid) end
+  local set     = function(self, value) return self:set(optid, value) end
+
+  if params[2] == "RW" then
+    Message["get_"..name], Message["set_"..name] = get, set
+  elseif params[2] == "RO" then
+    Message[name], Message["get_"..name] = get, get
+  elseif params[2] == "WO" then
+    Message[name], Message["set_"..name] = set, set
+  else
+    error("Unknown rw mode: " .. params[2])
+  end
+end
+
+-- define after MESSAGE_OPTIONS to overwrite ZMQ_MORE option
+
+function Message:more()
+  assert(not self:closed())
+  return api.zmq_msg_more(self._private.msg) ~= 0
 end
 
 if api.zmq_msg_gets then
@@ -1232,6 +1251,7 @@ function zmq.msg_init_data(str)  return Message:new(str)  end
 for name, value in pairs(api.SOCKET_TYPES)       do zmq[ name:sub(5) ] = value end
 for name, value in pairs(api.CONTEXT_OPTIONS)    do zmq[ name:sub(5) ] = value end
 for name, value in pairs(api.SOCKET_OPTIONS)     do zmq[ name:sub(5) ] = value[1] end
+for name, value in pairs(api.MESSAGE_OPTIONS)    do zmq[ name:sub(5) ] = value[1] end
 for name, value in pairs(api.FLAGS)              do zmq[ name:sub(5) ] = value end
 for name, value in pairs(api.DEVICE)             do zmq[ name:sub(5) ] = value end
 for name, value in pairs(api.SECURITY_MECHANISM) do zmq[ name:sub(5) ] = value end

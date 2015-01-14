@@ -892,12 +892,6 @@ static int luazmq_skt_set_str_arr (lua_State *L, int option_name) {
 #if defined(ZMQ_LAST_ENDPOINT)
   DEFINE_SKT_OPT_RO(last_endpoint,            ZMQ_LAST_ENDPOINT,                  str       )
 #endif
-#if defined(ZMQ_ROUTER_BEHAVIOR)
-  DEFINE_SKT_OPT_WO(router_behavior,         ZMQ_ROUTER_BEHAVIOR,               int       )
-#endif
-#if defined(ZMQ_FAIL_UNROUTABLE)
-  DEFINE_SKT_OPT_WO(fail_unroutable,         ZMQ_FAIL_UNROUTABLE,               int       )
-#endif
 #if defined(ZMQ_ROUTER_MANDATORY)
   DEFINE_SKT_OPT_WO(router_mandatory,         ZMQ_ROUTER_MANDATORY,               int       )
 #endif
@@ -1008,6 +1002,18 @@ static int luazmq_skt_set_str_arr (lua_State *L, int option_name) {
 #endif
 #if defined(ZMQ_SOCKS_PROXY)
   DEFINE_SKT_OPT_RW(socks_proxy,              ZMQ_SOCKS_PROXY,                    str       )
+#endif
+#if defined(ZMQ_XPUB_NODROP)
+  DEFINE_SKT_OPT_WO(xpub_nodrop,              ZMQ_XPUB_NODROP,                    int       )
+#endif
+#if defined(ZMQ_BLOCKY)
+  DEFINE_SKT_OPT_RW(blocky,                   ZMQ_BLOCKY,                         int       )
+#endif
+#if defined(ZMQ_XPUB_MANUAL)
+  DEFINE_SKT_OPT_WO(xpub_manual,              ZMQ_XPUB_MANUAL,                    int       )
+#endif
+#if defined(ZMQ_XPUB_WELCOME_MSG)
+  DEFINE_SKT_OPT_WO(xpub_welcome_msg,         ZMQ_XPUB_WELCOME_MSG,               str       )
 #endif
 
 //}
@@ -1147,12 +1153,6 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
 #if defined(ZMQ_LAST_ENDPOINT)
   REGISTER_SKT_OPT_RO(last_endpoint             ),
 #endif
-#if defined(ZMQ_ROUTER_BEHAVIOR)
-  REGISTER_SKT_OPT_WO(router_behavior          ),
-#endif
-#if defined(ZMQ_FAIL_UNROUTABLE)
-  REGISTER_SKT_OPT_WO(fail_unroutable          ),
-#endif
 #if defined(ZMQ_ROUTER_MANDATORY)
   REGISTER_SKT_OPT_WO(router_mandatory          ),
 #endif
@@ -1264,6 +1264,18 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
 #if defined(ZMQ_SOCKS_PROXY)
   REGISTER_SKT_OPT_RW(socks_proxy               ),
 #endif
+#if defined(ZMQ_XPUB_NODROP)
+  REGISTER_SKT_OPT_WO(xpub_nodrop               ),
+#endif
+#if defined(ZMQ_BLOCKY)
+  REGISTER_SKT_OPT_RW(blocky                    ),
+#endif
+#if defined(ZMQ_XPUB_MANUAL)
+  REGISTER_SKT_OPT_WO(xpub_manual               ),
+#endif
+#if defined(ZMQ_XPUB_WELCOME_MSG)
+  REGISTER_SKT_OPT_WO(xpub_welcome_msg          ),
+#endif
   //}
 
   {NULL,NULL}
@@ -1363,12 +1375,6 @@ static const luazmq_int_const skt_options[] ={
 #endif
 #if defined(ZMQ_LAST_ENDPOINT)
   DEFINE_ZMQ_CONST(LAST_ENDPOINT             ),
-#endif
-#if defined(ZMQ_ROUTER_BEHAVIOR)
-  DEFINE_ZMQ_CONST(ROUTER_BEHAVIOR          ),
-#endif
-#if defined(ZMQ_FAIL_UNROUTABLE)
-  DEFINE_ZMQ_CONST(FAIL_UNROUTABLE          ),
 #endif
 #if defined(ZMQ_ROUTER_MANDATORY)
   DEFINE_ZMQ_CONST(ROUTER_MANDATORY          ),
@@ -1481,7 +1487,18 @@ static const luazmq_int_const skt_options[] ={
 #if defined(ZMQ_SOCKS_PROXY)
   DEFINE_ZMQ_CONST(SOCKS_PROXY               ),
 #endif
-
+#if defined(ZMQ_XPUB_NODROP)
+  DEFINE_ZMQ_CONST(XPUB_NODROP               ),
+#endif
+#if defined(ZMQ_BLOCKY)
+  DEFINE_ZMQ_CONST(BLOCKY                    ),
+#endif
+#if defined(ZMQ_XPUB_MANUAL)
+  DEFINE_ZMQ_CONST(XPUB_MANUAL               ),
+#endif
+#if defined(ZMQ_XPUB_WELCOME_MSG)
+  DEFINE_ZMQ_CONST(XPUB_WELCOME_MSG          ),
+#endif
   {NULL, 0}
 };
 

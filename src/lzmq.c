@@ -20,6 +20,7 @@
 #include "zpoller.h"
 #include <assert.h>
 #include "zsupport.h"
+#include <memory.h>
 
 #define LUAZMQ_VERSION_MAJOR 0
 #define LUAZMQ_VERSION_MINOR 4
@@ -253,11 +254,11 @@ static void luazmq_zutils_initlib(lua_State *L, int nup){
 //{----------------------------------------------------------
 
 static int luazmq_push_version(lua_State *L){
-  lua_pushnumber(L, LUAZMQ_VERSION_MAJOR);
+  lua_pushinteger(L, LUAZMQ_VERSION_MAJOR);
   lua_pushliteral(L, ".");
-  lua_pushnumber(L, LUAZMQ_VERSION_MINOR);
+  lua_pushinteger(L, LUAZMQ_VERSION_MINOR);
   lua_pushliteral(L, ".");
-  lua_pushnumber(L, LUAZMQ_VERSION_PATCH);
+  lua_pushinteger(L, LUAZMQ_VERSION_PATCH);
 #ifdef LUAZMQ_VERSION_COMMENT
   if(LUAZMQ_VERSION_COMMENT[0]){
     lua_pushliteral(L, "-"LUAZMQ_VERSION_COMMENT);

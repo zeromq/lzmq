@@ -106,7 +106,7 @@ int luazmq_msg_close(lua_State *L){
   return luazmq_pass(L);
 }
 
-static int luazmq_msg_closed (lua_State *L) {
+static int luazmq_msg_closed(lua_State *L) {
   zmessage *zmsg = (zmessage *)luazmq_checkudatap (L, 1, LUAZMQ_MESSAGE);
   luaL_argcheck (L, zmsg != NULL, 1, LUAZMQ_PREFIX"message expected");
   lua_pushboolean(L, zmsg->flags & LUAZMQ_FLAG_CLOSED);
@@ -284,6 +284,32 @@ static int luazmq_msg_recv(lua_State *L){
   return 2;
 }
 
+//{ Options
+#define DEFINE_MSG_OPT(NAME, OPTNAME) \
+  static int luazmq_msg_set_##NAME(lua_State *L){\
+    lua_pushinteger(L, OPTNAME);\
+    lua_insert(L, 2);\
+    return luazmq_msg_set(L);\
+  }\
+  static int luazmq_msg_get_##NAME(lua_State *L){\
+    lua_pushinteger(L, OPTNAME);\
+    return luazmq_msg_get(L);\
+  }
+
+#define REGISTER_MSG_OPT_RW(NAME) {"set_"#NAME, luazmq_msg_set_##NAME}, {"get_"#NAME, luazmq_msg_get_##NAME}
+#define REGISTER_MSG_OPT_RO(NAME) {      #NAME, luazmq_msg_get_##NAME}, {"get_"#NAME, luazmq_msg_get_##NAME}
+#define REGISTER_MSG_OPT_WO(NAME) {"set_"#NAME, luazmq_msg_set_##NAME}, {      #NAME, luazmq_msg_set_##NAME}
+
+#ifdef ZMQ_SRCFD
+DEFINE_MSG_OPT(srcfd, ZMQ_SRCFD)
+#endif
+
+#ifdef ZMQ_SHARED
+DEFINE_MSG_OPT(shared, ZMQ_SHARED)
+#endif
+
+//}
+
 static const struct luaL_Reg luazmq_msg_methods[] = {
   { "close",      luazmq_msg_close       },
   { "closed",     luazmq_msg_closed      },
@@ -306,11 +332,27 @@ static const struct luaL_Reg luazmq_msg_methods[] = {
   { "__tostring", luazmq_msg_data        },
   { "__gc",       luazmq_msg_close       },
 
+#ifdef ZMQ_SRCFD
+  REGISTER_MSG_OPT_RO(srcfd),
+#endif
+
+#ifdef ZMQ_SHARED
+  REGISTER_MSG_OPT_RO(shared),
+#endif
+
   { NULL, NULL },
 };
 
 static const luazmq_int_const msg_options[] ={
   DEFINE_ZMQ_CONST(  MORE   ),
+
+#ifdef ZMQ_SRCFD
+  DEFINE_ZMQ_CONST(  SRCFD  ),
+#endif
+
+#ifdef ZMQ_SHARED
+  DEFINE_ZMQ_CONST(  SHARED ),
+#endif
 
   {NULL, 0}
 };

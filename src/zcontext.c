@@ -379,6 +379,22 @@ static int luazmq_ctx_socket (lua_State *L) {
 DEFINE_CTX_OPT(io_threads,  ZMQ_IO_THREADS)
 DEFINE_CTX_OPT(max_sockets, ZMQ_MAX_SOCKETS)
 
+#ifdef ZMQ_SOCKET_LIMIT
+DEFINE_CTX_OPT(socket_limit, ZMQ_SOCKET_LIMIT)
+#endif
+
+#ifdef ZMQ_THREAD_PRIORITY
+DEFINE_CTX_OPT(thread_priority, ZMQ_THREAD_PRIORITY)
+#endif
+
+#ifdef ZMQ_THREAD_SCHED_POLICY
+DEFINE_CTX_OPT(thread_sched_policy, ZMQ_THREAD_SCHED_POLICY)
+#endif
+
+#ifdef ZMQ_BLOCKY
+DEFINE_CTX_OPT(blocky, ZMQ_BLOCKY)
+#endif
+
 static const struct luaL_Reg luazmq_ctx_methods[] = {
   {"__gc",          luazmq_ctx_destroy       },
   {"destroy",       luazmq_ctx_destroy       },
@@ -401,6 +417,22 @@ static const struct luaL_Reg luazmq_ctx_methods[] = {
 
   REGISTER_CTX_OPT(io_threads),
   REGISTER_CTX_OPT(max_sockets),
+
+#ifdef ZMQ_SOCKET_LIMIT
+  REGISTER_CTX_OPT(socket_limit),
+#endif
+
+#ifdef ZMQ_THREAD_PRIORITY
+  REGISTER_CTX_OPT(thread_priority),
+#endif
+
+#ifdef ZMQ_THREAD_SCHED_POLICY
+  REGISTER_CTX_OPT(thread_sched_policy),
+#endif
+
+#ifdef ZMQ_BLOCKY
+  REGISTER_CTX_OPT(blocky),
+#endif
 
   {NULL,NULL}
 };
