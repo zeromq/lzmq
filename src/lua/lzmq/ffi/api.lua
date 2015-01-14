@@ -141,7 +141,12 @@ local is_zmq_ge = function (major, minor, patch)
   return true
 end
 
-if is_zmq_ge(4, 1, 0) then
+if is_zmq_ge(4, 2, 0) then
+  header = [[
+    typedef struct zmq_msg_t {unsigned char _ [64];} zmq_msg_t;
+  ]]
+  ffi.cdef(header)
+elseif is_zmq_ge(4, 1, 0) then
   header = [[
     typedef struct zmq_msg_t {unsigned char _ [48];} zmq_msg_t;
   ]]
@@ -803,6 +808,10 @@ _M.CONTEXT_OPTIONS = O{
     ZMQ_THREAD_PRIORITY     = 3;
     ZMQ_THREAD_SCHED_POLICY = 4;
   };
+  [{4,2,0}] = {
+    ZMQ_BLOCKY              = 70
+  };
+
 }
 
 _M.SOCKET_OPTIONS = O{
@@ -872,6 +881,25 @@ _M.SOCKET_OPTIONS = O{
     ZMQ_HANDSHAKE_IVL             = {66, "RW", "int"},
     ZMQ_IDENTITY_FD               = {67, "RO", "fdt"},
     ZMQ_SOCKS_PROXY               = {68, "RW", "str"},
+  };
+
+  [{4,1,1}] = {
+    ZMQ_XPUB_NODROP               = {69, "WO", "int"},
+  };
+
+  [{4,2,0}] = {
+    ZMQ_BLOCKY            = {70, "RW", "int"},
+    ZMQ_XPUB_MANUAL       = {71, "WO", "int"},
+    ZMQ_XPUB_WELCOME_MSG  = {72, "WO", "str"},
+  };
+
+}
+
+_M.MESSAGE_OPTIONS = O{
+  ZMQ_MORE = {1, "RO"};
+  [{4,0,6}] = {
+    ZMQ_SRCFD  = {2, "RO"};
+    ZMQ_SHARED = {3, "RO"};
   };
 }
 
