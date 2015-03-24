@@ -7,8 +7,10 @@
 -- This function create thread in suspended mode.
 --
 -- @tparam lzmq.context ctx ZMQ Context
--- @tparam [string|function] code if first char is '@' then this is filename else this is Lua chunk.
+-- @tparam [string|function|table] code if first char is '@' then this is filename else this is Lua chunk.
 --            If code is function then it uses `string.dump` to serialize it.
+--            If code is a table it is treated as thread constructor options.
+--            see https://github.com/moteus/lua-llthreads2/blob/master/src/lua/llthreads2/ex.lua#L196
 -- @param ... arguments for thread
 -- @treturn[1] thread new thread
 -- @treturn[2] nil
@@ -25,8 +27,10 @@ function run() end
 -- This function create thread in suspended mode.
 -- 
 -- @tparam lzmq.context ctx ZMQ Context
--- @tparam [string|function] code if first char is '@' then this is filename else this is Lua chunk.
+-- @tparam [string|function|table] code if first char is '@' then this is filename else this is Lua chunk.
 --            If code is function then it uses `string.dump` to serialize it.
+--            If code is a table it is treated as thread constructor options.
+--            see https://github.com/moteus/lua-llthreads2/blob/master/src/lua/llthreads2/ex.lua#L196
 -- @param ... arguments for thread
 -- @treturn[1] thread new thread
 -- @treturn[1] lzmq.socket pipe
@@ -55,8 +59,10 @@ function fork() end
 -- Child thread gets pipe socket same as in fork.
 -- 
 -- @tparam lzmq.context ctx ZMQ Context
--- @tparam [string|function] code if first char is '@' then this is filename else this is Lua chunk.
+-- @tparam [string|function|table] code if first char is '@' then this is filename else this is Lua chunk.
 --            If code is function then it uses `string.dump` to serialize it.
+--            If code is a table it is treated as thread constructor options.
+--            see https://github.com/moteus/lua-llthreads2/blob/master/src/lua/llthreads2/ex.lua#L196
 -- @param ... arguments for thread
 -- @treturn[1] arctor new actor
 -- @treturn[2] nil
