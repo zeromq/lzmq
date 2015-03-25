@@ -141,7 +141,7 @@ local is_zmq_ge = function (major, minor, patch)
   return true
 end
 
-if is_zmq_ge(4, 2, 0) then
+if is_zmq_ge(4, 1, 1) then
   header = [[
     typedef struct zmq_msg_t {unsigned char _ [64];} zmq_msg_t;
   ]]
