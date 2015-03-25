@@ -879,7 +879,7 @@ _M.SOCKET_OPTIONS = O{
     ZMQ_GSSAPI_SERVICE_PRINCIPAL  = {64, "RW", "str"},
     ZMQ_GSSAPI_PLAINTEXT          = {65, "RW", "str"},
     ZMQ_HANDSHAKE_IVL             = {66, "RW", "int"},
-    ZMQ_IDENTITY_FD               = {67, "RO", "fdt"},
+    -- ZMQ_IDENTITY_FD               = {67, "RO", "fdt"},
     ZMQ_SOCKS_PROXY               = {68, "RW", "str"},
   };
 
