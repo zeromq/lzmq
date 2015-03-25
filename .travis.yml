@@ -63,6 +63,7 @@ script:
   - lunit.sh test_proxy.lua
   - lua -lluacov test_threads.lua
   - lua -lluacov test_threads_arg.lua
+  - lua -lluacov test_threads_opt.lua
   - lua -lluacov test_threads_fork_arg.lua
   - lua -lluacov test_threads_fork.lua
   - lua -lluacov test_threads_file.lua

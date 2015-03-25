@@ -117,22 +117,33 @@ local function make_pipe(ctx)
   return pipe, pipe_endpoint
 end
 
-local function thread_opts(code, default_thread_opts)
-  local source
-  local prelude
-  local lua_init
+local function thread_opts(code, opt)
   if type(code) == "table" then
-    source = code[1] or code.source
-    prelude = code.prelude
-    lua_init = code.lua_init
-  else
-    source = code
+    local source   = assert(code[1] or code.source)
+    local lua_init = code.lua_init or opt.prelude
+    local prelude  = opt.prelude
+    if code.prelude then
+      --! @todo support user prelude as `@filename`
+      local user_prelude = code.prelude
+      if type(user_prelude) == 'function' then
+        user_prelude = T(user_prelude)
+      end
+      if type(prelude) == 'function' then
+        prelude = T(prelude)
+      end
+
+      prelude = string.format([[
+        local loadstring = loadstring or load
+        local prelude1 = loadstring(%q)
+        local prelude2 = loadstring(%q)
+        return prelude1(prelude2(...))
+      ]], user_prelude, prelude)
+    end
+    return {source, prelude = prelude, lua_init = lua_init}
   end
-  return {
-    [1]      = assert(source) or default_thread_opts.source,
-    prelude  = prelude        or default_thread_opts.prelude,
-    lua_init = lua_init       or default_thread_opts.lua_init
-  }
+
+  opt.source = assert(code)
+  return opt
 end
 
 local zthreads = {}
@@ -161,7 +172,6 @@ function zthreads.actor(...)
 
   return actor_new(thread, pipe)
 end
-
 
 function zthreads.xrun(...)
   return zthreads.run(zthreads.context(), ...)
