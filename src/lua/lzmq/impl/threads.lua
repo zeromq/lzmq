@@ -142,8 +142,11 @@ local function thread_opts(code, opt)
     return {source, prelude = prelude, lua_init = lua_init}
   end
 
-  opt.source = assert(code)
-  return opt
+  return {
+     source = assert(code),
+     prelude = opt.prelude,
+     lua_init = opt.lua_init
+  }
 end
 
 local zthreads = {}
