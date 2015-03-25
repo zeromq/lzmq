@@ -120,7 +120,7 @@ end
 local function thread_opts(code, opt)
   if type(code) == "table" then
     local source   = assert(code[1] or code.source)
-    local lua_init = code.lua_init or opt.prelude
+    local lua_init = code.lua_init or opt.lua_init
     local prelude  = opt.prelude
     if code.prelude then
       --! @todo support user prelude as `@filename`
