@@ -117,25 +117,25 @@ local function make_pipe(ctx)
   return pipe, pipe_endpoint
 end
 
-local zthreads = {}
-
 local function thread_opts(code, default_thread_opts)
   local source
   local prelude
   local lua_init
   if type(code) == "table" then
-    source = code[1] or code.source or default_thread_opts.source
-    prelude = code.prelude or default_thread_opts.prelude
-    lua_init = code.lua_init or default_thread_opts.lua_init
+    source = code[1] or code.source
+    prelude = code.prelude
+    lua_init = code.lua_init
   else
     source = code
   end
   return {
-    [1] = assert(source),
-    prelude = prelude,
-    lua_init = lua_init
+    [1]      = assert(source) or default_thread_opts.source,
+    prelude  = prelude        or default_thread_opts.prelude,
+    lua_init = lua_init       or default_thread_opts.lua_init
   }
 end
+
+local zthreads = {}
 
 function zthreads.run(ctx, code, ...)
   if ctx then ctx = ctx:lightuserdata() end
