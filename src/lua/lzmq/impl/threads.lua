@@ -101,6 +101,7 @@ end
 
 local string  = require"string"
 local Threads = require"lzmq.llthreads.ex"
+
 return function(ZMQ_NAME)
 
 local zmq = require(ZMQ_NAME)
@@ -109,19 +110,36 @@ local function make_pipe(ctx)
   local pipe = ctx:socket(zmq.PAIR)
   local pipe_endpoint = "inproc://lzmq.pipe." .. pipe:fd() .. "." .. rand_bytes(10);
   local ok, err = pipe:bind(pipe_endpoint)
-  if not ok then 
+  if not ok then
     pipe:close()
     return nil, err
   end
   return pipe, pipe_endpoint
 end
 
+local function thread_opts(code, default_thread_opts)
+  local source
+  local prelude
+  local lua_init
+  if type(code) == "table" then
+    source = code[1] or code.source
+    prelude = code.prelude
+    lua_init = code.lua_init
+  else
+    source = code
+  end
+  return {
+    [1]      = assert(source) or default_thread_opts.source,
+    prelude  = prelude        or default_thread_opts.prelude,
+    lua_init = lua_init       or default_thread_opts.lua_init
+  }
+end
+
 local zthreads = {}
 
 function zthreads.run(ctx, code, ...)
   if ctx then ctx = ctx:lightuserdata() end
-  run_starter.source = code
-  return Threads.new(run_starter, ZMQ_NAME, ctx, ...)
+  return Threads.new(thread_opts(code, run_starter), ZMQ_NAME, ctx, ...)
 end
 
 function zthreads.fork(ctx, code, ...)
@@ -129,8 +147,7 @@ function zthreads.fork(ctx, code, ...)
   if not pipe then return nil, endpoint end
 
   ctx = ctx:lightuserdata()
-  fork_starter.source = code
-  local ok, err = Threads.new(fork_starter, ZMQ_NAME, ctx, endpoint, ...)
+  local ok, err = Threads.new(thread_opts(code, fork_starter), ZMQ_NAME, ctx, endpoint, ...)
   if not ok then
     pipe:close()
     return nil, err
@@ -144,6 +161,7 @@ function zthreads.actor(...)
 
   return actor_new(thread, pipe)
 end
+
 
 function zthreads.xrun(...)
   return zthreads.run(zthreads.context(), ...)
@@ -182,3 +200,4 @@ zthreads.set_parent_ctx = zthreads.set_context
 return zthreads
 
 end
+
