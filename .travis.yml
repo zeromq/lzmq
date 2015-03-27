@@ -41,11 +41,11 @@ before_install:
 
 install:
   - sudo pip install cpp-coveralls
-  - sudo luarocks install luafilesystem --from=https://rocks.moonscript.org/dev
-  - sudo luarocks install lua-path --deps-mode=none
+  - sudo luarocks install luafilesystem
+  - sudo luarocks install lua-path
   - sudo luarocks install luacov-coveralls
-  - sudo luarocks install lua-llthreads2 --server=http://rocks.moonscript.org/dev
-  - sudo luarocks install https://raw.github.com/moteus/lunit/moteus-skip/rockspecs/lunitx-scm.mot.skip-0.rockspec
+  - sudo luarocks install lua-llthreads2
+  - sudo luarocks install lunitx
 
   - if [ $LZMQ = "ffi-lua" ]; then
       sudo luarocks install ljsyscall 0.9;
