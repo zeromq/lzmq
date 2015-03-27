@@ -1,5 +1,7 @@
 # PLATFORM must be "linux" or "macosx"
 
+set -eufo pipefail
+
 git clone git://github.com/jedisct1/libsodium.git
 cd libsodium
 ./autogen.sh

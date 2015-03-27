@@ -2,7 +2,7 @@ language: c
 
 env:
   global:
-    - LUAROCKS=2.2.0beta1
+    - LUAROCKS=2.2.1
   matrix:
     # You can set PERF only for luajit/ffi
     # todo: install libffi and test ffi binding on Lua 5.1/5.2
