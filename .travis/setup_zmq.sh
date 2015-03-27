@@ -1,10 +1,7 @@
 
-source .travis/platform.sh
+set -eufo pipefail
 
-echo "==============================="
-echo " Platform : $PLATFORM          "
-echo "==============================="
-echo 
+source .travis/platform.sh
 
 if [ "$PLATFORM" == "linux" ]; then
   sudo apt-get remove libzmq3;
