@@ -71,8 +71,8 @@ local bootstrap_code = require"string".dump(function(lua_init, prelude, code, ..
   local func
   func, args[0] = load_src(code)
 
-  _G.arg = args
-     arg = args
+  rawset(_G, "arg", args)
+  arg = args
 
   return func(unpack_n(args))
 end)
