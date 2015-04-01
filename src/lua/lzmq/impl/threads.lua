@@ -155,7 +155,7 @@ local function extract_endpoint(pipe, protocol, pipe_endpoint)
 end
 
 local function make_pipe(ctx, opt)
-  opt = opt or {}
+  opt = type(opt) == "table" and opt or {}
   local type = zmq.PAIR
   local pipe = ctx:socket(type)
 

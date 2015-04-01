@@ -2,7 +2,6 @@ local TEST_FFI = ("ffi" == os.getenv("LZMQ"))
 local LZMQ     = "lzmq" .. (TEST_FFI and ".ffi" or "")
 
 local zthreads = require (LZMQ .. ".threads" )
-local zmq = require ( LZMQ )
 
 local thread_code = function(...)
   local function assert_equal(name, a, b, ...)
@@ -33,10 +32,10 @@ local thread_opts = {
      return 1, nil, 'hello', ...
   end,
   endpoint_protocol = "tcp",
-  endpoint_name = "0.0.0.0"
+  endpoint_name = "0.0.0.0:*"
 }
 
-local thread, skt, endpoint = zthreads.fork_opts(ctx, thread_opts, nil, 2, nil)
+local thread, skt, endpoint = zthreads.fork(ctx, thread_opts, nil, 2, nil)
 
 local a = {}
 for k in string.gmatch(endpoint, "([.%w]+)") do
