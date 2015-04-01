@@ -22,33 +22,32 @@ local thread_code = function(...)
   assert_equal("#:", 7       , select("#", ...))
 end
 
--- pass `prelude` function that change thread arguments
 local ctx = zthreads.context()
+
+-- pass `prelude` function that change thread arguments
+-- use tcp for thread socket
 local thread_opts = {
   thread_code,
   prelude = function(...)
      -- a, b, c
      return 1, nil, 'hello', ...
-  end
-}
--- use tcp for thread socket
-local pipe_opts = {
-  protocol = "tcp"
+  end,
+  endpoint_protocol = "tcp",
+  endpoint_name = "0.0.0.0"
 }
 
-local thread, skt, endpoint = zthreads.fork_opts(ctx, thread_opts, pipe_opts, nil, 2, nil)
+local thread, skt, endpoint = zthreads.fork_opts(ctx, thread_opts, nil, 2, nil)
 
 local a = {}
 for k in string.gmatch(endpoint, "([.%w]+)") do
     table.insert(a, k)
 end
 assert(a[1] == "tcp")
-assert(a[2] == "127.0.0.1")
-assert(type(tonumber(a[3])) == "number")
+assert(a[2] == "0.0.0.0")
+assert(type(tonumber(a[3])) == "number") -- check the port
 
 assert(thread)
 assert(skt)
-assert(endpoint)
 
 assert(thread:start())
 assert(thread:join())

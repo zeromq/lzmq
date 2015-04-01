@@ -159,8 +159,8 @@ local function make_pipe(ctx, opt)
   local type = zmq.PAIR
   local pipe = ctx:socket(type)
 
-  local protocol  = opt.protocol or "inproc"
-  local name      = opt.name     or create_pipe_name(protocol, pipe:fd())
+  local protocol  = opt.endpoint_protocol or "inproc"
+  local name      = opt.endpoint_name or create_pipe_name(protocol, pipe:fd())
   local pipe_endpoint = create_pipe_endpoint(protocol, name)
   local ok, err = pipe:bind(pipe_endpoint)
   if not ok then
@@ -214,12 +214,8 @@ function zthreads.run(ctx, opts, ...)
   return Threads.new(thread_opts(opts, run_starter), ZMQ_NAME, ctx, ...)
 end
 
-function zthreads.fork(ctx, thread_opt, ...)
-    return zthreads.fork_opts(ctx, thread_opt, nil, ...)
-end
-
-function zthreads.fork_opts(ctx, opt, pipe_opt, ...)
-  local pipe, endpoint = make_pipe(ctx, pipe_opt)
+function zthreads.fork(ctx, opt, ...)
+  local pipe, endpoint = make_pipe(ctx, opt)
   if not pipe then return nil, endpoint end
 
   ctx = ctx:lightuserdata()
@@ -229,10 +225,6 @@ function zthreads.fork_opts(ctx, opt, pipe_opt, ...)
     return nil, err
   end
   return thread, pipe, endpoint
-end
-
-function zthreads.actor_opts(...)
-  return actor_assert(zthreads.fork_opts(...))
 end
 
 function zthreads.actor(...)
