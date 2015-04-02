@@ -112,27 +112,27 @@ return function(ZMQ_NAME)
 local zmq = require(ZMQ_NAME)
 
 -- for inproc or ipc
-local function create_local_pipe_name(namespace)
+local function create_local_pipe_address(namespace)
   return "lzmq.pipe." .. namespace .. "." .. rand_bytes(10)
 end
-local function create_tcp_pipe_name(_)
+local function create_tcp_pipe_address(_)
   return "127.0.0.1:*"
 end
 
-local supported_protocols = {
-  ipc    = create_local_pipe_name,
-  inproc = create_local_pipe_name,
-  tcp    = create_tcp_pipe_name
+local supported_transports = {
+  ipc    = create_local_pipe_address,
+  inproc = create_local_pipe_address,
+  tcp    = create_tcp_pipe_address
 }
 
-local function create_pipe_name(protocol, namespace)
-  local fun = supported_protocols[protocol]
-  assert(fun, "unsupported protocol " .. protocol)
+local function create_pipe_address(transport, namespace)
+  local fun = supported_transports[transport]
+  assert(fun, "unsupported transport " .. transport)
   return fun(namespace)
 end
 
-local function create_pipe_endpoint(protocol, name)
-  return protocol .. "://" .. name
+local function create_pipe_endpoint(transport, address)
+  return transport .. "://" .. address
 end
 
 local function strip_trailing_null_char(str)
@@ -144,13 +144,13 @@ local function strip_trailing_null_char(str)
   end
 end
 
-local function extract_endpoint(pipe, protocol, pipe_endpoint)
-  if protocol == "inproc" then
+local function extract_endpoint(pipe, transport, pipe_endpoint)
+  if transport == "inproc" then
      return pipe_endpoint
-  elseif protocol == "ipc" or protocol == "tcp" then
+  elseif transport == "ipc" or transport == "tcp" then
      return strip_trailing_null_char(pipe:last_endpoint())
   else
-     error("unsupported protocol " .. protocol)
+     error("unsupported transport " .. transport)
   end
 end
 
@@ -159,15 +159,15 @@ local function make_pipe(ctx, opt)
   local type = zmq.PAIR
   local pipe = ctx:socket(type)
 
-  local protocol  = opt.endpoint_protocol or "inproc"
-  local name      = opt.endpoint_name or create_pipe_name(protocol, pipe:fd())
-  local pipe_endpoint = create_pipe_endpoint(protocol, name)
+  local transport = opt.endpoint_transport or "inproc"
+  local address   = opt.endpoint_address or create_pipe_address(transport, pipe:fd())
+  local pipe_endpoint = create_pipe_endpoint(transport, address)
   local ok, err = pipe:bind(pipe_endpoint)
   if not ok then
     pipe:close()
     return nil, err
   end
-  return pipe, extract_endpoint(pipe, protocol, pipe_endpoint)
+  return pipe, extract_endpoint(pipe, transport, pipe_endpoint)
 end
 
 local function thread_opts(code, opt)

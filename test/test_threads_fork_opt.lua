@@ -31,8 +31,8 @@ local thread_opts = {
      -- a, b, c
      return 1, nil, 'hello', ...
   end,
-  endpoint_protocol = "tcp",
-  endpoint_name = "0.0.0.0:*"
+  endpoint_transport = "tcp",
+  endpoint_address = "0.0.0.0:*"
 }
 
 local thread, skt, endpoint = zthreads.fork(ctx, thread_opts, nil, 2, nil)
