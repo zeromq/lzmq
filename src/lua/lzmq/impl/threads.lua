@@ -83,6 +83,10 @@ function actor_mt:socket()
   return self._pipe
 end
 
+function actor_mt:endpoint()
+   return self._endpoint
+end
+
 function actor_mt:close()
   self._pipe:close()
   self._thread:join()
@@ -90,10 +94,11 @@ end
 
 end
 
-local function actor_new(thread, pipe)
+local function actor_new(thread, pipe, endpoint)
   local o = setmetatable({
     _thread = thread;
     _pipe   = pipe;
+    _endpoint = endpoint;
   }, actor_mt)
 
   return o
@@ -106,15 +111,63 @@ return function(ZMQ_NAME)
 
 local zmq = require(ZMQ_NAME)
 
-local function make_pipe(ctx)
-  local pipe = ctx:socket(zmq.PAIR)
-  local pipe_endpoint = "inproc://lzmq.pipe." .. pipe:fd() .. "." .. rand_bytes(10);
+-- for inproc or ipc
+local function create_local_pipe_address(namespace)
+  return "lzmq.pipe." .. namespace .. "." .. rand_bytes(10)
+end
+local function create_tcp_pipe_address(_)
+  return "127.0.0.1:*"
+end
+
+local supported_transports = {
+  ipc    = create_local_pipe_address,
+  inproc = create_local_pipe_address,
+  tcp    = create_tcp_pipe_address
+}
+
+local function create_pipe_address(transport, namespace)
+  local fun = supported_transports[transport]
+  assert(fun, "unsupported transport " .. transport)
+  return fun(namespace)
+end
+
+local function create_pipe_endpoint(transport, address)
+  return transport .. "://" .. address
+end
+
+local function strip_trailing_null_char(str)
+  -- remove null terminated char if exists
+  if str:byte(-1) == 0 then
+     return str:sub(1,-2)
+  else
+     return str
+  end
+end
+
+local function extract_endpoint(pipe, transport, pipe_endpoint)
+  if transport == "inproc" then
+     return pipe_endpoint
+  elseif transport == "ipc" or transport == "tcp" then
+     return strip_trailing_null_char(pipe:last_endpoint())
+  else
+     error("unsupported transport " .. transport)
+  end
+end
+
+local function make_pipe(ctx, opt)
+  opt = type(opt) == "table" and opt or {}
+  local type = zmq.PAIR
+  local pipe = ctx:socket(type)
+
+  local transport = opt.endpoint_transport or "inproc"
+  local address   = opt.endpoint_address or create_pipe_address(transport, pipe:fd())
+  local pipe_endpoint = create_pipe_endpoint(transport, address)
   local ok, err = pipe:bind(pipe_endpoint)
   if not ok then
     pipe:close()
     return nil, err
   end
-  return pipe, pipe_endpoint
+  return pipe, extract_endpoint(pipe, transport, pipe_endpoint)
 end
 
 local function thread_opts(code, opt)
@@ -139,7 +192,7 @@ local function thread_opts(code, opt)
         return prelude1(prelude2(...))
       ]], user_prelude, prelude)
     end
-    return {source, prelude = prelude, lua_init = lua_init}
+    return {source = source, prelude = prelude, lua_init = lua_init}
   end
 
   return {
@@ -149,31 +202,33 @@ local function thread_opts(code, opt)
   }
 end
 
-local zthreads = {}
-
-function zthreads.run(ctx, code, ...)
-  if ctx then ctx = ctx:lightuserdata() end
-  return Threads.new(thread_opts(code, run_starter), ZMQ_NAME, ctx, ...)
+local function actor_assert(thread, pipe, endpoint)
+  if not thread then return nil, pipe end
+  return actor_new(thread, pipe, endpoint)
 end
 
-function zthreads.fork(ctx, code, ...)
-  local pipe, endpoint = make_pipe(ctx)
+local zthreads = {}
+
+function zthreads.run(ctx, opts, ...)
+  if ctx then ctx = ctx:lightuserdata() end
+  return Threads.new(thread_opts(opts, run_starter), ZMQ_NAME, ctx, ...)
+end
+
+function zthreads.fork(ctx, opt, ...)
+  local pipe, endpoint = make_pipe(ctx, opt)
   if not pipe then return nil, endpoint end
 
   ctx = ctx:lightuserdata()
-  local ok, err = Threads.new(thread_opts(code, fork_starter), ZMQ_NAME, ctx, endpoint, ...)
-  if not ok then
+  local thread, err = Threads.new(thread_opts(opt, fork_starter), ZMQ_NAME, ctx, endpoint, ...)
+  if not thread then
     pipe:close()
     return nil, err
   end
-  return ok, pipe
+  return thread, pipe, endpoint
 end
 
 function zthreads.actor(...)
-  local thread, pipe = zthreads.fork(...)
-  if not thread then return nil, pipe end
-
-  return actor_new(thread, pipe)
+  return actor_assert(zthreads.fork(...))
 end
 
 function zthreads.xrun(...)
@@ -213,4 +268,3 @@ zthreads.set_parent_ctx = zthreads.set_context
 return zthreads
 
 end
-

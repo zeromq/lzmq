@@ -66,6 +66,7 @@ script:
   - lua -lluacov test_threads_opt.lua
   - lua -lluacov test_threads_fork_arg.lua
   - lua -lluacov test_threads_fork.lua
+  - lua -lluacov test_threads_fork_opt.lua
   - lua -lluacov test_threads_file.lua
   - lua -lluacov test_threads_actor.lua
   - lua -lluacov test_threads_actor_poll.lua

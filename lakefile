@@ -30,7 +30,7 @@ ERRORS = {
 }
 if not ERRORS[ERR] then quit("Unknown error type!") end
 
-lzmq = c.shared{PROJECT, 
+lzmq = c.shared{PROJECT,
   base     = 'src',
   src      = '*.c',
   exclude  = 'ztimer',
@@ -46,7 +46,7 @@ lzmq = c.shared{PROJECT,
   strip    = true,
 }
 
-lztimer = c.shared{'timer', 
+lztimer = c.shared{'timer',
   base     = 'src',
   src      = {'ztimer','lzutils'},
   needs    = {LUA_NEED, 'stdint'},
@@ -81,6 +81,7 @@ target('test', install, function()
   run_test('test_threads_arg.lua')
   run_test('test_threads_opt.lua')
   run_test('test_threads_fork.lua')
+  run_test('test_threads_fork_opt.lua')
   run_test('test_threads_fork_arg.lua')
   run_test('test_threads_file.lua')
   run_test('test_metadata.lua')
