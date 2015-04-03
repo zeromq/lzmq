@@ -113,6 +113,8 @@ function test_capture()
 
   assert_equal(thread, thread:start())
 
+  ztimer.sleep(1000)
+
   assert(cli:send("hello"))
 
   local msg = assert_table(pipe:recv_all())
@@ -149,7 +151,9 @@ function test_basic()
   local cli = assert(ctx:socket{zmq.REQ, bind = cli_endpoint, rcvtimeo=1000})
   local srv = assert(ctx:socket{zmq.REP, bind = srv_endpoint, rcvtimeo=1000})
 
-  thread:start()
+  assert_equal(thread, thread:start())
+
+  ztimer.sleep(1000)
 
   assert(cli:send("hello"))
   assert_equal('hello', srv:recv())
@@ -199,7 +203,9 @@ function test_control()
   local srv = assert(ctx:socket{zmq.REP, bind = srv_endpoint, rcvtimeo=1000})
   pipe:set_rcvtimeo(1000)
 
-  thread:start()
+  assert_equal(thread, thread:start())
+
+  ztimer.sleep(1000)
 
   pipe:send("PAUSE")
   assert(cli:send("hello"))
@@ -231,7 +237,9 @@ function test_basic()
   local cli = assert(ctx:socket{zmq.REQ, bind = cli_endpoint, rcvtimeo=1000})
   local srv = assert(ctx:socket{zmq.REP, bind = srv_endpoint, rcvtimeo=1000})
 
-  thread:start()
+  assert_equal(thread, thread:start())
+
+  ztimer.sleep(1000)
 
   assert(cli:send("hello"))
   assert_equal('hello', srv:recv())
