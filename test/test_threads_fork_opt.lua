@@ -31,8 +31,7 @@ local thread_opts = {
      -- a, b, c
      return 1, nil, 'hello', ...
   end,
-  endpoint_transport = "tcp",
-  endpoint_address = "0.0.0.0:*"
+  pipe = "tcp://127.0.0.1:*",
 }
 
 local thread, skt, endpoint = zthreads.fork(ctx, thread_opts, nil, 2, nil)
@@ -42,7 +41,7 @@ for k in string.gmatch(endpoint, "([.%w]+)") do
     table.insert(a, k)
 end
 assert(a[1] == "tcp")
-assert(a[2] == "0.0.0.0")
+assert(a[2] == "127.0.0.1")
 assert(type(tonumber(a[3])) == "number") -- check the port
 
 assert(thread)
