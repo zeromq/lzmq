@@ -154,13 +154,25 @@ local function extract_endpoint(pipe, transport, pipe_endpoint)
   end
 end
 
+local function split_transport(ep)
+  local transport, address = string.match(ep, "^(%w+)://(.+)$")
+  if not transport then transport = ep end
+  return transport, address
+end
+
 local function make_pipe(ctx, opt)
   opt = type(opt) == "table" and opt or {}
-  local type = zmq.PAIR
-  local pipe = ctx:socket(type)
+  local pipe = ctx:socket(zmq.PAIR)
 
-  local transport = opt.endpoint_transport or "inproc"
-  local address   = opt.endpoint_address or create_pipe_address(transport, pipe:fd())
+  local transport, address
+  if opt.pipe then
+    assert(type(opt.pipe) == 'string', 'Currently supports only string type')
+    transport, address = split_transport(opt.pipe)
+  else
+    transport = "inproc"
+  end
+  address = address or create_pipe_address(transport, pipe:fd())
+
   local pipe_endpoint = create_pipe_endpoint(transport, address)
   local ok, err = pipe:bind(pipe_endpoint)
   if not ok then
