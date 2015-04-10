@@ -96,6 +96,7 @@ end
 function Error:mnemo()
   return api.zmq_mnemoerror(self.errno)
 end
+Error.name = Error.mnemo
 
 function Error:category()
   return ERROR_CATEGORY
