@@ -15,6 +15,8 @@
 
 static const char* luazmq_err_getmnemo(int err);
 
+#define LZMQ_ERROR_CATEGORY "ZMQ"
+
 int luazmq_error_create(lua_State *L, int err){
   zerror *zerr = luazmq_newudata(L, zerror, LUAZMQ_ERROR);
   zerr->no = err;
@@ -22,7 +24,7 @@ int luazmq_error_create(lua_State *L, int err){
 }
 
 void luazmq_error_pushstring(lua_State *L, int err){
-  lua_pushfstring(L, "[%s] %s (%d)",
+  lua_pushfstring(L, "[" LZMQ_ERROR_CATEGORY "]""[%s] %s (%d)",
     luazmq_err_getmnemo(err),
     zmq_strerror(err),
     err
@@ -43,6 +45,12 @@ int luazmq_assert (lua_State *L) {
     return luaL_error(L, "%s", luaL_optstring(L, 2, "assertion failed!"));
   }
   return lua_gettop(L);
+}
+
+static int luazmq_err_cat(lua_State *L){
+  luazmq_geterror(L);
+  lua_pushliteral(L, LZMQ_ERROR_CATEGORY);
+  return 1;
 }
 
 static int luazmq_err_no(lua_State *L){
@@ -66,6 +74,13 @@ static int luazmq_err_mnemo(lua_State *L){
 static int luazmq_err_tostring(lua_State *L){
   zerror *zerr = luazmq_geterror(L);
   luazmq_error_pushstring(L, zerr->no);
+  return 1;
+}
+
+static int luazmq_err_equal(lua_State *L){
+  zerror *lhs = luazmq_geterror_at(L, 1);
+  zerror *rhs = luazmq_geterror_at(L, 2);
+  lua_pushboolean(L, (lhs->no == rhs->no)?1:0);
   return 1;
 }
 
@@ -144,7 +159,11 @@ static const struct luaL_Reg luazmq_err_methods[] = {
   {"no",              luazmq_err_no               },
   {"msg",             luazmq_err_msg              },
   {"mnemo",           luazmq_err_mnemo            },
+  {"name",            luazmq_err_mnemo            },
+  {"cat",             luazmq_err_cat              },
+  {"category",        luazmq_err_cat              },
   {"__tostring",      luazmq_err_tostring         },
+  {"__eq",            luazmq_err_equal            },
 
   {NULL,NULL}
 };

@@ -76,6 +76,8 @@ local function zerror(...) return Error:new(...) end
 do -- Error
 Error.__index = Error
 
+local ERROR_CATEGORY = "ZMQ"
+
 function Error:new(no)
   local o = setmetatable({
     errno = no or api.zmq_errno();
@@ -95,8 +97,17 @@ function Error:mnemo()
   return api.zmq_mnemoerror(self.errno)
 end
 
+function Error:category()
+  return ERROR_CATEGORY
+end
+Error.cat = Error.category
+
+function Error:__eq(rhs)
+  return self:no() == rhs:no()
+end
+
 function Error:__tostring()
-  return string.format("[%s] %s (%d)", self:mnemo(), self:msg(), self:no())
+  return string.format("[%s][%s] %s (%d)", ERROR_CATEGORY, self:mnemo(), self:msg(), self:no())
 end
 
 end

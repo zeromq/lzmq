@@ -165,6 +165,23 @@ function error:no             ()end
 -- @treturn string error name (e.g. "ETERM").
 function error:mnemo          ()end
 
+--- Get the error name
+-- This is synonym for `error:mnemo`
+--
+-- @treturn string error name (e.g. "ETERM").
+function error:name           ()end
+
+--- Get the error category
+--
+-- @treturn string error category. All lzmq errors has category `ZMQ`
+function error:category       ()end
+
+--- Get the error category
+-- This is synonym for `error:category`
+--
+-- @treturn string error category.
+function error:cat            ()end
+
 --- Get the error description
 -- 
 -- @treturn string result from `zmq_strerror`(e.g. "Context was terminated").
