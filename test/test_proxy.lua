@@ -79,7 +79,9 @@ local include_thread  = [[
 ]]
 
 local _ENV = TEST_CASE'proxy' if true then
-if not zmq.proxy then test = SKIP"zmq_proxy does not support" else
+if not zmq.proxy then test = SKIP"zmq_proxy does not support"
+elseif is_zmq_le(zmq, 4,0,6) then test = SKIP"zmq_proxy on 4.0.6 !!!DOES NOT WORK AT ALL!!!"
+else
 
 local cli_endpoint = "inproc://client"
 local srv_endpoint = "inproc://server"
@@ -171,6 +173,7 @@ end
 local _ENV = TEST_CASE'proxy_steerable' if true then
 if not zmq.proxy_steerable then test = SKIP"zmq_proxy_steerable does not support"
 elseif is_zmq_le(zmq, 4,0,5) then test = SKIP"ZeroMQ 4.0.5 invalid implementation"
+elseif is_zmq_le(zmq, 4,0,6) then test = SKIP"zmq_proxy_steerable on 4.0.6 !!!DOES NOT WORK AT ALL!!!"
 else
 
 local cli_endpoint = "inproc://client"
