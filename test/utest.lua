@@ -42,9 +42,10 @@ local zloop  = require (LZMQ .. ".loop"  )
 local zpoller= require (LZMQ .. ".poller")
 
 print("------------------------------------")
-print("Lua  version: " .. (_G.jit and _G.jit.version or _G._VERSION))
-print("ZQM  version: " .. zversion(zmq))
-print("lzmq version: " .. zmq._VERSION .. (TEST_FFI and " (FFI)" or ""))
+print("Module    name: " .. zmq._NAME);
+print("Module version: " .. zmq._VERSION);
+print("Lua    version: " .. (_G.jit and _G.jit.version or _G._VERSION))
+print("ZMQ    version: " .. table.concat(zmq.version(), '.'))
 print("------------------------------------")
 print("")
 
@@ -1791,6 +1792,36 @@ function test_generate_bin()
   assert_string(sec)
   assert_equal(32, #pub)
   assert_equal(32, #sec)
+end
+
+function test_curve_public()
+  if not zmq.curve_public then
+    return skip("curve_public not supported by libzmq since version 4.2.2")
+  end
+
+  local pub, sec = zmq.curve_keypair()
+  if not pub then
+    assert(error_is(sec, zmq.errors.ENOTSUP))
+    return skip("you need build libzmq with libsodium")
+  end
+
+  local derived_public = assert_string(zmq.curve_public(sec))
+  assert_equal(pub, derived_public)
+end
+
+function test_curve_public_bin()
+  if not zmq.curve_public then
+    return skip("curve_public not supported by libzmq since version 4.2.2")
+  end
+
+  local pub, sec = zmq.curve_keypair()
+  if not pub then
+    assert(error_is(sec, zmq.errors.ENOTSUP))
+    return skip("you need build libzmq with libsodium")
+  end
+
+  local derived_public = assert_string(zmq.curve_public(sec, true))
+  assert_equal(pub, zmq.z85_encode(derived_public))
 end
 
 end

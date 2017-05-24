@@ -1,7 +1,7 @@
 /*
   Author: Alexey Melnichuk <mimir@newmail.ru>
 
-  Copyright (C) 2013-2014 Alexey Melnichuk <mimir@newmail.ru>
+  Copyright (C) 2013-2017 Alexey Melnichuk <mimir@newmail.ru>
 
   Licensed according to the included 'LICENCE' document
 
@@ -9,7 +9,9 @@
  */
 
 #include "zmq.h"
+#if ZMQ_VERSION < ZMQ_MAKE_VERSION(4,2,0)
 #include "zmq_utils.h"
+#endif
 #include "lzutils.h"
 #include "lzmq.h"
 #include "zerror.h"
@@ -22,10 +24,13 @@
 #include "zsupport.h"
 #include <memory.h>
 
+#define LUAZMQ_MODULE_NAME      "lzmq"
+#define LUAZMQ_MODULE_LICENSE   "MIT"
+#define LUAZMQ_MODULE_COPYRIGHT "Copyright (c) 2013-2017 Alexey Melnichuk"
 #define LUAZMQ_VERSION_MAJOR 0
 #define LUAZMQ_VERSION_MINOR 4
-#define LUAZMQ_VERSION_PATCH 3
-// #define LUAZMQ_VERSION_COMMENT "dev"
+#define LUAZMQ_VERSION_PATCH 4
+#define LUAZMQ_VERSION_COMMENT "dev"
 
 const char *LUAZMQ_CONTEXT = LUAZMQ_PREFIX "Context";
 const char *LUAZMQ_SOCKET  = LUAZMQ_PREFIX "Socket";
@@ -420,6 +425,30 @@ static int luazmq_curve_keypair(lua_State *L){
 
 #endif
 
+#ifdef LUAZMQ_SUPPORT_CURVE_PUBLIC
+
+static int luazmq_curve_public(lua_State *L){
+  const char *secret_key = luaL_checkstring(L, 1);
+  int as_bin = lua_toboolean(L, 2);
+  char public_key [41];
+  int rc = zmq_curve_public(public_key, secret_key);
+  if(rc == -1)
+    return luazmq_fail(L, 0);
+
+  if(as_bin){
+    uint8_t public_key_bin[32];
+    zmq_z85_decode (public_key_bin, public_key);
+    lua_pushlstring(L, (char*)public_key_bin, 32);
+  }
+  else{
+    lua_pushlstring(L, public_key, 40);
+  }
+
+  return 1;
+}
+
+#endif
+
 static int luazmq_init_socket(lua_State *L) {
   void *src = lua_touserdata(L, 1);
   luaL_argcheck(L, lua_islightuserdata(L, 1), 1, "lightuserdata expected");
@@ -447,6 +476,10 @@ static const struct luaL_Reg luazmqlib[]   = {
 
 #ifdef LUAZMQ_SUPPORT_CURVE_KEYPAIR
   { "curve_keypair",  luazmq_curve_keypair    },
+#endif
+
+#ifdef LUAZMQ_SUPPORT_CURVE_PUBLIC
+  { "curve_public",  luazmq_curve_public      },
 #endif
 
 #ifdef ZMQ_HAS_CAPABILITIES
@@ -520,6 +553,18 @@ static void luazmq_init_lib(lua_State *L){
 
   lua_pushliteral(L, "_VERSION");
   luazmq_push_version(L);
+  lua_rawset(L, -3);
+
+  lua_pushliteral(L, "_NAME");
+  lua_pushliteral(L, LUAZMQ_MODULE_NAME);
+  lua_rawset(L, -3);
+
+  lua_pushliteral(L, "_LICENSE");
+  lua_pushliteral(L, LUAZMQ_MODULE_LICENSE);
+  lua_rawset(L, -3);
+
+  lua_pushliteral(L, "_COPYRIGHT");
+  lua_pushliteral(L, LUAZMQ_MODULE_COPYRIGHT);
   lua_rawset(L, -3);
 }
 

@@ -1,4 +1,4 @@
-#Lua binding to [ZeroMQ](http://zeromq.org) library.
+# Lua binding to [ZeroMQ](http://zeromq.org) library.
 
 [![Build Status](https://travis-ci.org/zeromq/lzmq.png?branch=master)](https://travis-ci.org/zeromq/lzmq)
 [![Build Status](https://buildhive.cloudbees.com/job/zeromq/job/lzmq/badge/icon)](https://buildhive.cloudbees.com/job/zeromq/job/lzmq/)
@@ -9,10 +9,10 @@ Support ZeroMQ version 3.2.x/4.x<br/>
 This library is not dropin replacement for [lua-zmq](https://github.com/Neopallium/lua-zmq) library.<br/>
 This library has C and FFI version of binding.
 
-##Source Code
+## Source Code
 https://github.com/zeromq/lzmq
 
-##Install
+## Install
 If you plan use `lzmq.threads` module then you should also install [llthreads2](https://github.com/moteus/lua-llthreads2)<br/>
 
 * Using *LuaRocks*:<br/>
@@ -23,17 +23,17 @@ If you plan use `lzmq.threads` module then you should also install [llthreads2](
 `luadist install lua-llthreads2` or `luadist install lua-llthreads2-compat`<br/>
 `luadist install lzmq` or `luadist install lzmq-ffi`<br/>
 
-##API
+## API
 This is short [API](http://moteus.github.io/lzmq/index.html) description.<br/>
 See also [exampes](https://github.com/moteus/lzmq-zguide) from [OMQ - The Guide](http://zguide.zeromq.org).<br/>
 
-##Performance
+## Performance
 To run same test you should copy original performance tests to `exampes/perf2/libzmq`
 and run `runner.lua` from `exampes/perf2`. For now it require LuaJIT and exists 
 C and FFI version of `lzmq` library.<br/>
 Of course you can run any test manually.
 
-###Inproc Throughput Test:
+### Inproc Throughput Test:
 
 message size: 30 [B]<br/>
 message count: 10000<br/>
@@ -52,7 +52,7 @@ mean throughput [Mb/s]:<br/>
 | 9 |397.022     |311.931     |415.945     |187.749     |244.998     |
 | 10|438.196     |302.763     |412.229     |189.813     |255.646     |
 
-###Inproc Latency Test:
+### Inproc Latency Test:
 
 message size: 1 [B]<br/>
 message count: 10000<br/>
@@ -72,7 +72,7 @@ average latency [us]:<br/>
 | 10|95.635      |97.946      |95.684      |96.429      |92.629      |
 
 ----
-###Incompatibility list with lua-zmq (this is not full)
+### Incompatibility list with lua-zmq (this is not full)
 
 |    Feature           |      lua-zmq           |        lzmq              |
 |----------------------|------------------------|--------------------------|

@@ -1,5 +1,9 @@
+package.path = "..\\src\\lua\\?.lua;" .. package.path
+
 local api = require "lzmq.ffi.api"
 local printf = function(...) print(string.format(...)) end
+
+print(api.zmq_version())
 
 local function rfit(str, n)
   if #str >= n then return str end

@@ -391,8 +391,8 @@ DEFINE_CTX_OPT(thread_priority, ZMQ_THREAD_PRIORITY)
 DEFINE_CTX_OPT(thread_sched_policy, ZMQ_THREAD_SCHED_POLICY)
 #endif
 
-#ifdef ZMQ_BLOCKY
-DEFINE_CTX_OPT(blocky, ZMQ_BLOCKY)
+#ifdef ZMQ_MAX_MSGSZ
+DEFINE_CTX_OPT(max_msgsz, ZMQ_MAX_MSGSZ)
 #endif
 
 static const struct luaL_Reg luazmq_ctx_methods[] = {
@@ -430,8 +430,8 @@ static const struct luaL_Reg luazmq_ctx_methods[] = {
   REGISTER_CTX_OPT(thread_sched_policy),
 #endif
 
-#ifdef ZMQ_BLOCKY
-  REGISTER_CTX_OPT(blocky),
+#ifdef ZMQ_MAX_MSGSZ
+  REGISTER_CTX_OPT(max_msgsz),
 #endif
 
   {NULL,NULL}
