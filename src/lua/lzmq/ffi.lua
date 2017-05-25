@@ -1,14 +1,17 @@
 --
 --  Author: Alexey Melnichuk <mimir@newmail.ru>
 --
---  Copyright (C) 2013-2014 Alexey Melnichuk <mimir@newmail.ru>
+--  Copyright (C) 2013-2017 Alexey Melnichuk <mimir@newmail.ru>
 --
 --  Licensed according to the included 'LICENCE' document
 --
 --  This file is part of lua-lzqm library.
 --
 
-local LZMQ_VERSION = "0.4.3"
+local LZMQ_VERSION   = "0.4.4-dev"
+local LZMQ_NAME      = "lzmq.ffi"
+local LZMQ_LICENSE   = "MIT"
+local LZMQ_COPYRIGHT = "Copyright (c) 2013-2017 Alexey Melnichuk"
 
 local lua_version_t
 local function lua_version()
@@ -1199,7 +1202,10 @@ end
 
 do -- zmq
 
-zmq._VERSION = LZMQ_VERSION
+zmq._VERSION   = LZMQ_VERSION
+zmq._NAME      = LZMQ_NAME
+zmq._LICENSE   = LZMQ_LICENSE
+zmq._COPYRIGHT = LZMQ_COPYRIGHT
 
 function zmq.version(unpack)
   local mj,mn,pt = api.zmq_version()
@@ -1315,6 +1321,16 @@ function zmq.curve_keypair(...)
   local pub, sec = api.zmq_curve_keypair(...)
   if pub == -1 then return nil, zerror() end
   return pub, sec
+end
+
+end
+
+if api.zmq_curve_public then
+
+function zmq.curve_public(...)
+  local pub = api.zmq_curve_public(...)
+  if pub == -1 then return nil, zerror() end
+  return pub
 end
 
 end

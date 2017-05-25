@@ -1,7 +1,7 @@
 --
 --  Author: Alexey Melnichuk <mimir@newmail.ru>
 --
---  Copyright (C) 2013-2014 Alexey Melnichuk <mimir@newmail.ru>
+--  Copyright (C) 2013-2017 Alexey Melnichuk <mimir@newmail.ru>
 --
 --  Licensed according to the included 'LICENCE' document
 --
@@ -233,6 +233,7 @@ header = [[
   char *zmq_z85_encode (char *dest, const char *data, size_t size);
   char *zmq_z85_decode (char *dest, const char *string);
   int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key);
+  int zmq_curve_public (char *z85_public_key, const char *z85_secret_key);
 ]]
 ffi.cdef(header)
 
@@ -640,6 +641,25 @@ end
 
 end
 
+-- zmq_curve_public
+if pget(libzmq3, "zmq_curve_public") then
+
+function _M.zmq_curve_public(secret_key, as_binary)
+  local public_key = ffi.new(vla_char_t, 41)
+  local ret = libzmq3.zmq_curve_public(public_key, secret_key)
+  if ret == -1 then return -1 end
+  if not as_binary then
+    return ffi.string(public_key, 40)
+  end
+  local public_key_bin = ffi.new(vla_char_t, 32)
+
+  libzmq3.zmq_z85_decode(public_key_bin, public_key)
+
+  return ffi.string(public_key_bin, 32)
+end
+
+end
+
 -- zmq_recv_event
 do
 
@@ -808,8 +828,8 @@ _M.CONTEXT_OPTIONS = O{
     ZMQ_THREAD_PRIORITY     = 3;
     ZMQ_THREAD_SCHED_POLICY = 4;
   };
-  [{4,2,0}] = {
-    ZMQ_BLOCKY              = 70
+  [{4,2,2}] = {
+    ZMQ_MAX_MSGSZ           = 5
   };
 
 }
@@ -891,6 +911,24 @@ _M.SOCKET_OPTIONS = O{
     ZMQ_BLOCKY            = {70, "RW", "int"},
     ZMQ_XPUB_MANUAL       = {71, "WO", "int"},
     ZMQ_XPUB_WELCOME_MSG  = {72, "WO", "str"},
+  };
+
+  [{4,2,2}] = {
+    ZMQ_STREAM_NOTIFY        = {73, "WO", "int"},
+    ZMQ_INVERT_MATCHING      = {74, "RW", "int"},
+    ZMQ_HEARTBEAT_IVL        = {75, "WO", "int"},
+    ZMQ_HEARTBEAT_TTL        = {76, "WO", "int"},
+    ZMQ_HEARTBEAT_TIMEOUT    = {77, "WO", "int"},
+    ZMQ_XPUB_VERBOSER        = {78, "WO", "int"},
+    ZMQ_CONNECT_TIMEOUT      = {79, "RW", "int"},
+    ZMQ_TCP_MAXRT            = {80, "RW", "int"},
+    ZMQ_THREAD_SAFE          = {81, "RO", "int"},
+    ZMQ_MULTICAST_MAXTPDU    = {84, "RW", "int"},
+    ZMQ_VMCI_BUFFER_SIZE     = {85, "RW", "u64"},
+    ZMQ_VMCI_BUFFER_MIN_SIZE = {86, "RW", "u64"},
+    ZMQ_VMCI_BUFFER_MAX_SIZE = {87, "RW", "u64"},
+    ZMQ_VMCI_CONNECT_TIMEOUT = {88, "RW", "int"},
+    ZMQ_USE_FD               = {89, "RW", "fdt"},
   };
 
 }
