@@ -73,6 +73,7 @@ local Message = {}
 local Poller  = {}
 local StopWatch = {}
 
+local NAME_PREFIX = "LuaZMQ: "
 
 local function zerror(...) return Error:new(...) end
 
@@ -145,6 +146,7 @@ function Context:new(ptr)
       sockets = make_weak_kv();
       ctx     = ctx;
       scount  = 0;
+      hash    = ptrtohex(ctx);
     }
   }, self)
 
@@ -285,7 +287,9 @@ end
 
 local SNAMES = {}
 for n, v in pairs(api.SOCKET_TYPES) do
-  SNAMES[n:sub(5)] = v
+  n = string.sub(n, 5)
+  SNAMES[n] = v
+  SNAMES[v] = n
 end
 
 function Context:socket(stype, opt)
@@ -302,6 +306,8 @@ function Context:socket(stype, opt)
     _private = {
       ctx = self;
       skt = skt;
+      hash = ptrtohex(skt);
+      socket_type = SNAMES[stype] or string.format('%d', stype);
     }
   },Socket)
   self:_inc_socket_count(1)
@@ -372,6 +378,16 @@ else
   end
 end
 
+function Context:__tostring()
+  local str = string.format('%sContext (0x%s)',
+    NAME_PREFIX, self._private.hash
+  )
+  if self:closed() then
+    str = str .. ' - closed'
+  end
+  return str
+end
+
 end
 
 do -- Socket
@@ -381,7 +397,7 @@ Socket.__index = Socket
 local tmp_msg = ffi.new(api.zmq_msg_t)
 
 function Socket:closed()
-  return not self._private
+  return not self._private.skt
 end
 
 function Socket:close(linger)
@@ -405,7 +421,7 @@ function Socket:close(linger)
   end
 
   self._private.skt = nil
-  self._private = nil
+  self._private.ctx = nil
   return true
 end
 
@@ -774,6 +790,16 @@ function Socket:has_event(...)
   for i = 1, #res do res[i] = (0 ~= bit.band(res[i], events)) end
 
   return unpack(res)
+end
+
+function Socket:__tostring()
+  local str = string.format('%sSocket[%s] (0x%s)',
+    NAME_PREFIX, self._private.socket_type, self._private.hash
+  )
+  if self:closed() then
+    str = str .. ' - closed'
+  end
+  return str
 end
 
 end

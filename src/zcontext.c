@@ -1,7 +1,7 @@
 /*
   Author: Alexey Melnichuk <mimir@newmail.ru>
 
-  Copyright (C) 2013-2014 Alexey Melnichuk <mimir@newmail.ru>
+  Copyright (C) 2013-2017 Alexey Melnichuk <mimir@newmail.ru>
 
   Licensed according to the included 'LICENCE' document
 
@@ -133,6 +133,18 @@ int luazmq_init_ctx (lua_State *L) {
 static int luazmq_ctx_lightuserdata(lua_State *L) {
   zcontext *zctx = luazmq_getcontext(L);
   lua_pushlightuserdata(L, zctx->ctx);
+  return 1;
+}
+
+static int luazmq_ctx_tostring (lua_State *L) {
+  zcontext *ctx = (zcontext *)luazmq_checkudatap (L, 1, LUAZMQ_CONTEXT);
+  luaL_argcheck (L, ctx != NULL, 1, LUAZMQ_PREFIX"context expected");
+  if(ctx->flags & LUAZMQ_FLAG_CLOSED){
+    lua_pushfstring(L, LUAZMQ_PREFIX"Context (%p) - closed", ctx);
+  }
+  else{
+    lua_pushfstring(L, LUAZMQ_PREFIX"Context (%p)", ctx);
+  }
   return 1;
 }
 
@@ -396,6 +408,7 @@ DEFINE_CTX_OPT(max_msgsz, ZMQ_MAX_MSGSZ)
 #endif
 
 static const struct luaL_Reg luazmq_ctx_methods[] = {
+  {"__tostring",    luazmq_ctx_tostring      },
   {"__gc",          luazmq_ctx_destroy       },
   {"destroy",       luazmq_ctx_destroy       },
   {"closed",        luazmq_ctx_closed        },

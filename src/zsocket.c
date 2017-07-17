@@ -1,7 +1,7 @@
 /*
   Author: Alexey Melnichuk <mimir@newmail.ru>
 
-  Copyright (C) 2013-2014 Alexey Melnichuk <mimir@newmail.ru>
+  Copyright (C) 2013-2017 Alexey Melnichuk <mimir@newmail.ru>
 
   Licensed according to the included 'LICENCE' document
 
@@ -664,6 +664,95 @@ static int luazmq_skt_closed (lua_State *L) {
   return 1;
 }
 
+static const char* luazmq_skt_type_name(int typ){
+  switch(typ){
+#ifdef ZMQ_PAIR
+    case ZMQ_PAIR:    {static const char *name = "PAIR"; return name;}
+#endif
+#ifdef ZMQ_PUB
+    case ZMQ_PUB:     {static const char *name = "PUB"; return name;}
+#endif
+#ifdef ZMQ_SUB
+    case ZMQ_SUB:     {static const char *name = "SUB"; return name;}
+#endif
+#ifdef ZMQ_REQ
+    case ZMQ_REQ:     {static const char *name = "REQ"; return name;}
+#endif
+#ifdef ZMQ_REP
+    case ZMQ_REP:     {static const char *name = "REP"; return name;}
+#endif
+#ifdef ZMQ_DEALER
+    case ZMQ_DEALER:  {static const char *name = "DEALER"; return name;}
+#endif
+#ifdef ZMQ_ROUTER
+    case ZMQ_ROUTER:  {static const char *name = "ROUTER"; return name;}
+#endif
+#ifdef ZMQ_PULL
+    case ZMQ_PULL:    {static const char *name = "PULL"; return name;}
+#endif
+#ifdef ZMQ_PUSH
+    case ZMQ_PUSH:    {static const char *name = "PUSH"; return name;}
+#endif
+#ifdef ZMQ_XPUB
+    case ZMQ_XPUB:    {static const char *name = "XPUB"; return name;}
+#endif
+#ifdef ZMQ_XSUB
+    case ZMQ_XSUB:    {static const char *name = "XSUB"; return name;}
+#endif
+#ifdef ZMQ_STREAM
+    case ZMQ_STREAM:  {static const char *name = "STREAM"; return name;}
+#endif
+#ifdef ZMQ_SERVER
+    case ZMQ_SERVER:  {static const char *name = "SERVER"; return name;}
+#endif
+#ifdef ZMQ_CLIENT
+    case ZMQ_CLIENT:  {static const char *name = "CLIENT"; return name;}
+#endif
+#ifdef ZMQ_RADIO
+    case ZMQ_RADIO:   {static const char *name = "RADIO"; return name;}
+#endif
+#ifdef ZMQ_DISH
+    case ZMQ_DISH:    {static const char *name = "DISH"; return name;}
+#endif
+#ifdef ZMQ_GATHER
+    case ZMQ_GATHER:  {static const char *name = "GATHER"; return name;}
+#endif
+#ifdef ZMQ_SCATTER
+    case ZMQ_SCATTER: {static const char *name = "SCATTER"; return name;}
+#endif
+#ifdef ZMQ_DGRAM
+    case ZMQ_DGRAM:   {static const char *name = "DGRAM"; return name;}
+#endif
+  }
+  return NULL;
+}
+
+static int luazmq_skt_tostring (lua_State *L) {
+  zsocket *skt = (zsocket *)luazmq_checkudatap (L, 1, LUAZMQ_SOCKET);
+  luaL_argcheck (L, skt != NULL, 1, LUAZMQ_PREFIX"socket expected");
+  if(skt->flags & LUAZMQ_FLAG_CLOSED){
+    lua_pushfstring(L, LUAZMQ_PREFIX"Socket[-1] (%p) - closed", skt);
+  }
+  else{
+    int typ; size_t len = sizeof(typ);
+    int rc = zmq_getsockopt(skt->skt, ZMQ_TYPE, &typ, &len);
+    const char *name = NULL;
+    if (rc != -1) {
+      name = luazmq_skt_type_name(typ);
+      if(name){
+        lua_pushfstring(L, LUAZMQ_PREFIX"Socket[%s] (%p)", name, skt);
+      }
+      else{
+        lua_pushfstring(L, LUAZMQ_PREFIX"Socket[%d] (%p)", typ, skt);
+      }
+    }
+    else{
+      lua_pushfstring(L, LUAZMQ_PREFIX"Socket[-1] (%p)", skt);
+    }
+  }
+  return 1;
+}
+
 static int luazmq_skt_has_event (lua_State *L) {
   zsocket *skt = luazmq_getsocket(L);
   int i, top = lua_gettop(L);
@@ -1135,6 +1224,7 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   {"setopt_u64",     luazmq_skt_setopt_u64   },
   {"setopt_str",     luazmq_skt_setopt_str   },
 
+  {"__tostring",     luazmq_skt_tostring     },
   {"on_close",       luazmq_skt_on_close     },
   {"__gc",           luazmq_skt_destroy      },
   {"close",          luazmq_skt_destroy      },
