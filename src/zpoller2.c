@@ -106,7 +106,7 @@ static int luazmq_plr_add(lua_State *L) {
   if(sock){
     ret = zmq_poller_add(poller->handle, sock->skt, NULL, events);
     if(-1 != ret){
-      luazmq_plr_save_socket(L, poller, sock->skt, 1);
+      luazmq_plr_save_socket(L, poller, sock->skt, 2);
     }
   }
   else{

@@ -1332,7 +1332,7 @@ function test_sleep()
   loop:add_once(10, function() assert_false(flag1) flag1 = true end)
   timer:start()
   loop.sleep(100)                     -- do not run event
-  assert_true(ge(100, timer:stop()))  -- wait full interval
+  assert_true(ge(98, timer:stop()))   -- wait full interval
   assert_false(flag1)
 
   assert_equal(0, loop:flush(100))    -- only flush io events and no wait

@@ -29,7 +29,7 @@ local zmq = require"lzmq"
 local setmetatable = setmetatable
 local tonumber = tonumber
 local assert = assert
-local Poller = zmq.poller
+local Poller = zmq.poller2 or zmq.poller
 
 local poller_mt = {}
 poller_mt.__index = poller_mt
@@ -38,6 +38,19 @@ local function raw_socket(sock)
 	return (type(sock) == 'table') and (sock.socket) and sock:socket() or sock
 end
 
+-- add
+if Poller == zmq.poller2 then
+
+function poller_mt:add(sock, events, cb)
+	assert(cb ~= nil)
+	local s = raw_socket(sock)
+	if self.poller:add(s, events) then
+		self.callbacks[s] = function(revents) return cb(sock, revents) end
+	end
+end
+
+else
+
 function poller_mt:add(sock, events, cb)
 	assert(cb ~= nil)
 	local s = raw_socket(sock)
@@ -45,15 +58,44 @@ function poller_mt:add(sock, events, cb)
 	self.callbacks[id] = function(revents) return cb(sock, revents) end
 end
 
+end
+
+-- modify
+if Poller == zmq.poller2 then
+
 function poller_mt:modify(sock, events, cb)
-	local id
 	if events ~= 0 and cb then
-		id = self.poller:modify(raw_socket(sock), events)
+		local s = raw_socket(sock)
+		self.poller:modify(s, events)
+		self.callbacks[s] = function(revents) return cb(sock, revents) end
+	else
+		self:remove(sock)
+	end
+end
+
+else
+
+function poller_mt:modify(sock, events, cb)
+	if events ~= 0 and cb then
+		local id = self.poller:modify(raw_socket(sock), events)
 		self.callbacks[id] = function(revents) return cb(sock, revents) end
 	else
 		self:remove(sock)
 	end
 end
+
+end
+
+-- remove
+if Poller == zmq.poller2 then
+
+function poller_mt:remove(sock)
+	local s = raw_socket(sock)
+	self.poller:remove(s)
+	self.callbacks[s] = nil
+end
+
+else
 
 function poller_mt:remove(sock)
 	local id = self.poller:remove(raw_socket(sock))
@@ -62,6 +104,31 @@ function poller_mt:remove(sock)
 		self.callbacks[i] = self.callbacks[i+1]
 	end
 end
+
+end
+
+-- poll
+if Poller == zmq.poller2 then
+
+function poller_mt:poll(timeout)
+	local poller, callbacks, count = self.poller, self.callbacks, 0
+	local n = poller:count()
+	for i = 1, n do
+		local socket, revents = poller:poll(timeout)
+		if socket == nil then
+			return nil, revents
+		end
+		if false == socket then
+			break
+		end
+		timeout = 0
+		count = count + 1
+		callbacks[socket](revents)
+	end
+	return count
+end
+
+else
 
 function poller_mt:poll(timeout)
 	local poller = self.poller
@@ -75,6 +142,8 @@ function poller_mt:poll(timeout)
 		callbacks[id](revents)
 	end
 	return count
+end
+
 end
 
 function poller_mt:start()
