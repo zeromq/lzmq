@@ -24,6 +24,10 @@
 #include "zsupport.h"
 #include <memory.h>
 
+#ifdef ZMQ_HAVE_POLLER
+#include "zpoller2.h"
+#endif
+
 #define LUAZMQ_MODULE_NAME      "lzmq"
 #define LUAZMQ_MODULE_LICENSE   "MIT"
 #define LUAZMQ_MODULE_COPYRIGHT "Copyright (c) 2013-2017 Alexey Melnichuk"
@@ -37,6 +41,9 @@ const char *LUAZMQ_SOCKET  = LUAZMQ_PREFIX "Socket";
 const char *LUAZMQ_ERROR   = LUAZMQ_PREFIX "Error";
 const char *LUAZMQ_POLLER  = LUAZMQ_PREFIX "Poller";
 const char *LUAZMQ_MESSAGE = LUAZMQ_PREFIX "Message";
+#ifdef ZMQ_HAVE_POLLER
+const char *LUAZMQ_POLLER2 = LUAZMQ_PREFIX "Poller2";
+#endif
 
 static const char *LUAZMQ_STOPWATCH = LUAZMQ_PREFIX "stopwatch";
 
@@ -156,6 +163,17 @@ zpoller *luazmq_getpoller_at (lua_State *L, int i) {
   luaL_argcheck (L, poller->items != NULL, 1, LUAZMQ_PREFIX"poller is closed");
   return poller;
 }
+
+#ifdef ZMQ_HAVE_POLLER
+
+zpoller2 *luazmq_getpoller2_at (lua_State *L, int i) {
+  zpoller2 *poller = (zpoller2 *)luazmq_checkudatap (L, i, LUAZMQ_POLLER2);
+  luaL_argcheck (L, poller != NULL, 1, LUAZMQ_PREFIX"poller expected");
+  luaL_argcheck (L, poller->handle != NULL, 1, LUAZMQ_PREFIX"poller is closed");
+  return poller;
+}
+
+#endif
 
 zmessage *luazmq_getmessage_at (lua_State *L, int i) {
   zmessage *zmsg = (zmessage *)luazmq_checkudatap (L, i, LUAZMQ_MESSAGE);
@@ -501,6 +519,10 @@ static const struct luaL_Reg luazmqlib[]   = {
   { "msg_init_data_multi",  luazmq_msg_init_data_multi    },
   { "msg_init_data_array",  luazmq_msg_init_data_array    },
 
+#ifdef ZMQ_HAVE_POLLER
+  { "poller2",        luazmq_poller2_create   },
+#endif
+
   {NULL, NULL}
 };
 
@@ -543,6 +565,9 @@ static void luazmq_init_lib(lua_State *L){
   lua_pushvalue(L, -2); luazmq_context_initlib(L, 1);
   lua_pushvalue(L, -2); luazmq_socket_initlib (L, 1);
   lua_pushvalue(L, -2); luazmq_poller_initlib (L, 1);
+#ifdef ZMQ_HAVE_POLLER
+  lua_pushvalue(L, -2); luazmq_poller2_initlib(L, 1);
+#endif
   lua_pushvalue(L, -2); luazmq_error_initlib  (L, 1);
   lua_pushvalue(L, -2); luazmq_message_initlib(L, 1);
   lua_pushvalue(L, -2); luazmq_zutils_initlib (L, 1);

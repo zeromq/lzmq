@@ -61,7 +61,7 @@ build = {
     ["lzmq"] = {
       sources = {'src/lzmq.c','src/lzutils.c','src/poller.c',
                  'src/zcontext.c','src/zerror.c','src/zmsg.c',
-                 'src/zpoller.c','src/zsocket.c'},
+                 'src/zpoller.c','src/zsocket.c','src/zpoller2.c'},
       incdirs = {"$(ZMQ_INCDIR)"},
       libdirs = {"$(ZMQ_LIBDIR)"},
       defines = {

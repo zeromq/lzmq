@@ -206,6 +206,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\zpoller2.c"
+				>
+			</File>
+			<File
 				RelativePath="..\src\zsocket.c"
 				>
 			</File>
@@ -241,6 +245,10 @@
 			</File>
 			<File
 				RelativePath="..\src\zpoller.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\zpoller2.h"
 				>
 			</File>
 			<File
