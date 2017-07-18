@@ -66,8 +66,10 @@ local auint32_t       = ffi.typeof("uint32_t[1]")
 local aint64_t        = ffi.typeof("int64_t[1]")
 local auint64_t       = ffi.typeof("uint64_t[1]")
 local asize_t         = ffi.typeof("size_t[1]")
+local avoid_t         = ffi.typeof("void*[1]")
 local vla_char_t      = ffi.typeof("char[?]")
 local pvoid_t         = ffi.typeof("void*")
+local ppvoid_t        = ffi.typeof("void**")
 local pchar_t         = ffi.typeof("char*")
 local uintptr_t       = ffi.typeof("uintptr_t")
 local NULL            = ffi.cast(pvoid_t, 0)
@@ -242,6 +244,35 @@ header = [[
   unsigned long zmq_stopwatch_stop (void *watch_);
 ]]
 ffi.cdef(header)
+
+local zmq_poller_event_t, vla_poller_event_t
+if is_zmq_ge(4, 2, 2) then
+
+header = [[
+typedef struct {
+  void *socket;
+  ]] .. fd_t .. [[ fd;
+  void *user_data;
+  short events;
+} zmq_poller_event_t;
+
+void *zmq_poller_new      (void);
+int  zmq_poller_destroy   (void **poller_p);
+int  zmq_poller_add       (void *poller, void *socket, void *user_data, short events);
+int  zmq_poller_add_fd    (void *poller, ]] .. fd_t .. [[ fd, void *user_data, short events);
+int  zmq_poller_modify    (void *poller, void *socket, short events);
+int  zmq_poller_modify_fd (void *poller, ]] .. fd_t .. [[ fd, short events);
+int  zmq_poller_remove    (void *poller, void *socket);
+int  zmq_poller_remove_fd (void *poller, ]] .. fd_t .. [[ fd);
+int  zmq_poller_wait      (void *poller, zmq_poller_event_t *event, long timeout);
+int  zmq_poller_wait_all  (void *poller, zmq_poller_event_t *events, int n_events, long timeout);
+]]
+ffi.cdef(header)
+
+vla_poller_event_t = ffi.typeof("zmq_poller_event_t[?]")
+zmq_poller_event_t = ffi.typeof("zmq_poller_event_t")
+
+end
 
 local zmq_msg_t       = ffi.typeof("zmq_msg_t")
 local vla_pollitem_t  = ffi.typeof("zmq_pollitem_t[?]")
@@ -794,6 +825,59 @@ do
 
 end
 
+-- zmq_poller_new, zmq_poller_destroy, zmq_poller_add, zmq_poller_add_fd,
+-- zmq_poller_modify, zmq_poller_modify_fd, zmq_poller_remove,
+-- zmq_poller_remove_fd, zmq_poller_wait, zmq_poller_wait_all
+if pget(libzmq3, "zmq_poller_new") then
+
+function _M.zmq_poller_new()
+  local poller = ffi.new(avoid_t, NULL)
+  poller[0] = libzmq3.zmq_poller_new()
+  if poller[0] == NULL then
+    return NULL
+  end
+  ffi.gc(poller, _M.zmq_poller_destroy)
+  return poller
+end
+
+function _M.zmq_poller_destroy(poller)
+  return libzmq3.zmq_poller_destroy(ffi.cast(ppvoid_t, poller))
+end
+
+function _M.zmq_poller_add(poller, socket, user_data, events)
+  return libzmq3.zmq_poller_add(poller[0], socket, user_data, events)
+end
+
+function _M.zmq_poller_add_fd(poller, fd, user_data, events)
+  return libzmq3.zmq_poller_add_fd(poller[0], fd, user_data, events)
+end
+
+function _M.zmq_poller_modify(poller, socket, events)
+  return libzmq3.zmq_poller_modify(poller[0], socket, events)
+end
+
+function _M.zmq_poller_modify_fd(poller,  fd, events)
+  return libzmq3.zmq_poller_modify_fd(poller[0], fd, events)
+end
+
+function _M.zmq_poller_remove(poller, socket)
+  return libzmq3.zmq_poller_remove(poller[0], socket)
+end
+
+function _M.zmq_poller_remove_fd(poller, fd)
+  return libzmq3.zmq_poller_remove_fd(poller[0], fd)
+end
+
+function _M.zmq_poller_wait(poller, event, timeout)
+  return libzmq3.zmq_poller_wait(poller[0], event, timeout)
+end
+
+function _M.zmq_poller_wait_all(poller, events, n_events, timeout)
+  return libzmq3.zmq_poller_wait_all(poller[0], events, n_events, timeout)
+end
+
+end
+
 _M.ERRORS = require"lzmq.ffi.error"
 local ERRORS_MNEMO = {}
 for k,v in pairs(_M.ERRORS) do ERRORS_MNEMO[v] = k end
@@ -1017,6 +1101,9 @@ _M.ptrtostr        = ptrtostr
 
 _M.serialize_ptr   = serialize_ptr
 _M.deserialize_ptr = deserialize_ptr
+
+_M.zmq_poller_event_t = zmq_poller_event_t
+_M.vla_poller_event_t = vla_poller_event_t
 
 _M.vla_pollitem_t = vla_pollitem_t
 _M.zmq_pollitem_t = zmq_pollitem_t
