@@ -380,7 +380,7 @@ else
 end
 
 function Context:__tostring()
-  local str = string.format('%sContext (0x%s)',
+  local str = string.format('%sContext (%s)',
     NAME_PREFIX, self._private.hash
   )
   if self:closed() then
@@ -794,7 +794,7 @@ function Socket:has_event(...)
 end
 
 function Socket:__tostring()
-  local str = string.format('%sSocket[%s] (0x%s)',
+  local str = string.format('%sSocket[%s] (%s)',
     NAME_PREFIX, self._private.socket_type, self._private.hash
   )
   if self:closed() then
@@ -1210,6 +1210,7 @@ function Poller2:new(n)
       events    = events;
       n_events  = n;
       callbacks = {};
+      hash      = ptrtohex(poller);
     }
   }, self)
 end
@@ -1345,6 +1346,13 @@ end
 
 function Poller2:stop()
   self._private.is_running = nil
+end
+
+function Poller2:__tostring()
+  local str = string.format('%sPoller (%s)',
+    NAME_PREFIX, self._private.hash
+  )
+  return str
 end
 
 end
