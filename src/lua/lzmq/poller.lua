@@ -110,6 +110,7 @@ end
 -- poll
 if Poller == zmq.poller2 then
 
+-- based on poll
 function poller_mt:poll(timeout)
 	local poller, callbacks, count = self.poller, self.callbacks, 0
 	local n = poller:count()
@@ -121,11 +122,29 @@ function poller_mt:poll(timeout)
 		if false == socket then
 			break
 		end
-		timeout = 0
-		count = count + 1
-		callbacks[socket](revents)
+		count, timeout = count + 1, 0
+		local cb = callbacks[socket]
+		if cb then callbacks[socket](revents) end
 	end
 	return count
+end
+
+-- based on poll_all
+function poller_mt:poll(timeout)
+	local poller, callbacks, events, n = self.poller, self.callbacks, self.events
+	local n, ret = poller:poll_all(timeout, events)
+	if not n then return nil, ret end
+	-- assert(2*n == #events)
+	-- assert((ret == nil) or (ret == events))
+	for i = 1, n do
+		local socket, revents = events[2*i-1], events[2*i]
+		events[2*i-1], events[2*i] = nil
+		local cb = callbacks[socket]
+		-- some callback may remove socket from poller
+		if cb then callbacks[socket](revents) end
+	end
+	-- assert(not next(events))
+	return n
 end
 
 else
@@ -167,6 +186,7 @@ function M.new(pre_alloc)
 	return setmetatable({
 		poller = Poller(pre_alloc),
 		callbacks = {},
+		events    = (Poller == zmq.poller2) and {} or nil,
 	}, poller_mt)
 end
 

@@ -1,7 +1,7 @@
 /*
   Author: Alexey Melnichuk <mimir@newmail.ru>
 
-  Copyright (C) 2013-2014 Alexey Melnichuk <mimir@newmail.ru>
+  Copyright (C) 2013-2017 Alexey Melnichuk <mimir@newmail.ru>
 
   Licensed according to the included 'LICENCE' document
 
@@ -38,7 +38,7 @@ static void luazmq_plr_remove_socket(lua_State *L, zpoller2 *poller, void *socke
   lua_pop(L, 1);
 }
 
-static void luazmq_plr_push_event_socket(lua_State *L, zpoller2 *poller, zmq_poller_event_t *event){
+static void luazmq_plr_push_event_socket(lua_State *L, const zpoller2 *poller, const zmq_poller_event_t *event){
   if(event->socket){
     lua_rawgeti(L, LUAZMQ_LUA_REGISTRY, poller->sockets_ref);
     lua_pushlightuserdata(L, event->socket);
@@ -54,8 +54,8 @@ static void luazmq_plr_push_event_socket(lua_State *L, zpoller2 *poller, zmq_pol
 
 int luazmq_poller2_create(lua_State *L){
   unsigned int n = luaL_optinteger(L, 1, LUAZMQ_DEFAULT_POLLER_LEN);
-  size_t poller_size = sizeof(sizeof(zpoller2) + (n - 1) * sizeof(zmq_poller_event_t));
-  zpoller2 *poller = luazmq_newudata(L, zpoller2, LUAZMQ_POLLER2);
+  size_t poller_size = sizeof(zpoller2) + (n - 1) * sizeof(zmq_poller_event_t);
+  zpoller2 *poller = (zpoller2 *)luazmq_newudata_(L, poller_size, LUAZMQ_POLLER2);
 
   // create storage for sockets references
   lua_newtable(L);
@@ -205,6 +205,41 @@ static int luazmq_plr_poll(lua_State *L) {
   return 2;
 }
 
+/* method: poll_all */
+static int luazmq_plr_poll_all(lua_State *L) {
+  zpoller2 *poller = luazmq_getpoller2(L);
+  long timeout = luaL_checkinteger(L,2);
+  int ret = zmq_poller_wait_all(poller->handle, &poller->events[0], poller->n_events, timeout);
+
+  if(-1 == ret){
+    if(zmq_errno() == ETIMEDOUT){
+      lua_pushinteger(L, 0);
+      return 1;
+    }
+    return luazmq_fail(L, NULL);
+  }
+  assert(ret >= 0 && ret <= poller->n_events);
+
+  if(!lua_istable(L, 3)){
+    lua_settop(L, 2);
+    lua_createtable(L, 2 * ret, 0);
+  }
+  else{
+    lua_settop(L, 3);
+  }
+  {int i=0, j=0; for(;i < ret; ++i){
+    const zmq_poller_event_t *event = &poller->events[i];
+    luazmq_plr_push_event_socket(L, poller, event);
+    lua_rawseti(L, -2, ++j);
+    lua_pushinteger(L, event->events);
+    lua_rawseti(L, -2, ++j);
+  }}
+
+  lua_pushinteger(L, ret);
+  lua_insert(L, -2);
+  return 2;
+}
+
 static int luazmq_plr_count(lua_State *L) {
   zpoller2 *poller = luazmq_getpoller2(L);
   lua_pushinteger(L, poller->n_events);
@@ -227,6 +262,7 @@ static const struct luaL_Reg luazmq_plr_methods[] = {
   {"modify",           luazmq_plr_modify           },
   {"remove",           luazmq_plr_remove           },
   {"poll",             luazmq_plr_poll             },
+  {"poll_all",         luazmq_plr_poll_all         },
   {"count",            luazmq_plr_count            },
   {"close",            luazmq_plr_close            },
   {"closed",           luazmq_plr_closed           },
