@@ -111,6 +111,16 @@ function test_constant()
     assert_number(zmq.POLLOUT                        )
     assert_number(zmq.POLLERR                        )
   end
+  do -- context opt
+    assert_number(zmq.IO_THREADS                     )
+    assert_number(zmq.MAX_SOCKETS                    )
+    -- 4.1.0
+    -- assert_number(zmq.SOCKET_LIMIT                   )
+    -- assert_number(zmq.THREAD_PRIORITY                )
+    -- assert_number(zmq.THREAD_SCHED_POLICY            )
+    -- 4.2.2
+    -- assert_number(zmq.MAX_MSGSZ                      )
+  end
   do -- socket opt
     assert_number(zmq.AFFINITY                       )
     assert_number(zmq.IDENTITY                       )
