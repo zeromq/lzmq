@@ -323,7 +323,7 @@ function Context:socket(stype, opt)
         if fn then
           local ok, err, ext = fn(o, v)
           if not ok then
-            o:destroy()
+            o:close()
             return nil, err, ext
           end
         end
