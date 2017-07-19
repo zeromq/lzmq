@@ -32,84 +32,84 @@ local assert = assert
 local Poller = zmq.poller
 
 local function hashid(obj)
-  obj = tostring(obj)
-  return string.match(obj, ': (%x+)$') or obj
+	obj = tostring(obj)
+	return string.match(obj, ': (%x+)$') or obj
 end
 
 local poller_mt = {}
 poller_mt.__index = poller_mt
 
 local function raw_socket(sock)
-  return (type(sock) == 'table') and (sock.socket) and sock:socket() or sock
+	return (type(sock) == 'table') and (sock.socket) and sock:socket() or sock
 end
 
 function poller_mt:add(sock, events, cb)
-  assert(cb ~= nil)
-  local s = raw_socket(sock)
-  local id = self.poller:add(s, events)
-  self.callbacks[id] = function(revents) return cb(sock, revents) end
+	assert(cb ~= nil)
+	local s = raw_socket(sock)
+	local id = self.poller:add(s, events)
+	self.callbacks[id] = function(revents) return cb(sock, revents) end
 end
 
 function poller_mt:modify(sock, events, cb)
-  local id
-  if events ~= 0 and cb then
-    id = self.poller:modify(raw_socket(sock), events)
-    self.callbacks[id] = function(revents) return cb(sock, revents) end
-  else
-    self:remove(sock)
-  end
+	local id
+	if events ~= 0 and cb then
+		id = self.poller:modify(raw_socket(sock), events)
+		self.callbacks[id] = function(revents) return cb(sock, revents) end
+	else
+		self:remove(sock)
+	end
 end
 
 function poller_mt:remove(sock)
-  local id = self.poller:remove(raw_socket(sock))
-  assert(id <= #self.callbacks)
-  for i = id, #self.callbacks do
-    self.callbacks[i] = self.callbacks[i+1]
-  end
+	local id = self.poller:remove(raw_socket(sock))
+	assert(id <= #self.callbacks)
+	for i = id, #self.callbacks do
+		self.callbacks[i] = self.callbacks[i+1]
+	end
 end
 
 function poller_mt:poll(timeout)
-  local poller = self.poller
-  local count, err = poller:poll(timeout)
-  if not count then
-    return nil, err
-  end
-  local callbacks = self.callbacks
-  for i=1,count do
-    local id, revents = poller:next_revents_idx()
-    callbacks[id](revents)
-  end
-  return count
+	local poller = self.poller
+	local count, err = poller:poll(timeout)
+	if not count then
+		return nil, err
+	end
+	local callbacks = self.callbacks
+	for i=1,count do
+		local id, revents = poller:next_revents_idx()
+		callbacks[id](revents)
+	end
+	return count
 end
 
 function poller_mt:start()
-  self.is_running = true
-  while self.is_running do
-    local status, err = self:poll(-1)
-    if not status then
-      return false, err
-    end
-  end
-  return true
+	self.is_running = true
+	while self.is_running do
+		local status, err = self:poll(-1)
+		if not status then
+			return false, err
+		end
+	end
+	return true
 end
 
 function poller_mt:stop()
-  self.is_running = false
+	self.is_running = false
 end
 
 function poller_mt:__tostring()
-  return string.format("LuaZMQ: Poller (%s)", self.hash)
+	return string.format("LuaZMQ: Poller (%s)", self.hash)
 end
 
 local M = {}
 
 function M.new(pre_alloc)
-  local poller = Poller(pre_alloc)
-  return setmetatable({
-    poller = poller,
-    hash = hashid(poller),
-    callbacks = {},
-  }, poller_mt)
+	local poller = Poller(pre_alloc)
+	return setmetatable({
+		poller = poller,
+		hash = hashid(poller),
+		callbacks = {},
+	}, poller_mt)
 end
 
 return setmetatable(M, {__call = function(tab, ...) return M.new(...) end})
