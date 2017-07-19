@@ -19,6 +19,7 @@ local SKIP       = function(msg) return function() return skip(msg) end end
 
 local IS_LUA52 = _VERSION >= 'Lua 5.2'
 local TEST_FFI = ("ffi" == os.getenv("LZMQ"))
+local TRAVIS   = (os.getenv("TRAVIS") == 'true')
 
 -- value >= expected
 local function ge(expected, value)
@@ -588,6 +589,23 @@ function test_socket_context()
   assert_equal(ctx, skt:context())
 end
 
+function test_tostring()
+  assert_match('LuaZMQ',  tostring(skt))
+  assert_match('LuaZMQ',  tostring(ctx))
+  assert_match('Socket',  tostring(skt))
+  assert_match('SUB',     tostring(skt))
+  assert_match('Context', tostring(ctx))
+
+  ctx:destroy()
+
+  assert_match('LuaZMQ',  tostring(skt))
+  assert_match('LuaZMQ',  tostring(ctx))
+  assert_match('Socket',  tostring(skt))
+  assert_match('Context', tostring(ctx))
+  assert_match('closed',  tostring(skt))
+  assert_match('closed',  tostring(ctx))
+end
+
 end
 
 local _ENV = TEST_CASE'context'              if ENABLE then
@@ -599,6 +617,7 @@ function setup() end
 function teardown()
   if skt then skt:close()   end
   if ctx then ctx:destroy() end
+  skt, ctx = nil
 end
 
 function test_context_shutdown()
@@ -641,6 +660,16 @@ function test_context_shutdown_autoclose()
   ctx:autoclose(skt)
   assert_true(ctx:shutdown())
   assert_true(skt:closed())
+end
+
+function test_context_fail_create_socket()
+  ctx = assert(is_zcontext(zmq.context()))
+  local err
+  assert_pass(function()
+    skt, err = ctx:socket{'PUB', subscribe = ''}
+  end)
+  assert_nil(skt)
+  assert_match('EINVAL', tostring(err))
 end
 
 end
@@ -1710,6 +1739,11 @@ function test_pollable_interface()
   ret = t[sub3] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
 end
 
+function test_tostring()
+  assert_match('LuaZMQ', tostring(poller))
+  assert_match('Poller', tostring(poller))
+end
+
 end
 
 local _ENV = TEST_CASE'z85 encode'           if ENABLE then
@@ -1828,6 +1862,7 @@ end
 end
 
 local _ENV = TEST_CASE'monitor'              if ENABLE then
+if TRAVIS then test = SKIP"Skip on travis because of assertion falure inside libzmq" else
 
 local ctx, loop, timer, srv, mon
 
@@ -1991,7 +2026,7 @@ function test_reset_monitor()
   assert(error_is(err, zmq.errors.EAGAIN))
 end
 
-end
+end end
 
 local _ENV = TEST_CASE'Clone socket'         if ENABLE then
 
