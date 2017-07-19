@@ -24,6 +24,16 @@ typedef SOCKET fd_t;
 typedef int    fd_t;
 #endif
 
+static void luazmq_pushsocket_fd(lua_State *L, fd_t fd);
+
+void luazmq_pushsocket_fd(lua_State *L, fd_t fd){
+  if(sizeof(lua_Integer) <= sizeof(fd_t)){
+    lua_pushinteger(L, (lua_Integer)fd);
+    return;
+  }
+  lua_pushnumber(L, (lua_Number)fd);
+}
+
 #define DEFINE_SKT_METHOD_1(NAME)              \
                                                \
 static int luazmq_skt_##NAME (lua_State *L) {  \
@@ -838,7 +848,7 @@ static int luazmq_skt_get_fdt (lua_State *L, int option_name) {
   }
 
   if (ret == -1) return luazmq_fail(L, skt);
-  lua_pushnumber(L, (lua_Number)option_value);
+  luazmq_pushsocket_fd(L, option_value);
   return 1;
 }
 
