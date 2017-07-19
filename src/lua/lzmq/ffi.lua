@@ -57,6 +57,11 @@ local function ptrtohex(ptr)
   return bintohex(api.ptrtostr(ptr))
 end
 
+local function hashid(obj)
+  obj = tostring(obj)
+  return string.match(obj, ': (%x+)$') or obj
+end
+
 local FLAGS = api.FLAGS
 local ERRORS = api.ERRORS
 local ZMQ_LINGER = api.SOCKET_OPTIONS.ZMQ_LINGER[1]
@@ -379,7 +384,7 @@ else
 end
 
 function Context:__tostring()
-  local str = string.format('%sContext (0x%s)',
+  local str = string.format('%sContext (%s)',
     NAME_PREFIX, self._private.hash
   )
   if self:closed() then
@@ -793,7 +798,7 @@ function Socket:has_event(...)
 end
 
 function Socket:__tostring()
-  local str = string.format('%sSocket[%s] (0x%s)',
+  local str = string.format('%sSocket[%s] (%s)',
     NAME_PREFIX, self._private.socket_type, self._private.hash
   )
   if self:closed() then
@@ -1035,14 +1040,17 @@ Poller.__index = Poller
 function Poller:new(n)
   assert((n or 0) >= 0)
 
-  return setmetatable({
+  local o = {
     _private = {
       items   = n and ffi.new(api.vla_pollitem_t, n);
       size    = n or 0;
       nitems  = 0;
       sockets = {};
     }
-  },self)
+  }
+  o._private.hash = hashid(o)
+
+  return setmetatable(o,self)
 end
 
 -- ensure that there n empty items
@@ -1189,6 +1197,12 @@ end
 
 function Poller:stop()
   self._private.is_running = nil
+end
+
+function Poller:__tostring()
+  return string.format('%sPoller (%s)',
+    NAME_PREFIX, self._private.hash
+  )
 end
 
 end
