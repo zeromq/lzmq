@@ -14,6 +14,14 @@
 #include "lzmq.h"
 #include <assert.h>
 
+static socket_t luazmq_checksocket_fd(lua_State *L, int idx);
+
+socket_t luazmq_checksocket_fd(lua_State *L, int idx){
+  if(sizeof(lua_Integer) >= sizeof(socket_t))
+    return luaL_checkinteger(L, idx);
+  return (socket_t)luaL_checknumber(L, idx);
+}
+
 #define LUAZMQ_DEFAULT_POLLER_LEN 10
 
 int luazmq_poller_create(lua_State *L){
@@ -52,7 +60,7 @@ static int luazmq_plr_add(lua_State *L) {
   socket_t fd = 0;
 
   if(lua_isuserdata(L, 2)) sock = luazmq_getsocket_at(L, 2);
-  else if(lua_isnumber(L, 2)) fd = lua_tonumber(L, 2);
+  else if(lua_isnumber(L, 2)) fd = luazmq_checksocket_fd(L, 2);
   else return luazmq_typerror(L, 2, "number or ZMQ socket");
 
   idx = poller_get_free_item(poller);
@@ -78,7 +86,7 @@ static int luazmq_plr_modify(lua_State *L){
     sock = luazmq_getsocket_at(L, 2);
     idx = poller_find_sock_item(poller, sock->skt);
   } else if(lua_isnumber(L, 2)) {
-    fd = lua_tonumber(L, 2);
+    fd = luazmq_checksocket_fd(L, 2);
     idx = poller_find_fd_item(poller, fd);
   } else {
     return luazmq_typerror(L, 2, "number or ZMQ socket");
@@ -108,7 +116,7 @@ static int luazmq_plr_remove(lua_State *L) {
     zsocket *sock = luazmq_getsocket_at(L, 2);
     idx = poller_find_sock_item(poller, sock->skt);
   } else if(lua_isnumber(L, 2)) {
-    socket_t fd = lua_tonumber(L, 2);
+    socket_t fd = luazmq_checksocket_fd(L, 2);
     idx = poller_find_fd_item(poller, fd);
   } else {
     return luazmq_typerror(L, 2, "number or ZMQ socket");
