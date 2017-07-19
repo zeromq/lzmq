@@ -589,6 +589,23 @@ function test_socket_context()
   assert_equal(ctx, skt:context())
 end
 
+function test_tostring()
+  assert_match('LuaZMQ',  tostring(skt))
+  assert_match('LuaZMQ',  tostring(ctx))
+  assert_match('Socket',  tostring(skt))
+  assert_match('SUB',     tostring(skt))
+  assert_match('Context', tostring(ctx))
+
+  ctx:destroy()
+
+  assert_match('LuaZMQ',  tostring(skt))
+  assert_match('LuaZMQ',  tostring(ctx))
+  assert_match('Socket',  tostring(skt))
+  assert_match('Context', tostring(ctx))
+  assert_match('closed',  tostring(skt))
+  assert_match('closed',  tostring(ctx))
+end
+
 end
 
 local _ENV = TEST_CASE'context'              if ENABLE then
@@ -1720,6 +1737,11 @@ function test_pollable_interface()
 
   ret = t[sub1] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
   ret = t[sub3] assert_table(ret) assert_equal("hello", ret[1]) assert_equal(false, ret[2])
+end
+
+function test_tostring()
+  assert_match('LuaZMQ', tostring(poller))
+  assert_match('Poller', tostring(poller))
 end
 
 end
