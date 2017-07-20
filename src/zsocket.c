@@ -18,11 +18,7 @@
 #include <memory.h>
 #include <stdlib.h>
 
-#if defined(_WIN32)
-typedef SOCKET fd_t;
-#else
-typedef int    fd_t;
-#endif
+#define fd_t lzmq_os_sock_t
 
 #define DEFINE_SKT_METHOD_1(NAME)              \
                                                \
@@ -838,20 +834,14 @@ static int luazmq_skt_get_fdt (lua_State *L, int option_name) {
   }
 
   if (ret == -1) return luazmq_fail(L, skt);
-  lua_pushnumber(L, (lua_Number)option_value);
+  luazmq_push_os_socket(L, option_value);
   return 1;
 }
 
 static int luazmq_skt_set_fdt (lua_State *L, int option_name) {
   zsocket *skt = luazmq_getsocket(L);
-  fd_t option_value;
+  fd_t option_value = luazmq_check_os_socket(L, 2, "file descriptor expected");
   int ret;
-  if(lua_islightuserdata(L, 2)){
-    option_value = (fd_t)lua_touserdata(L, 2);
-  }
-  else{
-    option_value = (fd_t)luaL_checknumber(L, 2);
-  }
   ret = zmq_setsockopt(skt->skt, option_name, &option_value, sizeof(option_value));
   if (ret == -1) return luazmq_fail(L, skt);
   return luazmq_pass(L);

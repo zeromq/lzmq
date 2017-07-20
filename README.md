@@ -1,7 +1,6 @@
 # Lua binding to [ZeroMQ](http://zeromq.org) library.
 
 [![Build Status](https://travis-ci.org/zeromq/lzmq.png?branch=master)](https://travis-ci.org/zeromq/lzmq)
-[![Build Status](https://buildhive.cloudbees.com/job/zeromq/job/lzmq/badge/icon)](https://buildhive.cloudbees.com/job/zeromq/job/lzmq/)
 [![Coverage Status](https://coveralls.io/repos/zeromq/lzmq/badge.png?branch=master)](https://coveralls.io/r/zeromq/lzmq?branch=master)
 [![Licence](http://img.shields.io/badge/Licence-MIT-brightgreen.svg)](LICENCE.txt)
 

@@ -210,3 +210,64 @@ void luazmq_stack_dump (lua_State *L){
   }
   fprintf(stderr, " ------------ Stack Dump Finished ------------\n" );
 }
+
+lzmq_os_sock_t luazmq_check_os_socket(lua_State *L, int idx, const char *msg) {
+  if (lua_islightuserdata(L, idx))
+    return (lzmq_os_sock_t)lua_touserdata(L, idx);
+
+  if (!lua_isnumber(L, idx)) {
+    luazmq_typerror(L, idx, msg);
+    return 0;
+  }
+
+  if (sizeof(lua_Integer) >= sizeof(lzmq_os_sock_t))
+    return (lzmq_os_sock_t)lua_tointeger(L, idx);
+  return (lzmq_os_sock_t)lua_tonumber(L, idx);
+}
+
+void luazmq_push_os_socket(lua_State *L, lzmq_os_sock_t fd) {
+#if !defined(_WIN32)
+  lua_pushinteger(L, (lua_Integer)fd);
+#else /*_WIN32*/
+  /* Assumes that compiler can optimize constant conditions. MSVC do this. */
+
+  /*On Lua 5.3 lua_Integer type can be represented exactly*/
+#if LUA_VERSION_NUM >= 503
+  if (sizeof(lzmq_os_sock_t) <= sizeof(lua_Integer)) {
+    lua_pushinteger(L, (lua_Integer)fd);
+    return;
+  }
+#endif
+
+#if defined(LUA_NUMBER_DOUBLE) || defined(LUA_NUMBER_FLOAT)
+  /*! @todo test DBL_MANT_DIG, FLT_MANT_DIG */
+
+  if (sizeof(lua_Number) == 8) { /*we have 53 bits for integer*/
+    if ((sizeof(lzmq_os_sock_t) <= 6)) {
+      lua_pushnumber(L, (lua_Number)fd);
+      return;
+    }
+
+    if(((UINT_PTR)fd & 0x1FFFFFFFFFFFFF) == (UINT_PTR)fd)
+      lua_pushnumber(L, (lua_Number)fd);
+    else
+      lua_pushlightuserdata(L, (void*)fd);
+
+    return;
+  }
+
+  if (sizeof(lua_Number) == 4) { /*we have 24 bits for integer*/
+    if (((UINT_PTR)fd & 0xFFFFFF) == (UINT_PTR)fd)
+      lua_pushnumber(L, (lua_Number)fd);
+    else
+      lua_pushlightuserdata(L, (void*)fd);
+    return;
+  }
+#endif
+
+  lua_pushnumber(L, (lua_Number)fd);
+  if (luazmq_check_os_socket(L, -1, NULL) != fd)
+    lua_pushlightuserdata(L, (void*)fd);
+
+#endif /*_WIN32*/
+}

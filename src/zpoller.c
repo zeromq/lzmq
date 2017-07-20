@@ -14,6 +14,10 @@
 #include "lzmq.h"
 #include <assert.h>
 
+#define luazmq_check_socket(L, idx, zs, fd) \
+  if (lua_isuserdata(L, idx) && !lua_islightuserdata(L, idx)) zs = luazmq_getsocket_at(L, idx);\
+  else fd = (socket_t)luazmq_check_os_socket(L, idx, "number or ZMQ socket");
+
 #define LUAZMQ_DEFAULT_POLLER_LEN 10
 
 int luazmq_poller_create(lua_State *L){
@@ -51,9 +55,7 @@ static int luazmq_plr_add(lua_State *L) {
   zsocket *sock = NULL;
   socket_t fd = 0;
 
-  if(lua_isuserdata(L, 2)) sock = luazmq_getsocket_at(L, 2);
-  else if(lua_isnumber(L, 2)) fd = lua_tonumber(L, 2);
-  else return luazmq_typerror(L, 2, "number or ZMQ socket");
+  luazmq_check_socket(L, 2, sock, fd);
 
   idx = poller_get_free_item(poller);
   item = &(poller->items[idx]);
@@ -74,15 +76,12 @@ static int luazmq_plr_modify(lua_State *L){
   zsocket *sock = NULL;
   socket_t fd = 0;
 
-  if(lua_isuserdata(L, 2)) {
-    sock = luazmq_getsocket_at(L, 2);
+  luazmq_check_socket(L, 2, sock, fd);
+
+  if(sock)
     idx = poller_find_sock_item(poller, sock->skt);
-  } else if(lua_isnumber(L, 2)) {
-    fd = lua_tonumber(L, 2);
+  else
     idx = poller_find_fd_item(poller, fd);
-  } else {
-    return luazmq_typerror(L, 2, "number or ZMQ socket");
-  }
 
   if(events != 0) {
     if(idx < 0) idx = poller_get_free_item(poller);
@@ -103,16 +102,15 @@ static int luazmq_plr_modify(lua_State *L){
 static int luazmq_plr_remove(lua_State *L) {
   zpoller *poller = luazmq_getpoller(L);
   int idx = 0;
+  zsocket *sock = NULL;
+  socket_t fd = 0;
 
-  if(lua_isuserdata(L, 2)) {
-    zsocket *sock = luazmq_getsocket_at(L, 2);
+  luazmq_check_socket(L, 2, sock, fd);
+
+  if(sock)
     idx = poller_find_sock_item(poller, sock->skt);
-  } else if(lua_isnumber(L, 2)) {
-    socket_t fd = lua_tonumber(L, 2);
+  else
     idx = poller_find_fd_item(poller, fd);
-  } else {
-    return luazmq_typerror(L, 2, "number or ZMQ socket");
-  }
 
   /* if sock/fd was found. */
   if(idx >= 0) {

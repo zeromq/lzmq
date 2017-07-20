@@ -11,8 +11,18 @@
 #ifndef _LZUTILS_H_
 #define _LZUTILS_H_
 
+#if defined(_WIN32)
+#include <winsock2.h>
+#endif
+
 #include "lua.h"
 #include "lauxlib.h"
+
+#if defined(_WIN32)
+typedef SOCKET lzmq_os_sock_t;
+#else
+typedef int    lzmq_os_sock_t;
+#endif
 
 #if LUA_VERSION_NUM >= 503 /* Lua 5.3 */
 
@@ -98,5 +108,9 @@ int luazmq_call_method(lua_State *L, const char *name, int nargs, int nresults);
 int luazmq_new_weak_table(lua_State*L, const char *mode);
 
 void luazmq_stack_dump(lua_State *L);
+
+lzmq_os_sock_t luazmq_check_os_socket(lua_State *L, int idx, const char *msg);
+
+void luazmq_push_os_socket(lua_State *L, lzmq_os_sock_t fd);
 
 #endif

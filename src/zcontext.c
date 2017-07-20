@@ -450,6 +450,29 @@ static const struct luaL_Reg luazmq_ctx_methods[] = {
   {NULL,NULL}
 };
 
+static const luazmq_int_const ctx_options[] = {
+  DEFINE_ZMQ_CONST(IO_THREADS),
+  DEFINE_ZMQ_CONST(MAX_SOCKETS),
+
+#ifdef ZMQ_SOCKET_LIMIT
+  DEFINE_ZMQ_CONST(SOCKET_LIMIT),
+#endif
+
+#ifdef ZMQ_THREAD_PRIORITY
+  DEFINE_ZMQ_CONST(THREAD_PRIORITY),
+#endif
+
+#ifdef ZMQ_THREAD_SCHED_POLICY
+  DEFINE_ZMQ_CONST(THREAD_SCHED_POLICY),
+#endif
+
+#ifdef ZMQ_MAX_MSGSZ
+  DEFINE_ZMQ_CONST(MAX_MSGSZ),
+#endif
+
+  {0,0}
+};
+
 void luazmq_context_initlib (lua_State *L, int nup){
 #ifdef LUAZMQ_DEBUG
   int top = lua_gettop(L);
@@ -461,4 +484,6 @@ void luazmq_context_initlib (lua_State *L, int nup){
 #ifdef LUAZMQ_DEBUG
   assert(top == (lua_gettop(L) + nup));
 #endif
+
+  luazmq_register_consts(L, ctx_options);
 }
