@@ -470,7 +470,7 @@ static const luazmq_int_const ctx_options[] = {
   DEFINE_ZMQ_CONST(MAX_MSGSZ),
 #endif
 
-  {NULL,NULL}
+  {0,0}
 };
 
 void luazmq_context_initlib (lua_State *L, int nup){
