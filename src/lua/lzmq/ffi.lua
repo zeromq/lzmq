@@ -8,7 +8,7 @@
 --  This file is part of lua-lzqm library.
 --
 
-local LZMQ_VERSION   = "0.4.4"
+local LZMQ_VERSION   = "0.4.5-dev"
 local LZMQ_NAME      = "lzmq.ffi"
 local LZMQ_LICENSE   = "MIT"
 local LZMQ_COPYRIGHT = "Copyright (c) 2013-2017 Alexey Melnichuk"

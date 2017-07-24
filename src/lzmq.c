@@ -29,8 +29,8 @@
 #define LUAZMQ_MODULE_COPYRIGHT "Copyright (c) 2013-2017 Alexey Melnichuk"
 #define LUAZMQ_VERSION_MAJOR 0
 #define LUAZMQ_VERSION_MINOR 4
-#define LUAZMQ_VERSION_PATCH 4
-// #define LUAZMQ_VERSION_COMMENT "dev"
+#define LUAZMQ_VERSION_PATCH 5
+#define LUAZMQ_VERSION_COMMENT "dev"
 
 const char *LUAZMQ_CONTEXT = LUAZMQ_PREFIX "Context";
 const char *LUAZMQ_SOCKET  = LUAZMQ_PREFIX "Socket";
