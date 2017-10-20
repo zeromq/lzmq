@@ -46,6 +46,7 @@ install:
   - sudo luarocks install luacov-coveralls
   - sudo luarocks install lua-llthreads2
   - sudo luarocks install lunitx
+  - sudo luarocks install luasocket
 
   - if [ $LZMQ = "ffi-lua" ]; then
       sudo luarocks install ljsyscall 0.9;
