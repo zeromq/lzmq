@@ -42,6 +42,9 @@ local ztimer = require (LZMQ .. ".timer" )
 local zloop  = require (LZMQ .. ".loop"  )
 local zpoller= require (LZMQ .. ".poller")
 
+-- to use gettime in test
+local Socket = require "socket"
+
 print("------------------------------------")
 print("Module    name: " .. zmq._NAME);
 print("Module version: " .. zmq._VERSION);
@@ -1604,6 +1607,15 @@ end
 function test_absolute()
   timer = ztimer.absolute()
   test_timer(timer)
+end
+
+function test_absolute_time_value()
+  local t1 = ztimer.absolute_time()
+  local t2 = math.floor(Socket.gettime() * 1000)
+  local d  = math.abs(t2 - t1)
+
+  -- ~2 seconds
+  assert_true(d < 2000, string.format("expected delta time will be no more than 2 seconds but got: %.3f", d))
 end
 
 end

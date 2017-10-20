@@ -141,11 +141,12 @@ typedef uint64_t absolute_time_t;
 typedef int64_t  absolute_diff_t;
 
 static absolute_time_t GetUtcTime(){
+  // number of 100-nanosecond intervals since 1601-01-01 00:00:00 +0000 (UTC)
   FILETIME ft;
   absolute_time_t t;
   GetSystemTimeAsFileTime (&ft);
-  t = (absolute_time_t)ft.dwLowDateTime + ((absolute_time_t)(ft.dwHighDateTime-1) << 32LL);
-  return (t / 10000UL) + 116444736000000000LL;
+  t = (absolute_time_t)ft.dwLowDateTime | (((absolute_time_t)ft.dwHighDateTime) << 32);
+  return ((t - 116444736000000000LL) / 10000UL);
 }
 
 static absolute_diff_t GetUtcDelta(absolute_time_t StartTime, absolute_time_t EndTime){
@@ -167,7 +168,9 @@ static absolute_time_t GetUtcTime(){
   if (0 == gettimeofday(&tv, NULL))
     return (absolute_time_t)tv.tv_sec * 1000 + (absolute_time_t)tv.tv_usec/1000;
 #endif
-  return time(0);
+
+  // number of seconds since the Epoch, 1970-01-01 00:00:00 +0000 (UTC)
+  return (absolute_time_t)time(0) * 1000UL;
 }
 
 static monotonic_time_t GetMonotonicTime(){
