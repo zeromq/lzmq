@@ -43,9 +43,11 @@ local zlibs if IS_WINDOWS then
 else
   zlibs = {
     "zmq",      "libzmq",
+    "zmq.so.5", "libzmq.so.5",
     "zmq.so.4", "libzmq.so.4",
     "zmq.so.3", "libzmq.so.3",
     "/usr/local/lib/libzmq.so",
+    "/usr/local/lib/libzmq.so.5",
     "/usr/local/lib/libzmq.so.4",
     "/usr/local/lib/libzmq.so.3",
   }
@@ -171,7 +173,7 @@ header = [[
 
   void *zmq_socket         (void *, int type);
   int   zmq_close          (void *s);
-  int   zmq_setsockopt     (void *s, int option, const void *optval, size_t optvallen); 
+  int   zmq_setsockopt     (void *s, int option, const void *optval, size_t optvallen);
   int   zmq_getsockopt     (void *s, int option, void *optval, size_t *optvallen);
   int   zmq_bind           (void *s, const char *addr);
   int   zmq_connect        (void *s, const char *addr);
@@ -477,7 +479,7 @@ function _M.zmq_recv(skt, len, flags)
   return ffi.string(buf, len), flen
 end
 
-function _M.zmq_sendmsg(skt, msg, flags) 
+function _M.zmq_sendmsg(skt, msg, flags)
   return libzmq3.zmq_sendmsg(skt, msg, flags)
 end
 
@@ -491,8 +493,8 @@ end
 
 end
 
--- zmq_msg_init, zmq_msg_init_size, zmq_msg_data, zmq_msg_size, zmq_msg_get, 
--- zmq_msg_set, zmq_msg_move, zmq_msg_copy, zmq_msg_set_data, zmq_msg_get_data, 
+-- zmq_msg_init, zmq_msg_init_size, zmq_msg_data, zmq_msg_size, zmq_msg_get,
+-- zmq_msg_set, zmq_msg_move, zmq_msg_copy, zmq_msg_set_data, zmq_msg_get_data,
 -- zmq_msg_init_string, zmq_msg_recv, zmq_msg_send, zmq_msg_more, zmq_msg_gets
 do -- message
 
@@ -532,7 +534,7 @@ end
 local function get_msg_copy(copy)
   return function (dest, src)
     local new = false
-    if not src then 
+    if not src then
       new, src = true, dest
       dest = _M.zmq_msg_init()
       if not dest then return end
@@ -836,7 +838,7 @@ _M.CONTEXT_OPTIONS = O{
 
 _M.SOCKET_OPTIONS = O{
   ZMQ_AFFINITY                  = {4 , "RW", "u64"};
-  ZMQ_IDENTITY                  = {5 , "RW", "str"}; 
+  ZMQ_IDENTITY                  = {5 , "RW", "str"};
   ZMQ_SUBSCRIBE                 = {6 , "WO", "str_arr"};
   ZMQ_UNSUBSCRIBE               = {7 , "WO", "str_arr"};
   ZMQ_RATE                      = {8 , "RW", "int"};
