@@ -21,7 +21,7 @@
  */
 #if defined(__WINDOWS__) 
 
-#include <Windows.h>
+#include <windows.h>
 
 #if !defined(USE_TICK_COUNT) && !defined(USE_TICK_COUNT64) && !defined(USE_PERF_COUNT)
 #  define USE_PERF_COUNT
