@@ -77,6 +77,7 @@ local Socket  = {}
 local Message = {}
 local Poller  = {}
 local StopWatch = {}
+local Poller2
 
 local NAME_PREFIX = "LuaZMQ: "
 
@@ -1207,6 +1208,169 @@ end
 
 end
 
+if api.zmq_poller_new then -- Poller2
+Poller2 = {} Poller2.__index = Poller2
+
+function Poller2:new(n)
+  n = n or 10
+
+  local poller = api.zmq_poller_new()
+  if poller == api.NULL then return nil, zerror() end
+  local events = ffi.new(api.vla_poller_event_t, n)
+
+  return setmetatable({
+    _private = {
+      poller    = poller;
+      events    = events;
+      n_events  = n;
+      callbacks = {};
+      hash      = ptrtohex(poller);
+    }
+  }, self)
+end
+
+local function get_socket(skt)
+  if type(skt) == "number" then
+    return skt
+  end
+
+  if skt.socket then
+     skt = skt:socket()
+  end
+
+  return skt:handle()
+end
+
+local function skt2id(skt)
+  if type(skt) == "number" then
+    return skt
+  end
+  return api.serialize_ptr(skt)
+end
+
+function Poller2:add(skt, events, cb)
+  assert(type(events) == 'number')
+  assert(cb)
+
+  local poller = self._private.poller
+  local s, rc = get_socket(skt)
+  if type(s) == "number" then
+    rc = api.zmq_poller_add_fd(poller, s, api.NULL, events)
+  else
+    rc = api.zmq_poller_add(poller, s, api.NULL, events)
+  end
+
+  if rc == -1 then
+    return nil, zerror()
+  end
+
+  self._private.callbacks[skt2id(s)] = function(revents) return cb(skt, revents) end
+
+  return true
+end
+
+function Poller2:remove(skt)
+  local poller = self._private.poller
+  local s, rc = get_socket(skt)
+  if type(s) == "number" then
+    rc = api.zmq_poller_remove_fd(poller, s)
+  else
+    rc = api.zmq_poller_remove(poller, s)
+  end
+  self._private.callbacks[skt2id(s)] = nil
+
+  if rc == -1 then
+    return nil, zerror()
+  end
+
+  return true
+end
+
+function Poller2:modify(skt, events, cb)
+  if (not events) or (events == 0) or (not cb) then
+    return self:remove(skt)
+  end
+
+  local s = get_socket(skt)
+  local i = skt2id(s)
+  if not self._private.callbacks[i] then
+    return self:add(skt, events, cb)
+  end
+
+  local poller = self._private.poller
+
+  local rc
+  if type(s) == "number" then
+    rc = api.zmq_poller_modify_fd(poller, s, events)
+  else
+    rc = api.zmq_poller_modify(poller, s, events)
+  end
+
+  if rc == -1 then
+    return nil, zerror()
+  end
+
+  self._private.callbacks[i] = function(revents) return cb(skt, revents) end
+
+  return true
+end
+
+function Poller2:count()
+  return self._private.n_events
+end
+
+function Poller2:poll(timeout)
+  assert(type(timeout) == 'number')
+
+  local rc = api.zmq_poller_wait_all(
+    self._private.poller,
+    self._private.events,
+    self._private.n_events,
+    timeout
+  )
+
+  if rc == -1 then
+    if api.zmq_errno() == ERRORS.ETIMEDOUT then
+      return 0
+    end
+    return nil, zerror()
+  end
+
+  for i = 1, rc do
+    local event = self._private.events[i-1]
+    local s = (event.socket == NULL) and event.fd or event.socket
+    local cb = self._private.callbacks[skt2id(s)]
+    if cb then cb(event.events) end
+  end
+
+  return rc
+end
+
+function Poller2:start()
+  local status, err
+  self._private.is_running = true
+  while self._private.is_running do
+    status, err = self:poll(-1)
+    if not status then
+      return nil, err
+    end
+  end
+  return true
+end
+
+function Poller2:stop()
+  self._private.is_running = nil
+end
+
+function Poller2:__tostring()
+  local str = string.format('%sPoller (%s)',
+    NAME_PREFIX, self._private.hash
+  )
+  return str
+end
+
+end
+
 do -- StopWatch
 
 StopWatch.__index = StopWatch
@@ -1322,9 +1486,19 @@ for name, value in pairs(api.ERRORS) do
   zmq.errors[value] = name
 end
 
+if Poller2 then
+
+zmq.poller = {
+  new = function(n) return Poller2:new(n) end
+}
+
+else
+
 zmq.poller = {
   new = function(n) return Poller:new(n) end
 }
+
+end
 
 function zmq.device(dtype, frontend, backend)
   local ret = api.zmq_device(dtype, frontend:handle(), backend:handle())

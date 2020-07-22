@@ -68,6 +68,17 @@ typedef struct{
 struct ZMQ_Poller;
 typedef struct ZMQ_Poller zpoller;
 
+#ifdef ZMQ_HAVE_POLLER
+
+typedef struct zpoller2 {
+  void *handle;
+  int sockets_ref;
+  int n_events;
+  zmq_poller_event_t events[1];
+} zpoller2;
+
+#endif
+
 typedef struct{
   zmq_msg_t msg;
   uchar flags;
@@ -78,6 +89,9 @@ extern const char *LUAZMQ_SOCKET;
 extern const char *LUAZMQ_ERROR;
 extern const char *LUAZMQ_POLLER;
 extern const char *LUAZMQ_MESSAGE;
+#ifdef ZMQ_HAVE_POLLER
+extern const char *LUAZMQ_POLLER2;
+#endif
 
 zcontext *luazmq_getcontext_at (lua_State *L, int i);
 #define luazmq_getcontext(L) luazmq_getcontext_at((L),1)
@@ -91,9 +105,13 @@ zerror *luazmq_geterror_at (lua_State *L, int i);
 zpoller *luazmq_getpoller_at (lua_State *L, int i);
 #define luazmq_getpoller(L) luazmq_getpoller_at((L),1)
 
+#ifdef ZMQ_HAVE_POLLER
+zpoller2 *luazmq_getpoller2_at (lua_State *L, int i);
+#define luazmq_getpoller2(L) luazmq_getpoller2_at((L),1)
+#endif
+
 zmessage *luazmq_getmessage_at (lua_State *L, int i);
 #define luazmq_getmessage(L) luazmq_getmessage_at((L),1)
-
 
 int luazmq_pass(lua_State *L);
 int luazmq_fail_str(lua_State *L, zsocket *skt);
