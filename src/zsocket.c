@@ -768,7 +768,7 @@ static int luazmq_skt_has_event (lua_State *L) {
 
 static int luazmq_skt_set_int (lua_State *L, int option_name) {
   zsocket *skt = luazmq_getsocket(L);
-  int option_value = luaL_checkint(L, 2);
+  int option_value = luaL_checkint(L, 3);
   int ret = zmq_setsockopt(skt->skt, option_name, &option_value, sizeof(option_value));
   if (ret == -1) return luazmq_fail(L, skt);
   return luazmq_pass(L);
@@ -776,7 +776,7 @@ static int luazmq_skt_set_int (lua_State *L, int option_name) {
 
 static int luazmq_skt_set_u64 (lua_State *L, int option_name) {
   zsocket *skt = luazmq_getsocket(L);
-  uint64_t option_value = (uint64_t)luaL_checknumber(L, 2);
+  uint64_t option_value = (uint64_t)luaL_checknumber(L, 3);
   int ret = zmq_setsockopt(skt->skt, option_name, &option_value, sizeof(option_value));
   if (ret == -1) return luazmq_fail(L, skt);
   return luazmq_pass(L);
@@ -784,7 +784,7 @@ static int luazmq_skt_set_u64 (lua_State *L, int option_name) {
 
 static int luazmq_skt_set_i64 (lua_State *L, int option_name) {
   zsocket *skt = luazmq_getsocket(L);
-  int64_t option_value = (int64_t)luaL_checknumber(L, 2);
+  int64_t option_value = (int64_t)luaL_checknumber(L, 3);
   int ret = zmq_setsockopt(skt->skt, option_name, &option_value, sizeof(option_value));
   if (ret == -1) return luazmq_fail(L, skt);
   return luazmq_pass(L);
@@ -793,7 +793,7 @@ static int luazmq_skt_set_i64 (lua_State *L, int option_name) {
 static int luazmq_skt_set_str (lua_State *L, int option_name) {
   zsocket *skt = luazmq_getsocket(L);
   size_t len;
-  const char *option_value = luaL_checklstring(L, 2, &len);
+  const char *option_value = luaL_checklstring(L, 3, &len);
   int ret = zmq_setsockopt(skt->skt, option_name, option_value, len);
   if (ret == -1) return luazmq_fail(L, skt);
   return luazmq_pass(L);
